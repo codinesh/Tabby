@@ -436,6 +436,28 @@ function toggleGroupingButtons(activeBtn) {
   activeBtn.classList.add('active');
 }
 
+// Function to toggle the context menu
+function toggleContextMenu() {
+  const menu = document.getElementById('context-menu');
+  menu.classList.toggle('hidden');
+  
+  // Close menu when clicking outside
+  if (!menu.classList.contains('hidden')) {
+    document.addEventListener('click', closeContextMenuOnClickOutside);
+  }
+}
+
+// Function to close the context menu when clicking outside
+function closeContextMenuOnClickOutside(event) {
+  const menu = document.getElementById('context-menu');
+  const menuButton = document.getElementById('menu-button');
+  
+  if (!menu.contains(event.target) && event.target !== menuButton) {
+    menu.classList.add('hidden');
+    document.removeEventListener('click', closeContextMenuOnClickOutside);
+  }
+}
+
 // Initialize the extension
 document.addEventListener('DOMContentLoaded', () => {
   // Display all tabs
@@ -444,8 +466,22 @@ document.addEventListener('DOMContentLoaded', () => {
   // Load saved settings
   loadSettings();
   
-  // Add event listener for the refresh button
-  document.getElementById('refresh').addEventListener('click', displayTabs);
+  // Set up menu button
+  document.getElementById('menu-button').addEventListener('click', (event) => {
+    toggleContextMenu();
+    event.stopPropagation();
+  });
+  
+  // Set up menu items
+  document.getElementById('menu-refresh').addEventListener('click', () => {
+    displayTabs();
+    toggleContextMenu();
+  });
+  
+  document.getElementById('menu-settings').addEventListener('click', () => {
+    toggleSettings();
+    toggleContextMenu();
+  });
   
   // Add event listener for the group tabs button
   const groupTabsBtn = document.getElementById('group-tabs');
@@ -479,9 +515,6 @@ document.addEventListener('DOMContentLoaded', () => {
     ungroupAllTabs();
     hideAiSettings();
   });
-  
-  // Add event listener for the settings toggle button
-  document.getElementById('settings-toggle').addEventListener('click', toggleSettings);
   
   // Add event listener for the save settings button
   document.getElementById('save-settings').addEventListener('click', saveSettings);

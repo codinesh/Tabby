@@ -9,13 +9,19 @@
   <h1>Tabby</h1>
   <div id="content">
     <div class="controls">
-      <button id="refresh">Refresh</button>
       <div class="group-controls">
         <button id="group-tabs" class="active">Group by Domain</button>
         <button id="group-by-ai">Group by AI</button>
         <button id="ungroup-tabs">Ungroup All</button>
       </div>
-      <button id="settings-toggle" class="settings-button">⚙ Settings</button>
+      <button id="menu-button" class="menu-button">⋮</button>
+    </div>
+    
+    <div id="context-menu" class="context-menu hidden">
+      <ul>
+        <li id="menu-refresh">Refresh</li>
+        <li id="menu-settings">Settings</li>
+      </ul>
     </div>
     
     <div id="ai-settings" class="hidden">
