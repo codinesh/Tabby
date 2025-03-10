@@ -310,13 +310,13 @@ async function categorizeTabs() {
 
                           Instructions:
 
-                          1. Analyze Tab Content: Examine both the URL (especially the domain) and the title of each browser tab to understand its content and purpose.
+                          1. Analyze Tab Content: Examine both the URL and the title of each browser tab to understand its content and purpose.
                           2. Generate Concise Categories: Create short, impactful category names (ideally 1-3 words).
                           3. Prioritize Generality: Group similar tabs under broader, more general categories. Avoid creating excessively specific categories that could be grouped under a common theme. For example, instead of separate categories like 'Azure Function Deployment' and 'Azure Function Monitoring', use a more general category like 'Azure Functions'.
-                          4. Consider Domain (but avoid domain-specific categories unless appropriate): Use the domain (e.g., 'azure.com', 'github.com', 'youtube.com') as a hint for context, but categories should generally reflect the topic or function of the tab, not just the website domain itself. For example, tabs on 'github.com' might be categorized as 'Code Repositories', 'Project Development', etc., not just 'GitHub'. However, for very distinct domains like 'youtube.com', 'YouTube' might be a suitable concise category.
-                          5. Avoid Redundancy: Do not create multiple categories that essentially cover the same topic with slight variations in wording. Aim for a set of distinct and non-overlapping categories.
-
-                          Output Format: Return ONLY a JSON object where keys are tab IDs and values are the generated concise categories. Do not include any introductory or explanatory text outside of the JSON object.
+                          4. Use Clear Language: Ensure that the category names are clear and easily understandable to users. Avoid technical jargon or overly complex terms.
+                          5. Maintain Consistency: Use consistent naming conventions and formats for similar categories. For example, if you use 'Project Management' for one category, avoid using 'Project Mngmt' for another.
+                          6. Avoid Redundancy: Do not create multiple categories that essentially cover the same topic with slight variations in wording. Aim for a set of distinct and non-overlapping categories.
+                          7. Provide JSON Output: Format the output as a JSON object where keys are tab IDs and values are the generated categories.
                       `
             },
             {
