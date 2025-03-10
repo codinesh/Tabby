@@ -353,6 +353,49 @@ input[type="password"] {
   background-color: rgba(255, 255, 255, 0.2);
 }
 
+/* Group header actions */
+.group-actions {
+  display: flex;
+  align-items: center;
+}
+
+.group-edit,
+.group-add-to-settings,
+.group-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 5px;
+}
+
+.group-edit:hover,
+.group-add-to-settings:hover,
+.group-close:hover {
+  opacity: 1;
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.group-edit-field {
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+  padding: 2px 5px;
+  font-size: 14px;
+  color: #333;
+  margin-right: 5px;
+  width: 150px;
+}
+
+.group-edit-field:focus {
+  outline: none;
+  border-color: rgba(0, 0, 0, 0.3);
+}
+
 /* Tab group colors */
 .group-header.grey {
   background-color: #5f6368;

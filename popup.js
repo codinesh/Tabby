@@ -263,6 +263,123 @@ function displayTabs() {
     groupTitle.className = 'group-title';
     groupTitle.textContent = group.title || 'Unnamed group';
     
+    // Add actions container for group controls
+    const groupActions = document.createElement('div');
+    groupActions.className = 'group-actions';
+    
+    // Add edit button for renaming the group
+    const editBtn = document.createElement('div');
+    editBtn.className = 'group-edit';
+    editBtn.title = 'Edit group name';
+    editBtn.innerHTML = '✎';
+    editBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      
+      // Hide the group title and create an edit field
+      groupTitle.style.display = 'none';
+      
+      const editField = document.createElement('input');
+      editField.type = 'text';
+      editField.className = 'group-edit-field';
+      editField.value = group.title || '';
+      editField.placeholder = 'Group name';
+      
+      // Insert before the actions container
+      groupHeader.insertBefore(editField, groupActions);
+      
+      // Focus on the field
+      editField.focus();
+      
+      // Save changes on enter or blur
+      const saveChanges = () => {
+        const newTitle = editField.value.trim();
+        if (newTitle) {
+          chrome.tabGroups.update(parseInt(group.id), { title: newTitle });
+          groupTitle.textContent = newTitle;
+        }
+        
+        // Remove edit field and show title
+        editField.remove();
+        groupTitle.style.display = '';
+      };
+      
+      editField.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          saveChanges();
+        } else if (e.key === 'Escape') {
+          editField.remove();
+          groupTitle.style.display = '';
+        }
+      });
+      
+      editField.addEventListener('blur', saveChanges);
+    });
+    
+    // Add to settings button - saves this category to custom groups
+    const addToSettingsBtn = document.createElement('div');
+    addToSettingsBtn.className = 'group-add-to-settings';
+    addToSettingsBtn.title = 'Add to custom groups';
+    addToSettingsBtn.innerHTML = '+';
+    addToSettingsBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      
+      // Get the current custom groups
+      chrome.storage.sync.get(['customGroups'], (result) => {
+        const customGroups = result.customGroups || [];
+        
+        // Check if this group name already exists in settings
+        const groupExists = customGroups.some(g => g.name.toLowerCase() === (group.title || '').toLowerCase());
+        
+        if (!groupExists && group.title) {
+          // Collect keywords from the tab titles and URLs in this group
+          const keywords = [];
+          group.tabs.forEach(tab => {
+            // Extract domain name as a keyword
+            try {
+              const url = new URL(tab.url);
+              const domain = url.hostname;
+              if (domain && !keywords.includes(domain)) {
+                keywords.push(domain);
+              }
+            } catch (e) {
+              // Skip invalid URLs
+            }
+            
+            // Extract words from title that are at least 4 chars as potential keywords
+            const titleWords = tab.title.split(/\s+/)
+              .filter(word => word.length >= 4)
+              .map(word => word.toLowerCase());
+              
+            // Add unique words to keywords
+            titleWords.forEach(word => {
+              if (!keywords.includes(word)) {
+                keywords.push(word);
+              }
+            });
+          });
+          
+          // Limit keywords to first 5 to avoid clutter
+          const limitedKeywords = keywords.slice(0, 5);
+          
+          // Add to custom groups
+          customGroups.push({
+            name: group.title,
+            keywords: limitedKeywords
+          });
+          
+          // Save updated custom groups
+          chrome.storage.sync.set({ customGroups }, () => {
+            showStatus(`Added "${group.title}" to custom groups`, 'success');
+          });
+        } else if (groupExists) {
+          showStatus(`"${group.title}" already exists in custom groups`, 'info');
+        } else {
+          showStatus('Cannot add unnamed group to settings', 'error');
+        }
+      });
+    });
+    
+    // Add close button
     const groupCloseBtn = document.createElement('div');
     groupCloseBtn.className = 'group-close';
     groupCloseBtn.textContent = '✕';
@@ -275,8 +392,14 @@ function displayTabs() {
       groupContainer.remove();
     });
     
+    // Add all action buttons
+    groupActions.appendChild(editBtn);
+    groupActions.appendChild(addToSettingsBtn);
+    groupActions.appendChild(groupCloseBtn);
+    
+    // Assemble the header
     groupHeader.appendChild(groupTitle);
-    groupHeader.appendChild(groupCloseBtn);
+    groupHeader.appendChild(groupActions);
     groupContainer.appendChild(groupHeader);
     
     // Add tabs within this group
