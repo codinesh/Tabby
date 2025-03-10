@@ -20,14 +20,34 @@
     
     <div id="ai-settings" class="hidden">
       <h3>AI Settings</h3>
-      <div class="form-group">
-        <label for="ai-url">API Endpoint:</label>
-        <input type="text" id="ai-url" placeholder="https://api.openai.com/v1/chat/completions" value="https://api.openai.com/v1/chat/completions">
+      <div class="settings-tabs">
+        <button class="settings-tab active" data-tab="api-settings">API</button>
+        <button class="settings-tab" data-tab="groups-settings">Custom Groups</button>
       </div>
-      <div class="form-group">
-        <label for="api-key">API Key:</label>
-        <input type="password" id="api-key" placeholder="Your API key">
+      
+      <div id="api-settings" class="settings-content">
+        <div class="form-group">
+          <label for="ai-url">API Endpoint:</label>
+          <input type="text" id="ai-url" placeholder="https://api.openai.com/v1/chat/completions" value="https://api.openai.com/v1/chat/completions">
+        </div>
+        <div class="form-group">
+          <label for="api-key">API Key:</label>
+          <input type="password" id="api-key" placeholder="Your API key">
+        </div>
       </div>
+      
+      <div id="groups-settings" class="settings-content hidden">
+        <div class="form-group">
+          <p class="help-text">Configure your preferred groups and the keywords that should be included in each group.</p>
+          <div id="custom-groups-container">
+            <!-- Custom groups will be added here dynamically -->
+          </div>
+          <div class="group-actions">
+            <button id="add-group" class="small-button">+ Add Group</button>
+          </div>
+        </div>
+      </div>
+      
       <button id="save-settings">Save Settings</button>
     </div>
     
@@ -35,6 +55,19 @@
       <!-- Tabs will be listed here -->
     </div>
   </div>
+  
+  <template id="custom-group-template">
+    <div class="custom-group">
+      <div class="form-row">
+        <input type="text" class="group-name" placeholder="Group name (e.g., Workflow)">
+        <button class="remove-group small-button">✕</button>
+      </div>
+      <div class="form-row keywords-container">
+        <input type="text" class="group-keywords" placeholder="Keywords (comma separated, e.g., workflow, process, task)">
+      </div>
+    </div>
+  </template>
+  
   <script src="popup.js"></script>
 </body>
 </html>

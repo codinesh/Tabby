@@ -2,19 +2,47 @@
 function saveSettings() {
   const aiUrl = document.getElementById('ai-url').value;
   const apiKey = document.getElementById('api-key').value;
+  
+  // Save custom groups
+  const customGroups = getCustomGroupsFromUI();
 
   chrome.storage.sync.set({
     aiUrl: aiUrl,
-    apiKey: apiKey
+    apiKey: apiKey,
+    customGroups: customGroups
   }, () => {
     alert('Settings saved!');
     hideAiSettings(); // Hide settings after saving
   });
 }
 
+// Function to get custom groups from UI
+function getCustomGroupsFromUI() {
+  const customGroups = [];
+  const groupElements = document.querySelectorAll('.custom-group');
+  
+  groupElements.forEach((element) => {
+    const nameInput = element.querySelector('.group-name');
+    const keywordsInput = element.querySelector('.group-keywords');
+    
+    if (nameInput.value.trim() !== '') {
+      const keywords = keywordsInput.value.split(',')
+        .map(k => k.trim().toLowerCase())
+        .filter(k => k !== '');
+      
+      customGroups.push({
+        name: nameInput.value.trim(),
+        keywords: keywords
+      });
+    }
+  });
+  
+  return customGroups;
+}
+
 // Load settings from Chrome storage
 function loadSettings() {
-  chrome.storage.sync.get(['aiUrl', 'apiKey'], (result) => {
+  chrome.storage.sync.get(['aiUrl', 'apiKey', 'customGroups'], (result) => {
     if (result.aiUrl) {
       document.getElementById('ai-url').value = result.aiUrl;
     } else {
@@ -26,9 +54,75 @@ function loadSettings() {
       document.getElementById('api-key').value = result.apiKey;
     }
     
+    // Load custom groups
+    if (result.customGroups && result.customGroups.length > 0) {
+      loadCustomGroupsToUI(result.customGroups);
+    } else {
+      // Add one empty group by default
+      addCustomGroup();
+    }
+    
+    // Initialize settings tabs
+    initSettingsTabs();
+    
     // Check if we need to show settings automatically
-    // (only if API key is not set and user clicks Group by AI)
     checkIfSettingsNeeded();
+  });
+}
+
+// Load custom groups into the UI
+function loadCustomGroupsToUI(groups) {
+  const container = document.getElementById('custom-groups-container');
+  container.innerHTML = '';
+  
+  groups.forEach(group => {
+    const element = addCustomGroup();
+    const nameInput = element.querySelector('.group-name');
+    const keywordsInput = element.querySelector('.group-keywords');
+    
+    nameInput.value = group.name;
+    keywordsInput.value = group.keywords.join(', ');
+  });
+  
+  // Add at least one group if none were loaded
+  if (groups.length === 0) {
+    addCustomGroup();
+  }
+}
+
+// Add a new custom group element to the UI
+function addCustomGroup() {
+  const container = document.getElementById('custom-groups-container');
+  const template = document.getElementById('custom-group-template');
+  const clone = document.importNode(template.content, true);
+  const groupElement = clone.querySelector('.custom-group');
+  
+  // Add event listeners for the remove button
+  const removeButton = clone.querySelector('.remove-group');
+  removeButton.addEventListener('click', function() {
+    groupElement.remove();
+  });
+  
+  container.appendChild(clone);
+  return groupElement;
+}
+
+// Initialize settings tabs
+function initSettingsTabs() {
+  const tabs = document.querySelectorAll('.settings-tab');
+  const contents = document.querySelectorAll('.settings-content');
+  
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      // Remove active class from all tabs and hide all contents
+      tabs.forEach(t => t.classList.remove('active'));
+      contents.forEach(c => c.classList.add('hidden'));
+      
+      // Add active class to clicked tab and show corresponding content
+      tab.classList.add('active');
+      const contentId = tab.getAttribute('data-tab');
+      document.getElementById(contentId).classList.remove('hidden');
+    });
   });
 }
 
@@ -140,10 +234,27 @@ function ungroupAllTabs() {
   });
 }
 
+// Apply user-defined group if tab matches any keywords
+function matchCustomGroup(tabInfo, customGroups) {
+  // Check title and URL against custom group keywords
+  const title = tabInfo.title.toLowerCase();
+  const url = tabInfo.url.toLowerCase();
+  
+  for (const group of customGroups) {
+    for (const keyword of group.keywords) {
+      if (title.includes(keyword) || url.includes(keyword)) {
+        return group.name;
+      }
+    }
+  }
+  
+  return null;
+}
+
 // Categorize tabs using AI
 async function categorizeTabs() {
   // Get settings
-  chrome.storage.sync.get(['aiUrl', 'apiKey'], async (settings) => {
+  chrome.storage.sync.get(['aiUrl', 'apiKey', 'customGroups'], async (settings) => {
     if (!settings.aiUrl || !settings.apiKey) {
       alert('Please configure AI settings first');
       showAiSettings();
@@ -152,6 +263,7 @@ async function categorizeTabs() {
     
     const tabCategories = {};
     let allTabsInfo = [];
+    const customGroups = settings.customGroups || [];
 
     try {
       // Get all tabs
@@ -165,80 +277,96 @@ async function categorizeTabs() {
         title: tab.title,
         url: tab.url
       }));
-
-      // Create content for the OpenAI API request
-      const tabsInfoText = allTabsInfo.map(tab => 
-        `Tab ID: ${tab.id}, Title: ${tab.title}, URL: ${tab.url}`
-      ).join('\n');
       
-      // Format the request body for OpenAI's API
-      const requestBody = {
-        model: "gpt-4o",
-        messages: [
-          {
-            role: "system",
-            content: "You are a tab categorization assistant. Categorize each tab into one of these categories: Workitems, Documentation, Code, Learning, Entertainment, or Others. Return ONLY a JSON object with tab IDs as keys and categories as values, with no additional text."
-          },
-          {
-            role: "user",
-            content: `Please categorize the following tabs:\n${tabsInfoText}`
-          }
-        ]
-      };
-
-      // Send request to OpenAI API
-      const response = await fetch(settings.aiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'api-key': `${settings.apiKey}`
-        },
-        body: JSON.stringify(requestBody)
-      });
+      // First check for matches with user-defined groups
+      const tabsToProcess = [];
       
-      if (!response.ok) {
-        throw new Error(`AI service returned status ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
-      // Process OpenAI's response
-      if (data.choices && data.choices.length > 0) {
-        const assistantMessage = data.choices[0].message.content;
+      for (const tab of allTabsInfo) {
+        // Check if tab matches any custom group
+        const customGroupMatch = matchCustomGroup(tab, customGroups);
         
-        try {
-          // Extract JSON from the response
-          let jsonStr = assistantMessage;
-          
-          // If the response contains markdown code blocks, extract the JSON
-          if (jsonStr.includes('```json')) {
-            jsonStr = jsonStr.split('```json')[1].split('```')[0].trim();
-          } else if (jsonStr.includes('```')) {
-            jsonStr = jsonStr.split('```')[1].split('```')[0].trim();
-          }
-          
-          // Parse the categories
-          const categoriesData = JSON.parse(jsonStr);
-          
-          // Store categories
-          for (const tabId in categoriesData) {
-            tabCategories[tabId] = categoriesData[tabId];
-          }
-          
-          // Save categories to storage
-          chrome.storage.local.set({ tabCategories }, () => {
-            // Group by categories
-            groupTabsByCategory(tabCategories);
-            // Refresh display to show categories
-            displayTabs();
-          });
-        } catch (parseError) {
-          console.error('Error parsing AI response:', parseError);
-          alert(`Error parsing AI response: ${parseError.message}`);
+        if (customGroupMatch) {
+          tabCategories[tab.id] = customGroupMatch;
+        } else {
+          // If no match, this tab needs AI categorization
+          tabsToProcess.push(tab);
         }
-      } else {
-        throw new Error('Invalid response format from AI service');
       }
+      
+      // If there are tabs that don't match custom groups, categorize them with AI
+      if (tabsToProcess.length > 0) {
+        // Create content for the OpenAI API request
+        const tabsInfoText = tabsToProcess.map(tab => 
+          `Tab ID: ${tab.id}, Title: ${tab.title}, URL: ${tab.url}`
+        ).join('\n');
+        
+        // Format the request body for OpenAI's API with improved prompt
+        const requestBody = {
+          model: "gpt-4o",
+          messages: [
+            {
+              role: "system",
+              content: "You are a tab categorization assistant that helps organize browser tabs. Analyze each tab's URL and title to generate meaningful, concise categories that accurately reflect the content or purpose of the tab. Create specific and diverse categories rather than using generic ones. For example, instead of just 'Work', create more specific categories like 'Project Management', 'Development', 'Meeting Notes', etc. Return ONLY a JSON object with tab IDs as keys and categories as values, with no additional text."
+            },
+            {
+              role: "user",
+              content: `Please categorize the following tabs into specific and diverse categories:\n${tabsInfoText}`
+            }
+          ]
+        };
+
+        // Send request to OpenAI API
+        const response = await fetch(settings.aiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'api-key': `${settings.apiKey}`
+          },
+          body: JSON.stringify(requestBody)
+        });
+        
+        if (!response.ok) {
+          throw new Error(`AI service returned status ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // Process OpenAI's response
+        if (data.choices && data.choices.length > 0) {
+          const assistantMessage = data.choices[0].message.content;
+          
+          try {
+            // Extract JSON from the response
+            let jsonStr = assistantMessage;
+            
+            // If the response contains markdown code blocks, extract the JSON
+            if (jsonStr.includes('```json')) {
+              jsonStr = jsonStr.split('```json')[1].split('```')[0].trim();
+            } else if (jsonStr.includes('```')) {
+              jsonStr = jsonStr.split('```')[1].split('```')[0].trim();
+            }
+            
+            // Parse the categories
+            const aiCategories = JSON.parse(jsonStr);
+            
+            // Merge AI categories with custom group matches
+            for (const tabId in aiCategories) {
+              tabCategories[tabId] = aiCategories[tabId];
+            }
+          } catch (parseError) {
+            console.error('Error parsing AI response:', parseError);
+            alert(`Error parsing AI response: ${parseError.message}`);
+          }
+        }
+      }
+      
+      // Save all categories to storage
+      chrome.storage.local.set({ tabCategories }, () => {
+        // Group by categories
+        groupTabsByCategory(tabCategories);
+        // Refresh display to show categories
+        displayTabs();
+      });
     } catch (error) {
       console.error('Error categorizing tabs:', error);
       alert(`Error categorizing tabs: ${error.message}`);
@@ -264,20 +392,12 @@ function groupTabsByCategory(categories) {
     const tabIds = categoryGroups[category];
     if (tabIds.length > 0) {
       chrome.tabs.group({ tabIds }, (groupId) => {
-        // Set color based on category type
-        let color = 'blue'; // Default
-        
-        if (category.toLowerCase().includes('work')) {
-          color = 'red';
-        } else if (category.toLowerCase().includes('documentation')) {
-          color = 'yellow';
-        } else if (category.toLowerCase().includes('code')) {
-          color = 'green';
-        } else if (category.toLowerCase().includes('learning')) {
-          color = 'purple';
-        } else if (category.toLowerCase().includes('entertainment')) {
-          color = 'pink';
-        }
+        // Generate color based on category name hash
+        // This ensures consistent colors for the same category names
+        const colorOptions = ['grey', 'blue', 'red', 'yellow', 'green', 'pink', 'purple', 'cyan'];
+        const hash = Array.from(category).reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        const colorIndex = hash % colorOptions.length;
+        const color = colorOptions[colorIndex];
         
         chrome.tabGroups.update(groupId, { 
           title: category,
@@ -364,10 +484,10 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('settings-toggle').addEventListener('click', toggleSettings);
   
   // Add event listener for the save settings button
-  document.getElementById('save-settings').addEventListener('click', () => {
-    saveSettings();
-    categorizeTabs();
-  });
+  document.getElementById('save-settings').addEventListener('click', saveSettings);
+  
+  // Add event listener for the add group button
+  document.getElementById('add-group').addEventListener('click', addCustomGroup);
 });
 
 // Listen for tab events and refresh the list
