@@ -2,7 +2,10 @@
 
 Tabby is a browser extension that helps you organize your tabs using AI-powered categorization or domain-based grouping.
 
-![Sample screenshot](image.png)
+<div style="display: flex; justify-content: space-between;">
+   <img src="images/image.png" alt="Tabby home page" width="48%"/>
+   <img src="image.png" alt="Settings page" width="48%"/>
+</div>
 
 ## Features
 

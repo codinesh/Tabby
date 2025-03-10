@@ -300,6 +300,71 @@ function displayTabs() {
           // Check if another group with the same name already exists (ignoring case)
           chrome.tabs.query({}, (tabs) => {
             const tabIds = group.tabs.map(tab => tab.id);
+            let existingGroupFound = false;
+            
+            // Filter to find tabs in groups
+            const tabsInGroups = tabs.filter(tab => tab.groupId !== chrome.tabs.TAB_GROUP_ID_NONE);
+            
+            // Find unique group IDs
+            const uniqueGroupIds = [...new Set(tabsInGroups.map(tab => tab.groupId))];
+            
+            // Check each group to see if its name matches our new name
+            const checkGroups = (index) => {
+              if (index >= uniqueGroupIds.length) {
+                // No matching group found, update current group
+                chrome.tabGroups.update(parseInt(group.id), { title: newTitle }, () => {
+                  groupTitle.textContent = newTitle;
+                });
+                return;
+              }
+              
+              const currentGroupId = uniqueGroupIds[index];
+              
+              // Skip our own group
+              if (currentGroupId === group.id) {
+                checkGroups(index + 1);
+                return;
+              }
+              
+              chrome.tabGroups.get(currentGroupId, (currentGroup) => {
+                if (chrome.runtime.lastError) {
+                  checkGroups(index + 1);
+                  return;
+                }
+                
+                // If we found a group with matching name (case-insensitive)
+                if (currentGroup.title && currentGroup.title.toLowerCase() === newTitle.toLowerCase()) {
+                  // We found a matching group, move tabs to it
+                  existingGroupFound = true;
+                  
+                  // Move the tabs to the existing group
+                  chrome.tabs.group({ tabIds: tabIds, groupId: currentGroupId }, () => {
+                    // Remove the old (now empty) group from UI
+                    groupContainer.remove();
+                    
+                    // Show status message
+                    showStatus(`Moved tabs to existing "${currentGroup.title}" group`, 'success');
+                    
+                    // Refresh the display
+                    displayTabs();
+                  });
+                } else {
+                  // Continue checking other groups
+                  checkGroups(index + 1);
+                }
+              });
+            };
+            
+            // Start checking groups
+            checkGroups(0);
+            
+            // If no existing group was found, the callback will update the title
+          });
+        } else {
+          // If empty name, revert to previous name
+          groupTitle.textContent = group.title || 'Unnamed group';
+        }
+        
         // Remove edit field and show title
         editField.remove();
         groupTitle.style.display = '';
@@ -408,6 +473,21 @@ function displayTabs() {
     group.tabs.forEach((tab) => {
       renderTab(tab, groupContainer);
     });
+    
+    // Check if only one tab is in the group and add a special indicator
+    if (group.tabs.length === 1) {
+      const singleTabIndicator = document.createElement('div');
+      singleTabIndicator.className = 'single-tab-indicator';
+      singleTabIndicator.textContent = 'Single tab in group - consider ungrouping';
+      singleTabIndicator.addEventListener('click', () => {
+        // Ungroup the single tab
+        chrome.tabs.ungroup(group.tabs[0].id, () => {
+          showStatus('Tab ungrouped', 'success');
+          displayTabs();
+        });
+      });
+      groupContainer.appendChild(singleTabIndicator);
+    }
     
     tabsList.appendChild(groupContainer);
   }

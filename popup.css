@@ -474,3 +474,18 @@ input[type="password"] {
   background-color: #f0f0f0;
   border-radius: 4px;
 }
+
+.single-tab-indicator {
+  background-color: #f8f9fa;
+  color: #666;
+  padding: 8px;
+  font-size: 12px;
+  text-align: center;
+  cursor: pointer;
+  border-top: 1px solid #eee;
+}
+
+.single-tab-indicator:hover {
+  background-color: #e8f0fe;
+  color: #1a73e8;
+}
