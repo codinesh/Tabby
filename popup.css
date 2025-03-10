@@ -247,7 +247,7 @@ button:hover {
 
 .group-name {
   flex: 1;
-  margin-right: 5px;
+  margin-right: 4px;
 }
 
 .keywords-container {
@@ -267,6 +267,7 @@ button:hover {
 .group-actions {
   display: flex;
   justify-content: flex-start;
+  gap: 0.5rem;
 }
 
 .remove-group {
@@ -676,4 +677,63 @@ menu-button:hover {
 }
 [data-theme="dark"] .group-header.cyan {
   background-color: #00acc1;
+}
+
+/* Ensure settings UI works well with dark theme */
+[data-theme="dark"] #ai-settings {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .settings-tabs {
+  border-bottom-color: var(--border-color);
+}
+
+[data-theme="dark"] .settings-tab {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .settings-tab.active {
+  color: var(--accent-color);
+}
+
+[data-theme="dark"] .settings-tab:hover {
+  background-color: var(--hover-bg);
+}
+
+[data-theme="dark"] .help-text {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .custom-group {
+  background-color: var(--bg-primary);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .category {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .menu-button {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .menu-button:hover {
+  background-color: var(--hover-bg);
+}
+
+[data-theme="dark"] .context-menu {
+  background-color: var(--bg-primary);
+}
+
+[data-theme="dark"] .context-menu li:hover {
+  background-color: var(--hover-bg);
+}
+
+/* Ensure input fields are styled for dark theme */
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] input[type="password"] {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
 }
