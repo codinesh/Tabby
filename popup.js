@@ -66,9 +66,11 @@ function saveSettings() {
     apiKey: apiKey,
     customGroups: customGroups
   }, () => {
-    // Replace alert with status message
+    // Hide settings panel
+    hideAiSettings();
+    
+    // Show success status message
     showStatus('Settings saved!', 'success');
-    hideAiSettings(); // Hide settings after saving
   });
 }
 
@@ -747,21 +749,33 @@ function groupTabsByCategory(categories) {
 
 // Show AI settings panel
 function showAiSettings() {
+  // Hide controls and tabs list
+  document.querySelector('.controls').classList.add('hidden');
+  document.getElementById('tabs-list').classList.add('hidden');
+  
+  // Show settings panel
   document.getElementById('ai-settings').classList.remove('hidden');
 }
 
 // Hide AI settings panel
 function hideAiSettings() {
+  // Hide settings panel
   document.getElementById('ai-settings').classList.add('hidden');
+  
+  // Show controls and tabs list
+  document.querySelector('.controls').classList.remove('hidden');
+  document.getElementById('tabs-list').classList.remove('hidden');
 }
 
 // Toggle settings visibility
 function toggleSettings() {
   const settingsPanel = document.getElementById('ai-settings');
   if (settingsPanel.classList.contains('hidden')) {
-    settingsPanel.classList.remove('hidden');
+    // Show settings, hide controls and tabs
+    showAiSettings();
   } else {
-    settingsPanel.classList.add('hidden');
+    // Hide settings, show controls and tabs
+    hideAiSettings();
   }
 }
 
