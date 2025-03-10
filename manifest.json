@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Tabby - AI Tab Manager",
   "version": "1.0.0",
-  "description": "Organize your browser tabs effortlessly using AI-powered categorization and domain-based grouping. Boost your productivity with smart tab management.",
+  "description": "AI powered browser tab manager to organize and group your tabs. Save time and reduce tab clutter.",
   "permissions": ["tabs", "storage", "tabGroups"],
   "action": {
     "default_popup": "popup.html",
@@ -17,8 +17,8 @@
     "48": "images/icon48.png",
     "128": "images/icon128.png"
   },
-  "author": "Dinesh",
-  "homepage_url": "https://github.com/codinesh",
+  "author": "Tabby",
+  "homepage_url": "https://github.com/yourusername/tabby",
   "minimum_chrome_version": "88",
   "offline_enabled": true,
   "short_name": "Tabby"
