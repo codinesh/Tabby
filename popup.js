@@ -193,57 +193,151 @@ function checkIfSettingsNeeded() {
   });
 }
 
-// Function to display all tabs
+// Function to display all tabs organized by groups
 function displayTabs() {
   const tabsList = document.getElementById('tabs-list');
   tabsList.innerHTML = '';
   
+  // Get all tabs and group information
   chrome.tabs.query({}, (tabs) => {
+    // Organize tabs by groups
+    const groupedTabs = {};
+    const ungroupedTabs = [];
+    
+    // First pass: identify all groups and their properties
     tabs.forEach((tab) => {
-      const tabItem = document.createElement('div');
-      tabItem.className = 'tab-item';
-      tabItem.setAttribute('data-tab-id', tab.id);
-      
-      const favicon = document.createElement('img');
-      favicon.className = 'tab-favicon';
-      favicon.src = tab.favIconUrl || 'images/favicon.png';
-      
-      const title = document.createElement('div');
-      title.className = 'tab-title';
-      title.textContent = tab.title;
-      
-      // Add category span if we have it stored
-      chrome.storage.local.get(['tabCategories'], (result) => {
-        if (result.tabCategories && result.tabCategories[tab.id]) {
-          const category = document.createElement('span');
-          category.className = 'category';
-          category.textContent = `[${result.tabCategories[tab.id]}]`;
-          title.appendChild(category);
+      if (tab.groupId !== chrome.tabs.TAB_GROUP_ID_NONE) {
+        if (!groupedTabs[tab.groupId]) {
+          groupedTabs[tab.groupId] = {
+            id: tab.groupId,
+            tabs: [],
+            title: null,
+            color: null
+          };
         }
-      });
+        groupedTabs[tab.groupId].tabs.push(tab);
+      } else {
+        ungroupedTabs.push(tab);
+      }
+    });
+    
+    // Get group details (title, color)
+    const groupIds = Object.keys(groupedTabs);
+    if (groupIds.length > 0) {
+      const getGroupDetails = (groupId) => {
+        chrome.tabGroups.get(parseInt(groupId), (group) => {
+          if (chrome.runtime.lastError) {
+            console.error(chrome.runtime.lastError);
+            return;
+          }
+          
+          groupedTabs[groupId].title = group.title;
+          groupedTabs[groupId].color = group.color;
+          
+          // Render the group after getting details
+          renderTabGroup(groupedTabs[groupId]);
+        });
+      };
       
-      const closeBtn = document.createElement('div');
-      closeBtn.className = 'tab-close';
-      closeBtn.textContent = '✕';
-      closeBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        chrome.tabs.remove(tab.id);
-        tabItem.remove();
-      });
-      
-      tabItem.appendChild(favicon);
-      tabItem.appendChild(title);
-      tabItem.appendChild(closeBtn);
-      
-      // Switch to this tab when clicked
-      tabItem.addEventListener('click', () => {
-        chrome.tabs.update(tab.id, { active: true });
-        chrome.windows.update(tab.windowId, { focused: true });
-      });
-      
-      tabsList.appendChild(tabItem);
+      // Get details for each group
+      groupIds.forEach(getGroupDetails);
+    }
+    
+    // Render ungrouped tabs
+    ungroupedTabs.forEach((tab) => {
+      renderTab(tab, null);
     });
   });
+  
+  // Function to render a tab group
+  function renderTabGroup(group) {
+    const groupContainer = document.createElement('div');
+    groupContainer.className = 'tab-group';
+    groupContainer.setAttribute('data-group-id', group.id);
+    
+    // Group header
+    const groupHeader = document.createElement('div');
+    groupHeader.className = `group-header ${group.color || 'grey'}`;
+    
+    const groupTitle = document.createElement('div');
+    groupTitle.className = 'group-title';
+    groupTitle.textContent = group.title || 'Unnamed group';
+    
+    const groupCloseBtn = document.createElement('div');
+    groupCloseBtn.className = 'group-close';
+    groupCloseBtn.textContent = '✕';
+    groupCloseBtn.title = 'Close group';
+    groupCloseBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      // Close all tabs in this group
+      const tabIds = group.tabs.map(tab => tab.id);
+      chrome.tabs.remove(tabIds);
+      groupContainer.remove();
+    });
+    
+    groupHeader.appendChild(groupTitle);
+    groupHeader.appendChild(groupCloseBtn);
+    groupContainer.appendChild(groupHeader);
+    
+    // Add tabs within this group
+    group.tabs.forEach((tab) => {
+      renderTab(tab, groupContainer);
+    });
+    
+    tabsList.appendChild(groupContainer);
+  }
+  
+  // Function to render a single tab
+  function renderTab(tab, container) {
+    const tabItem = document.createElement('div');
+    tabItem.className = 'tab-item';
+    tabItem.setAttribute('data-tab-id', tab.id);
+    
+    const favicon = document.createElement('img');
+    favicon.className = 'tab-favicon';
+    favicon.src = tab.favIconUrl || 'images/favicon.png';
+    
+    const title = document.createElement('div');
+    title.className = 'tab-title';
+    title.textContent = tab.title;
+    
+    // Add category span if we have it stored
+    chrome.storage.local.get(['tabCategories'], (result) => {
+      if (result.tabCategories && result.tabCategories[tab.id]) {
+        const category = document.createElement('span');
+        category.className = 'category';
+        category.textContent = `[${result.tabCategories[tab.id]}]`;
+        title.appendChild(category);
+      }
+    });
+    
+    const closeBtn = document.createElement('div');
+    closeBtn.className = 'tab-close';
+    closeBtn.textContent = '✕';
+    closeBtn.title = 'Close tab';
+    closeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      chrome.tabs.remove(tab.id);
+      tabItem.remove();
+    });
+    
+    tabItem.appendChild(favicon);
+    tabItem.appendChild(title);
+    tabItem.appendChild(closeBtn);
+    
+    // Switch to this tab when clicked
+    tabItem.addEventListener('click', () => {
+      chrome.tabs.update(tab.id, { active: true });
+      chrome.windows.update(tab.windowId, { focused: true });
+    });
+    
+    // Add to the appropriate container
+    if (container) {
+      container.appendChild(tabItem);
+    } else {
+      tabsList.appendChild(tabItem);
+    }
+  }
 }
 
 // Group tabs by domain

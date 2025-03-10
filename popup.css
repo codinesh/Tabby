@@ -1,5 +1,7 @@
 body {
   width: 350px;
+  min-width: 300px;
+  max-width: 450px;
   min-height: 300px;
   padding: 10px;
   font-family: Arial, sans-serif;
@@ -311,4 +313,122 @@ input[type="password"] {
 
 .context-menu li:hover {
   background-color: #f5f5f5;
+}
+
+/* Tab group styling */
+.tab-group {
+  margin-bottom: 16px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.group-title {
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.group-close {
+  opacity: 0.7;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.group-close:hover {
+  opacity: 1;
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Tab group colors */
+.group-header.grey {
+  background-color: #5f6368;
+}
+.group-header.blue {
+  background-color: #1a73e8;
+}
+.group-header.red {
+  background-color: #ea4335;
+}
+.group-header.yellow {
+  background-color: #fbbc04;
+  color: #333;
+}
+.group-header.green {
+  background-color: #34a853;
+}
+.group-header.pink {
+  background-color: #e91e63;
+}
+.group-header.purple {
+  background-color: #9334e6;
+}
+.group-header.cyan {
+  background-color: #00acc1;
+}
+
+/* Tab styling within groups */
+.tab-group .tab-item {
+  border-bottom: 1px solid #eee;
+  padding-left: 15px;
+}
+
+.tab-group .tab-item:last-child {
+  border-bottom: none;
+}
+
+#tabs-list {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.tab-item {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+.tab-item:hover {
+  background-color: #f5f5f5;
+}
+
+.tab-favicon {
+  margin-right: 10px;
+  width: 16px;
+  height: 16px;
+}
+
+.tab-title {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 13px;
+}
+
+.tab-close {
+  opacity: 0.6;
+  cursor: pointer;
+  padding: 2px 6px;
+}
+
+.tab-close:hover {
+  opacity: 1;
+  background-color: #f0f0f0;
+  border-radius: 4px;
 }
