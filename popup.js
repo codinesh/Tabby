@@ -1,20 +1,20 @@
 // Status message handling functions
-function showStatus(message, type = 'info', autoHide = true) {
-  const statusContainer = document.getElementById('status-container');
-  const statusMessage = document.getElementById('status-message');
-  const loadingSpinner = document.getElementById('loading-spinner');
-  
+function showStatus(message, type = "info", autoHide = true) {
+  const statusContainer = document.getElementById("status-container");
+  const statusMessage = document.getElementById("status-message");
+  const loadingSpinner = document.getElementById("loading-spinner");
+
   // Clear previous status classes
-  statusContainer.classList.remove('success', 'error', 'info');
-  
+  statusContainer.classList.remove("success", "error", "info");
+
   // Set the message and type
   statusMessage.textContent = message;
   statusContainer.classList.add(type);
-  statusContainer.classList.remove('hidden');
-  
+  statusContainer.classList.remove("hidden");
+
   // Hide spinner when showing a regular status message
-  loadingSpinner.style.display = 'none';
-  
+  loadingSpinner.style.display = "none";
+
   // Auto-hide the status after 3 seconds if autoHide is true
   if (autoHide) {
     setTimeout(() => {
@@ -24,94 +24,99 @@ function showStatus(message, type = 'info', autoHide = true) {
 }
 
 function hideStatus() {
-  const statusContainer = document.getElementById('status-container');
-  statusContainer.classList.add('hidden');
+  const statusContainer = document.getElementById("status-container");
+  statusContainer.classList.add("hidden");
 }
 
-function showLoading(message = 'Processing...') {
-  const statusContainer = document.getElementById('status-container');
-  const statusMessage = document.getElementById('status-message');
-  const loadingSpinner = document.getElementById('loading-spinner');
-  
+function showLoading(message = "Processing...") {
+  const statusContainer = document.getElementById("status-container");
+  const statusMessage = document.getElementById("status-message");
+  const loadingSpinner = document.getElementById("loading-spinner");
+
   // Set the message
   statusMessage.textContent = message;
-  
+
   // Show container and spinner
-  statusContainer.classList.remove('hidden');
-  statusContainer.classList.remove('success', 'error');
-  statusContainer.classList.add('info');
-  
+  statusContainer.classList.remove("hidden");
+  statusContainer.classList.remove("success", "error");
+  statusContainer.classList.add("info");
+
   // Always display the spinner for loading
-  loadingSpinner.style.display = 'inline-block';
+  loadingSpinner.style.display = "inline-block";
 }
 
 function hideLoading() {
-  const loadingSpinner = document.getElementById('loading-spinner');
-  loadingSpinner.style.display = 'none';
+  const loadingSpinner = document.getElementById("loading-spinner");
+  loadingSpinner.style.display = "none";
 }
 
 // Store settings in Chrome storage
 function saveSettings() {
   // Show loading status while saving
-  showLoading('Saving settings...');
-  
-  const aiUrl = document.getElementById('ai-url').value;
-  const apiKey = document.getElementById('api-key').value;
-  
+  showLoading("Saving settings...");
+
+  const aiUrl = document.getElementById("ai-url").value;
+  const apiKey = document.getElementById("api-key").value;
+
   // Save custom groups
   const customGroups = getCustomGroupsFromUI();
 
-  chrome.storage.sync.set({
-    aiUrl: aiUrl,
-    apiKey: apiKey,
-    customGroups: customGroups
-  }, () => {
-    // Hide settings panel
-    hideAiSettings();
-    
-    // Show success status message
-    showStatus('Settings saved!', 'success');
-  });
+  chrome.storage.sync.set(
+    {
+      aiUrl: aiUrl,
+      apiKey: apiKey,
+      customGroups: customGroups,
+    },
+    () => {
+      // Hide settings panel
+      hideAiSettings();
+
+      // Show success status message
+      showStatus("Settings saved!", "success");
+    }
+  );
 }
 
 // Function to get custom groups from UI
 function getCustomGroupsFromUI() {
   const customGroups = [];
-  const groupElements = document.querySelectorAll('.custom-group');
-  
+  const groupElements = document.querySelectorAll(".custom-group");
+
   groupElements.forEach((element) => {
-    const nameInput = element.querySelector('.group-name');
-    const keywordsInput = element.querySelector('.group-keywords');
-    
-    if (nameInput.value.trim() !== '') {
-      const keywords = keywordsInput.value.split(',')
-        .map(k => k.trim().toLowerCase())
-        .filter(k => k !== '');
-      
+    const nameInput = element.querySelector(".group-name");
+    const keywordsInput = element.querySelector(".group-keywords");
+
+    if (nameInput.value.trim() !== "") {
+      const keywords = keywordsInput.value
+        .split(",")
+        .map((k) => k.trim().toLowerCase())
+        .filter((k) => k !== "");
+
       customGroups.push({
         name: nameInput.value.trim(),
-        keywords: keywords
+        keywords: keywords,
       });
     }
   });
-  
+
   return customGroups;
 }
 
 // Load settings from Chrome storage
 function loadSettings() {
-  chrome.storage.sync.get(['aiUrl', 'apiKey', 'customGroups'], (result) => {
+  chrome.storage.sync.get(["aiUrl", "apiKey", "customGroups"], (result) => {
     if (result.aiUrl) {
-      document.getElementById('ai-url').value = result.aiUrl;
+      document.getElementById("ai-url").value = result.aiUrl;
     } else {
       // Set default API URL if not already set
-      document.getElementById('ai-url').value = 'https://api.openai.com/v1/chat/completions';
+      document.getElementById("ai-url").value =
+        "https://api.openai.com/v1/chat/completions";
     }
-    
+
     if (result.apiKey) {
-      document.getElementById('api-key').value = result.apiKey;
+      document.getElementById("api-key").value = result.apiKey;
     }
-    
+
     // Load custom groups
     if (result.customGroups && result.customGroups.length > 0) {
       loadCustomGroupsToUI(result.customGroups);
@@ -119,10 +124,10 @@ function loadSettings() {
       // Add one empty group by default
       addCustomGroup();
     }
-    
+
     // Initialize settings tabs
     initSettingsTabs();
-    
+
     // Check if we need to show settings automatically
     checkIfSettingsNeeded();
   });
@@ -130,18 +135,18 @@ function loadSettings() {
 
 // Load custom groups into the UI
 function loadCustomGroupsToUI(groups) {
-  const container = document.getElementById('custom-groups-container');
-  container.innerHTML = '';
-  
-  groups.forEach(group => {
+  const container = document.getElementById("custom-groups-container");
+  container.innerHTML = "";
+
+  groups.forEach((group) => {
     const element = addCustomGroup();
-    const nameInput = element.querySelector('.group-name');
-    const keywordsInput = element.querySelector('.group-keywords');
-    
+    const nameInput = element.querySelector(".group-name");
+    const keywordsInput = element.querySelector(".group-keywords");
+
     nameInput.value = group.name;
-    keywordsInput.value = group.keywords.join(', ');
+    keywordsInput.value = group.keywords.join(", ");
   });
-  
+
   // Add at least one group if none were loaded
   if (groups.length === 0) {
     addCustomGroup();
@@ -150,62 +155,62 @@ function loadCustomGroupsToUI(groups) {
 
 // Add a new custom group element to the UI
 function addCustomGroup() {
-  const container = document.getElementById('custom-groups-container');
-  const template = document.getElementById('custom-group-template');
+  const container = document.getElementById("custom-groups-container");
+  const template = document.getElementById("custom-group-template");
   const clone = document.importNode(template.content, true);
-  const groupElement = clone.querySelector('.custom-group');
-  
+  const groupElement = clone.querySelector(".custom-group");
+
   // Add event listeners for the remove button
-  const removeButton = clone.querySelector('.remove-group');
-  removeButton.addEventListener('click', function() {
+  const removeButton = clone.querySelector(".remove-group");
+  removeButton.addEventListener("click", function () {
     groupElement.remove();
   });
-  
+
   container.appendChild(clone);
   return groupElement;
 }
 
 // Initialize settings tabs
 function initSettingsTabs() {
-  const tabs = document.querySelectorAll('.settings-tab');
-  const contents = document.querySelectorAll('.settings-content');
-  
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
+  const tabs = document.querySelectorAll(".settings-tab");
+  const contents = document.querySelectorAll(".settings-content");
+
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
       // Remove active class from all tabs and hide all contents
-      tabs.forEach(t => t.classList.remove('active'));
-      contents.forEach(c => c.classList.add('hidden'));
-      
+      tabs.forEach((t) => t.classList.remove("active"));
+      contents.forEach((c) => c.classList.add("hidden"));
+
       // Add active class to clicked tab and show corresponding content
-      tab.classList.add('active');
-      const contentId = tab.getAttribute('data-tab');
-      document.getElementById(contentId).classList.remove('hidden');
+      tab.classList.add("active");
+      const contentId = tab.getAttribute("data-tab");
+      document.getElementById(contentId).classList.remove("hidden");
     });
   });
 }
 
 // Function to check if settings panel needs to be shown
 function checkIfSettingsNeeded() {
-  chrome.storage.sync.get(['apiKey'], (result) => {
+  chrome.storage.sync.get(["apiKey"], (result) => {
     if (!result.apiKey) {
       // If no API key is set, we'll need to show settings when AI grouping is selected
-      const groupByAiBtn = document.getElementById('group-by-ai');
-      groupByAiBtn.addEventListener('click', showAiSettings, { once: true });
+      const groupByAiBtn = document.getElementById("group-by-ai");
+      groupByAiBtn.addEventListener("click", showAiSettings, { once: true });
     }
   });
 }
 
 // Function to display all tabs organized by groups
 function displayTabs() {
-  const tabsList = document.getElementById('tabs-list');
-  tabsList.innerHTML = '';
-  
+  const tabsList = document.getElementById("tabs-list");
+  tabsList.innerHTML = "";
+
   // Get all tabs and group information
   chrome.tabs.query({}, (tabs) => {
     // Organize tabs by groups
     const groupedTabs = {};
     const ungroupedTabs = [];
-    
+
     // First pass: identify all groups and their properties
     tabs.forEach((tab) => {
       if (tab.groupId !== chrome.tabs.TAB_GROUP_ID_NONE) {
@@ -214,7 +219,7 @@ function displayTabs() {
             id: tab.groupId,
             tabs: [],
             title: null,
-            color: null
+            color: null,
           };
         }
         groupedTabs[tab.groupId].tabs.push(tab);
@@ -222,7 +227,7 @@ function displayTabs() {
         ungroupedTabs.push(tab);
       }
     });
-    
+
     // Get group details (title, color)
     const groupIds = Object.keys(groupedTabs);
     if (groupIds.length > 0) {
@@ -232,175 +237,194 @@ function displayTabs() {
             console.error(chrome.runtime.lastError);
             return;
           }
-          
+
           groupedTabs[groupId].title = group.title;
           groupedTabs[groupId].color = group.color;
-          
+
           // Render the group after getting details
           renderTabGroup(groupedTabs[groupId]);
         });
       };
-      
+
       // Get details for each group
       groupIds.forEach(getGroupDetails);
     }
-    
+
     // Render ungrouped tabs
     ungroupedTabs.forEach((tab) => {
       renderTab(tab, null);
     });
   });
-  
+
   // Function to render a tab group
   function renderTabGroup(group) {
-    const groupContainer = document.createElement('div');
-    groupContainer.className = 'tab-group';
-    groupContainer.setAttribute('data-group-id', group.id);
-    
+    const groupContainer = document.createElement("div");
+    groupContainer.className = "tab-group";
+    groupContainer.setAttribute("data-group-id", group.id);
+
     // Group header
-    const groupHeader = document.createElement('div');
-    groupHeader.className = `group-header ${group.color || 'grey'}`;
-    
-    const groupTitle = document.createElement('div');
-    groupTitle.className = 'group-title';
-    groupTitle.textContent = group.title || 'Unnamed group';
-    
+    const groupHeader = document.createElement("div");
+    groupHeader.className = `group-header ${group.color || "grey"}`;
+
+    const groupTitle = document.createElement("div");
+    groupTitle.className = "group-title";
+    groupTitle.textContent = group.title || "Unnamed group";
+
     // Add actions container for group controls
-    const groupActions = document.createElement('div');
-    groupActions.className = 'group-actions';
-    
+    const groupActions = document.createElement("div");
+    groupActions.className = "group-actions";
+
     // Add edit button for renaming the group
-    const editBtn = document.createElement('div');
-    editBtn.className = 'group-edit';
-    editBtn.title = 'Edit group name';
-    editBtn.innerHTML = '✎';
-    editBtn.addEventListener('click', (e) => {
+    const editBtn = document.createElement("div");
+    editBtn.className = "group-edit";
+    editBtn.title = "Edit group name";
+    editBtn.innerHTML = "✎";
+    editBtn.addEventListener("click", (e) => {
       e.stopPropagation();
-      
+
       // Hide the group title and create an edit field
-      groupTitle.style.display = 'none';
-      
-      const editField = document.createElement('input');
-      editField.type = 'text';
-      editField.className = 'group-edit-field';
-      editField.value = group.title || '';
-      editField.placeholder = 'Group name';
-      
+      groupTitle.style.display = "none";
+
+      const editField = document.createElement("input");
+      editField.type = "text";
+      editField.className = "group-edit-field";
+      editField.value = group.title || "";
+      editField.placeholder = "Group name";
+
       // Insert before the actions container
       groupHeader.insertBefore(editField, groupActions);
-      
+
       // Focus on the field
       editField.focus();
-      
+
       // Save changes on enter or blur
       const saveChanges = () => {
         const newTitle = editField.value.trim();
-        
+
         if (newTitle) {
           // Check if another group with the same name already exists (ignoring case)
           chrome.tabs.query({}, (tabs) => {
-            const tabIds = group.tabs.map(tab => tab.id);
+            const tabIds = group.tabs.map((tab) => tab.id);
             let existingGroupFound = false;
-            
+
             // Filter to find tabs in groups
-            const tabsInGroups = tabs.filter(tab => tab.groupId !== chrome.tabs.TAB_GROUP_ID_NONE);
-            
+            const tabsInGroups = tabs.filter(
+              (tab) => tab.groupId !== chrome.tabs.TAB_GROUP_ID_NONE
+            );
+
             // Find unique group IDs
-            const uniqueGroupIds = [...new Set(tabsInGroups.map(tab => tab.groupId))];
-            
+            const uniqueGroupIds = [
+              ...new Set(tabsInGroups.map((tab) => tab.groupId)),
+            ];
+
             // Check each group to see if its name matches our new name
             const checkGroups = (index) => {
               if (index >= uniqueGroupIds.length) {
                 // No matching group found, update current group
-                chrome.tabGroups.update(parseInt(group.id), { title: newTitle }, () => {
-                  groupTitle.textContent = newTitle;
-                });
+                chrome.tabGroups.update(
+                  parseInt(group.id),
+                  { title: newTitle },
+                  () => {
+                    groupTitle.textContent = newTitle;
+                  }
+                );
                 return;
               }
-              
+
               const currentGroupId = uniqueGroupIds[index];
-              
+
               // Skip our own group
               if (currentGroupId === group.id) {
                 checkGroups(index + 1);
                 return;
               }
-              
+
               chrome.tabGroups.get(currentGroupId, (currentGroup) => {
                 if (chrome.runtime.lastError) {
                   checkGroups(index + 1);
                   return;
                 }
-                
+
                 // If we found a group with matching name (case-insensitive)
-                if (currentGroup.title && currentGroup.title.toLowerCase() === newTitle.toLowerCase()) {
+                if (
+                  currentGroup.title &&
+                  currentGroup.title.toLowerCase() === newTitle.toLowerCase()
+                ) {
                   // We found a matching group, move tabs to it
                   existingGroupFound = true;
-                  
+
                   // Move the tabs to the existing group
-                  chrome.tabs.group({ tabIds: tabIds, groupId: currentGroupId }, () => {
-                    // Remove the old (now empty) group from UI
-                    groupContainer.remove();
-                    
-                    // Show status message
-                    showStatus(`Moved tabs to existing "${currentGroup.title}" group`, 'success');
-                    
-                    // Refresh the display
-                    displayTabs();
-                  });
+                  chrome.tabs.group(
+                    { tabIds: tabIds, groupId: currentGroupId },
+                    () => {
+                      // Remove the old (now empty) group from UI
+                      groupContainer.remove();
+
+                      // Show status message
+                      showStatus(
+                        `Moved tabs to existing "${currentGroup.title}" group`,
+                        "success"
+                      );
+
+                      // Refresh the display
+                      displayTabs();
+                    }
+                  );
                 } else {
                   // Continue checking other groups
                   checkGroups(index + 1);
                 }
               });
             };
-            
+
             // Start checking groups
             checkGroups(0);
-            
+
             // If no existing group was found, the callback will update the title
           });
         } else {
           // If empty name, revert to previous name
-          groupTitle.textContent = group.title || 'Unnamed group';
+          groupTitle.textContent = group.title || "Unnamed group";
         }
-        
+
         // Remove edit field and show title
         editField.remove();
-        groupTitle.style.display = '';
+        groupTitle.style.display = "";
       };
-      
-      editField.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
+
+      editField.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
           saveChanges();
-        } else if (e.key === 'Escape') {
+        } else if (e.key === "Escape") {
           editField.remove();
-          groupTitle.style.display = '';
+          groupTitle.style.display = "";
         }
       });
-      
-      editField.addEventListener('blur', saveChanges);
+
+      editField.addEventListener("blur", saveChanges);
     });
-    
+
     // Add to settings button - saves this category to custom groups
-    const addToSettingsBtn = document.createElement('div');
-    addToSettingsBtn.className = 'group-add-to-settings';
-    addToSettingsBtn.title = 'Add to custom groups';
-    addToSettingsBtn.innerHTML = '+';
-    addToSettingsBtn.addEventListener('click', (e) => {
+    const addToSettingsBtn = document.createElement("div");
+    addToSettingsBtn.className = "group-add-to-settings";
+    addToSettingsBtn.title = "Add to custom groups";
+    addToSettingsBtn.innerHTML = "+";
+    addToSettingsBtn.addEventListener("click", (e) => {
       e.stopPropagation();
-      
+
       // Get the current custom groups
-      chrome.storage.sync.get(['customGroups'], (result) => {
+      chrome.storage.sync.get(["customGroups"], (result) => {
         const customGroups = result.customGroups || [];
-        
+
         // Check if this group name already exists in settings
-        const groupExists = customGroups.some(g => g.name.toLowerCase() === (group.title || '').toLowerCase());
-        
+        const groupExists = customGroups.some(
+          (g) => g.name.toLowerCase() === (group.title || "").toLowerCase()
+        );
+
         if (!groupExists && group.title) {
           // Collect keywords from the tab titles and URLs in this group
           const keywords = [];
-          group.tabs.forEach(tab => {
+          group.tabs.forEach((tab) => {
             // Extract domain name as a keyword
             try {
               const url = new URL(tab.url);
@@ -411,131 +435,136 @@ function displayTabs() {
             } catch (e) {
               // Skip invalid URLs
             }
-            
+
             // Extract words from title that are at least 4 chars as potential keywords
-            const titleWords = tab.title.split(/\s+/)
-              .filter(word => word.length >= 4)
-              .map(word => word.toLowerCase());
-              
+            const titleWords = tab.title
+              .split(/\s+/)
+              .filter((word) => word.length >= 4)
+              .map((word) => word.toLowerCase());
+
             // Add unique words to keywords
-            titleWords.forEach(word => {
+            titleWords.forEach((word) => {
               if (!keywords.includes(word)) {
                 keywords.push(word);
               }
             });
           });
-          
+
           // Limit keywords to first 5 to avoid clutter
           const limitedKeywords = keywords.slice(0, 5);
-          
+
           // Add to custom groups
           customGroups.push({
             name: group.title,
-            keywords: limitedKeywords
+            keywords: limitedKeywords,
           });
-          
+
           // Save updated custom groups
           chrome.storage.sync.set({ customGroups }, () => {
-            showStatus(`Added "${group.title}" to custom groups`, 'success');
+            showStatus(`Added "${group.title}" to custom groups`, "success");
           });
         } else if (groupExists) {
-          showStatus(`"${group.title}" already exists in custom groups`, 'info');
+          showStatus(
+            `"${group.title}" already exists in custom groups`,
+            "info"
+          );
         } else {
-          showStatus('Cannot add unnamed group to settings', 'error');
+          showStatus("Cannot add unnamed group to settings", "error");
         }
       });
     });
-    
+
     // Add close button
-    const groupCloseBtn = document.createElement('div');
-    groupCloseBtn.className = 'group-close';
-    groupCloseBtn.textContent = '✕';
-    groupCloseBtn.title = 'Close group';
-    groupCloseBtn.addEventListener('click', (e) => {
+    const groupCloseBtn = document.createElement("div");
+    groupCloseBtn.className = "group-close";
+    groupCloseBtn.textContent = "✕";
+    groupCloseBtn.title = "Close group";
+    groupCloseBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       // Close all tabs in this group
-      const tabIds = group.tabs.map(tab => tab.id);
+      const tabIds = group.tabs.map((tab) => tab.id);
       chrome.tabs.remove(tabIds);
       groupContainer.remove();
     });
-    
+
     // Add all action buttons
     groupActions.appendChild(editBtn);
     groupActions.appendChild(addToSettingsBtn);
     groupActions.appendChild(groupCloseBtn);
-    
+
     // Assemble the header
     groupHeader.appendChild(groupTitle);
     groupHeader.appendChild(groupActions);
     groupContainer.appendChild(groupHeader);
-    
+
     // Add tabs within this group
     group.tabs.forEach((tab) => {
       renderTab(tab, groupContainer);
     });
-    
+
     // Check if only one tab is in the group and add a special indicator
     if (group.tabs.length === 1) {
-      const singleTabIndicator = document.createElement('div');
-      singleTabIndicator.className = 'single-tab-indicator';
-      singleTabIndicator.textContent = 'Single tab in group - consider ungrouping';
-      singleTabIndicator.addEventListener('click', () => {
+      const singleTabIndicator = document.createElement("div");
+      singleTabIndicator.className = "single-tab-indicator";
+      singleTabIndicator.textContent =
+        "Single tab in group - consider ungrouping";
+      singleTabIndicator.addEventListener("click", () => {
         // Ungroup the single tab
         chrome.tabs.ungroup(group.tabs[0].id, () => {
-          showStatus('Tab ungrouped', 'success');
+          showStatus("Tab ungrouped", "success");
           displayTabs();
         });
       });
       groupContainer.appendChild(singleTabIndicator);
     }
-    
+
     tabsList.appendChild(groupContainer);
   }
-  
+
   // Function to render a single tab
   function renderTab(tab, container) {
-    const tabItem = document.createElement('div');
-    tabItem.className = 'tab-item';
-    tabItem.setAttribute('data-tab-id', tab.id);
-    
-    const favicon = document.createElement('img');
-    favicon.className = 'tab-favicon';
-    favicon.src = tab.favIconUrl || 'images/favicon.png';
-    
-    const title = document.createElement('div');
-    title.className = 'tab-title';
+    const tabItem = document.createElement("div");
+    tabItem.className = "tab-item";
+    tabItem.setAttribute("data-tab-id", tab.id);
+
+    const favicon = document.createElement("img");
+    favicon.className = "tab-favicon";
+    favicon.src = tab.favIconUrl || "images/favicon.png";
+
+    const title = document.createElement("div");
+    title.className = "tab-title";
     title.textContent = tab.title;
-    
+
     // Add category span if we have it stored
-    chrome.storage.local.get(['tabCategories'], (result) => {
+    chrome.storage.local.get(["tabCategories"], (result) => {
       if (result.tabCategories && result.tabCategories[tab.id]) {
-        const category = document.createElement('span');
-        category.className = 'category';
+        const category = document.createElement("span");
+        category.className = "category";
         category.textContent = `[${result.tabCategories[tab.id]}]`;
         title.appendChild(category);
       }
     });
-    
-    const closeBtn = document.createElement('div');
-    closeBtn.className = 'tab-close';
-    closeBtn.textContent = '✕';
-    closeBtn.title = 'Close tab';
-    closeBtn.addEventListener('click', (e) => {
+
+    const closeBtn = document.createElement("div");
+    closeBtn.className = "tab-close";
+    closeBtn.textContent = "✕";
+    closeBtn.title = "Close tab";
+    closeBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       chrome.tabs.remove(tab.id);
       tabItem.remove();
     });
-    
+
     tabItem.appendChild(favicon);
     tabItem.appendChild(title);
     tabItem.appendChild(closeBtn);
-    
+
     // Switch to this tab when clicked
-    tabItem.addEventListener('click', () => {
+    tabItem.addEventListener("click", () => {
       chrome.tabs.update(tab.id, { active: true });
       chrome.windows.update(tab.windowId, { focused: true });
     });
-    
+
     // Add to the appropriate container
     if (container) {
       container.appendChild(tabItem);
@@ -547,27 +576,27 @@ function displayTabs() {
 
 // Group tabs by domain
 function groupTabsByDomain() {
-  showLoading('Grouping tabs by domain...');
-  
+  showLoading("Grouping tabs by domain...");
+
   chrome.tabs.query({}, (tabs) => {
     // Create a map of domains to tab IDs
     const domainGroups = {};
-    
+
     tabs.forEach((tab) => {
       try {
         const url = new URL(tab.url);
         const domain = url.hostname;
-        
+
         if (!domainGroups[domain]) {
           domainGroups[domain] = [];
         }
-        
+
         domainGroups[domain].push(tab.id);
       } catch (e) {
         // Skip invalid URLs
       }
     });
-    
+
     // Group tabs with the same domain
     for (const domain in domainGroups) {
       const tabIds = domainGroups[domain];
@@ -577,23 +606,23 @@ function groupTabsByDomain() {
         });
       }
     }
-    
-    showStatus('Tabs grouped by domain!', 'success');
+
+    showStatus("Tabs grouped by domain!", "success");
   });
 }
 
 // Ungroup all tabs
 function ungroupAllTabs() {
-  showLoading('Ungrouping all tabs...');
-  
+  showLoading("Ungrouping all tabs...");
+
   chrome.tabs.query({}, (tabs) => {
     tabs.forEach((tab) => {
       if (tab.groupId !== chrome.tabs.TAB_GROUP_ID_NONE) {
         chrome.tabs.ungroup(tab.id);
       }
     });
-    
-    showStatus('All tabs ungrouped!', 'success');
+
+    showStatus("All tabs ungrouped!", "success");
   });
 }
 
@@ -602,7 +631,7 @@ function matchCustomGroup(tabInfo, customGroups) {
   // Check title and URL against custom group keywords
   const title = tabInfo.title.toLowerCase();
   const url = tabInfo.url.toLowerCase();
-  
+
   for (const group of customGroups) {
     for (const keyword of group.keywords) {
       if (title.includes(keyword) || url.includes(keyword)) {
@@ -610,72 +639,76 @@ function matchCustomGroup(tabInfo, customGroups) {
       }
     }
   }
-  
+
   return null;
 }
 
 // Categorize tabs using AI
 async function categorizeTabs() {
   // Get settings
-  chrome.storage.sync.get(['aiUrl', 'apiKey', 'customGroups'], async (settings) => {
-    if (!settings.aiUrl || !settings.apiKey) {
-      showStatus('Please configure AI settings first', 'error');
-      showAiSettings();
-      return;
-    }
-    
-    // Show loading status
-    showLoading('Categorizing tabs with AI...');
-    
-    const tabCategories = {};
-    let allTabsInfo = [];
-    const customGroups = settings.customGroups || [];
-
-    try {
-      // Get all tabs
-      const tabs = await new Promise(resolve => 
-        chrome.tabs.query({}, resolve)
-      );
-      
-      // Prepare data for batch processing
-      allTabsInfo = tabs.map(tab => ({
-        id: tab.id,
-        title: tab.title,
-        url: tab.url
-      }));
-      
-      // First check for matches with user-defined groups
-      const tabsToProcess = [];
-      
-      for (const tab of allTabsInfo) {
-        // Check if tab matches any custom group
-        const customGroupMatch = matchCustomGroup(tab, customGroups);
-        
-        if (customGroupMatch) {
-          tabCategories[tab.id] = customGroupMatch;
-        } else {
-          // If no match, this tab needs AI categorization
-          tabsToProcess.push(tab);
-        }
+  chrome.storage.sync.get(
+    ["aiUrl", "apiKey", "customGroups"],
+    async (settings) => {
+      if (!settings.aiUrl || !settings.apiKey) {
+        showStatus("Please configure AI settings first", "error");
+        showAiSettings();
+        return;
       }
-      
-      // If there are tabs that don't match custom groups, categorize them with AI
-      if (tabsToProcess.length > 0) {
-        // Update loading message
-        showLoading('Sending data to AI service...');
-        
-        // Create content for the OpenAI API request
-        const tabsInfoText = tabsToProcess.map(tab => 
-          `Tab ID: ${tab.id}, Title: ${tab.title}, URL: ${tab.url}`
-        ).join('\n');
-        
-        // Format the request body for OpenAI's API with improved prompt
-        const requestBody = {
-          model: "gpt-4o",
-          messages: [
-            {
-              role: "system",
-              content: `You are a browser tab categorization assistant. Your goal is to group open browser tabs into meaningful and concise categories based on their URL and title. Prioritize creating generic yet descriptive categories that group similar tabs together under broader topics, instead of creating highly specific or redundant categories.
+
+      // Show loading status
+      showLoading("Categorizing tabs with AI...");
+
+      const tabCategories = {};
+      let allTabsInfo = [];
+      const customGroups = settings.customGroups || [];
+
+      try {
+        // Get all tabs
+        const tabs = await new Promise((resolve) =>
+          chrome.tabs.query({}, resolve)
+        );
+
+        // Prepare data for batch processing
+        allTabsInfo = tabs.map((tab) => ({
+          id: tab.id,
+          title: tab.title,
+          url: tab.url,
+        }));
+
+        // First check for matches with user-defined groups
+        const tabsToProcess = [];
+
+        for (const tab of allTabsInfo) {
+          // Check if tab matches any custom group
+          const customGroupMatch = matchCustomGroup(tab, customGroups);
+
+          if (customGroupMatch) {
+            tabCategories[tab.id] = customGroupMatch;
+          } else {
+            // If no match, this tab needs AI categorization
+            tabsToProcess.push(tab);
+          }
+        }
+
+        // If there are tabs that don't match custom groups, categorize them with AI
+        if (tabsToProcess.length > 0) {
+          // Update loading message
+          showLoading("Sending data to AI service...");
+
+          // Create content for the OpenAI API request
+          const tabsInfoText = tabsToProcess
+            .map(
+              (tab) => `Tab ID: ${tab.id}, Title: ${tab.title}, URL: ${tab.url}`
+            )
+            .join("\n");
+
+          // Format the request body for OpenAI's API with improved prompt
+          const requestBody = {
+            model: "gpt-4o",
+            messages: [
+              {
+                role: "system",
+                content: `You are a browser tab categorization assistant. Your goal is to group open browser tabs into meaningful and concise categories based on their URL and title. Prioritize creating generic yet descriptive categories that group similar tabs together under broader topics, instead of creating highly specific or redundant categories.
 
                           Instructions:
 
@@ -686,95 +719,111 @@ async function categorizeTabs() {
                           5. Maintain Consistency: Use consistent naming conventions and formats for similar categories. For example, if you use 'Project Management' for one category, avoid using 'Project Mngmt' for another.
                           6. Avoid Redundancy: Do not create multiple categories that essentially cover the same topic with slight variations in wording. Aim for a set of distinct and non-overlapping categories.
                           7. Provide JSON Output: Format the output as a JSON object where keys are tab IDs and values are the generated categories.
-                      `
-            },
-            {
-              role: "user",
-              content: `Please categorize the following tabs into specific and diverse categories:\n${tabsInfoText}`
-            }
-          ]
-        };
+                      `,
+              },
+              {
+                role: "user",
+                content: `Please categorize the following tabs into specific and diverse categories:\n${tabsInfoText}`,
+              },
+            ],
+          };
 
-        try {
-          // Send request to OpenAI API
-          const response = await fetch(settings.aiUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'api-key': `${settings.apiKey}`
-            },
-            body: JSON.stringify(requestBody)
-          });
-          
-          if (!response.ok) {
-            throw new Error(`AI service returned status ${response.status}`);
-          }
-          
-          showLoading('Processing AI response...');
-          const data = await response.json();
-          
-          // Process OpenAI's response
-          if (data.choices && data.choices.length > 0) {
-            const assistantMessage = data.choices[0].message.content;
-            
-            try {
-              // Extract JSON from the response
-              let jsonStr = assistantMessage;
-              
-              // If the response contains markdown code blocks, extract the JSON
-              if (jsonStr.includes('```json')) {
-                jsonStr = jsonStr.split('```json')[1].split('```')[0].trim();
-              } else if (jsonStr.includes('```')) {
-                jsonStr = jsonStr.split('```')[1].split('```')[0].trim();
-              }
-              
-              // Parse the categories
-              const aiCategories = JSON.parse(jsonStr);
-              
-              // Merge AI categories with custom group matches
-              for (const tabId in aiCategories) {
-                tabCategories[tabId] = aiCategories[tabId];
-              }
-              
-              showLoading('Applying tab categories...');
-              showStatus('Tabs categorized successfully!', 'success', false);
-            } catch (parseError) {
-              console.error('Error parsing AI response:', parseError);
-              showStatus(`Error parsing AI response: ${parseError.message}`, 'error');
+          try {
+            // Send request to OpenAI API
+            const response = await fetch(settings.aiUrl, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "api-key": `${settings.apiKey}`,
+              },
+              body: JSON.stringify(requestBody),
+            });
+
+            if (!response.ok) {
+              throw new Error(`AI service returned status ${response.status}`);
             }
+
+            showLoading("Processing AI response...");
+            const data = await response.json();
+
+            // Process OpenAI's response
+            if (data.choices && data.choices.length > 0) {
+              const assistantMessage = data.choices[0].message.content;
+
+              try {
+                // Extract JSON from the response
+                let jsonStr = assistantMessage;
+
+                // If the response contains markdown code blocks, extract the JSON
+                if (jsonStr.includes("```json")) {
+                  jsonStr = jsonStr.split("```json")[1].split("```")[0].trim();
+                } else if (jsonStr.includes("```")) {
+                  jsonStr = jsonStr.split("```")[1].split("```")[0].trim();
+                }
+
+                // Parse the categories
+                const aiCategories = JSON.parse(jsonStr);
+
+                // Merge AI categories with custom group matches
+                for (const tabId in aiCategories) {
+                  tabCategories[tabId] = aiCategories[tabId];
+                }
+
+                showLoading("Applying tab categories...");
+                showStatus("Tabs categorized successfully!", "success", false);
+              } catch (parseError) {
+                console.error("Error parsing AI response:", parseError);
+                showStatus(
+                  `Error parsing AI response: ${parseError.message}`,
+                  "error"
+                );
+              }
+            }
+          } catch (fetchError) {
+            console.error("Error fetching from AI service:", fetchError);
+            showStatus(
+              `Error connecting to AI service: ${fetchError.message}`,
+              "error"
+            );
+            return;
           }
-        } catch (fetchError) {
-          console.error('Error fetching from AI service:', fetchError);
-          showStatus(`Error connecting to AI service: ${fetchError.message}`, 'error');
-          return;
+        } else {
+          // If all tabs were matched with custom groups, no need for API call
+          showLoading("Applying custom group categories...");
+          showStatus("Tabs categorized using custom groups!", "success");
         }
-      } else {
-        // If all tabs were matched with custom groups, no need for API call
-        showLoading('Applying custom group categories...');
-        showStatus('Tabs categorized using custom groups!', 'success');
+
+        // Save all categories to storage
+        chrome.storage.local.set({ tabCategories }, () => {
+          // Group by categories
+          showLoading("Creating tab groups...");
+          groupTabsByCategory(tabCategories);
+          // Refresh display to show categories
+          displayTabs();
+        });
+      } catch (error) {
+        console.error("Error categorizing tabs:", error);
+        showStatus(`Error categorizing tabs: ${error.message}`, "error");
       }
-      
-      // Save all categories to storage
-      chrome.storage.local.set({ tabCategories }, () => {
-        // Group by categories
-        showLoading('Creating tab groups...');
-        groupTabsByCategory(tabCategories);
-        // Refresh display to show categories
-        displayTabs();
-      });
-    } catch (error) {
-      console.error('Error categorizing tabs:', error);
-      showStatus(`Error categorizing tabs: ${error.message}`, 'error');
     }
-  });
+  );
 }
 
 // Group tabs by category
 function groupTabsByCategory(categories) {
   // Organize tabs by category
   const categoryGroups = {};
-  const colorOptions = ['grey', 'blue', 'red', 'yellow', 'green', 'pink', 'purple', 'cyan'];
-  
+  const colorOptions = [
+    "grey",
+    "blue",
+    "red",
+    "yellow",
+    "green",
+    "pink",
+    "purple",
+    "cyan",
+  ];
+
   for (const tabId in categories) {
     const category = categories[tabId];
     if (!categoryGroups[category]) {
@@ -782,17 +831,17 @@ function groupTabsByCategory(categories) {
     }
     categoryGroups[category].push(parseInt(tabId));
   }
-  
+
   // Count for tracking when all groups are processed
   let groupsCount = Object.keys(categoryGroups).length;
   let processedCount = 0;
-  
+
   // If no groups to process, show completed message immediately
   if (groupsCount === 0) {
-    showStatus('Tab categorization completed!', 'success');
+    showStatus("Tab categorization completed!", "success");
     return;
   }
-  
+
   // Create tab groups by category
   for (const category in categoryGroups) {
     const tabIds = categoryGroups[category];
@@ -800,28 +849,35 @@ function groupTabsByCategory(categories) {
       chrome.tabs.group({ tabIds }, (groupId) => {
         // Generate color based on category name hash
         // This ensures consistent colors for the same category names
-        const hash = Array.from(category).reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        const hash = Array.from(category).reduce(
+          (acc, char) => acc + char.charCodeAt(0),
+          0
+        );
         const colorIndex = hash % colorOptions.length;
         const color = colorOptions[colorIndex];
-        
-        chrome.tabGroups.update(groupId, { 
-          title: category,
-          color: color
-        }, () => {
-          // Increment processed count and check if all groups are processed
-          processedCount++;
-          if (processedCount >= groupsCount) {
-            // All groups processed, show success message
-            showStatus('Tab grouping completed!', 'success');
+
+        chrome.tabGroups.update(
+          groupId,
+          {
+            title: category,
+            color: color,
+          },
+          () => {
+            // Increment processed count and check if all groups are processed
+            processedCount++;
+            if (processedCount >= groupsCount) {
+              // All groups processed, show success message
+              showStatus("Tab grouping completed!", "success");
+            }
           }
-        });
+        );
       });
     } else {
       // Increment processed count for empty groups
       processedCount++;
       if (processedCount >= groupsCount) {
         // All groups processed, show success message
-        showStatus('Tab grouping completed!', 'success');
+        showStatus("Tab grouping completed!", "success");
       }
     }
   }
@@ -830,27 +886,27 @@ function groupTabsByCategory(categories) {
 // Show AI settings panel
 function showAiSettings() {
   // Hide controls and tabs list
-  document.querySelector('.controls').classList.add('hidden');
-  document.getElementById('tabs-list').classList.add('hidden');
-  
+  document.querySelector(".controls").classList.add("hidden");
+  document.getElementById("tabs-list").classList.add("hidden");
+
   // Show settings panel
-  document.getElementById('ai-settings').classList.remove('hidden');
+  document.getElementById("ai-settings").classList.remove("hidden");
 }
 
 // Hide AI settings panel
 function hideAiSettings() {
   // Hide settings panel
-  document.getElementById('ai-settings').classList.add('hidden');
-  
+  document.getElementById("ai-settings").classList.add("hidden");
+
   // Show controls and tabs list
-  document.querySelector('.controls').classList.remove('hidden');
-  document.getElementById('tabs-list').classList.remove('hidden');
+  document.querySelector(".controls").classList.remove("hidden");
+  document.getElementById("tabs-list").classList.remove("hidden");
 }
 
 // Toggle settings visibility
 function toggleSettings() {
-  const settingsPanel = document.getElementById('ai-settings');
-  if (settingsPanel.classList.contains('hidden')) {
+  const settingsPanel = document.getElementById("ai-settings");
+  if (settingsPanel.classList.contains("hidden")) {
     // Show settings, hide controls and tabs
     showAiSettings();
   } else {
@@ -861,93 +917,455 @@ function toggleSettings() {
 
 // Toggle between domain and AI grouping buttons
 function toggleGroupingButtons(activeBtn) {
-  document.getElementById('group-tabs').classList.remove('active');
-  document.getElementById('group-by-ai').classList.remove('active');
-  document.getElementById('ungroup-tabs').classList.remove('active');
-  activeBtn.classList.add('active');
+  document.getElementById("group-tabs").classList.remove("active");
+  document.getElementById("group-by-ai").classList.remove("active");
+  document.getElementById("ungroup-tabs").classList.remove("active");
+  activeBtn.classList.add("active");
 }
 
 // Function to toggle the context menu
 function toggleContextMenu() {
-  const menu = document.getElementById('context-menu');
-  menu.classList.toggle('hidden');
-  
+  const menu = document.getElementById("context-menu");
+  menu.classList.toggle("hidden");
+
   // Close menu when clicking outside
-  if (!menu.classList.contains('hidden')) {
-    document.addEventListener('click', closeContextMenuOnClickOutside);
+  if (!menu.classList.contains("hidden")) {
+    document.addEventListener("click", closeContextMenuOnClickOutside);
   }
 }
 
 // Function to close the context menu when clicking outside
 function closeContextMenuOnClickOutside(event) {
-  const menu = document.getElementById('context-menu');
-  const menuButton = document.getElementById('menu-button');
-  
+  const menu = document.getElementById("context-menu");
+  const menuButton = document.getElementById("menu-button");
+
   if (!menu.contains(event.target) && event.target !== menuButton) {
-    menu.classList.add('hidden');
-    document.removeEventListener('click', closeContextMenuOnClickOutside);
+    menu.classList.add("hidden");
+    document.removeEventListener("click", closeContextMenuOnClickOutside);
   }
 }
 
+// Theme management
+function initializeTheme() {
+  chrome.storage.sync.get(["theme"], (result) => {
+    const theme = result.theme || "system";
+    if (theme === "system") {
+      const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      document.body.setAttribute("data-theme", isDark ? "dark" : "light");
+    } else {
+      document.body.setAttribute("data-theme", theme);
+    }
+    updateThemeIcon();
+  });
+}
+
+function updateThemeIcon() {
+  const themeToggle = document.getElementById("theme-toggle");
+  const currentTheme = document.body.getAttribute("data-theme");
+  themeToggle.textContent = currentTheme === "dark" ? "☀️" : "🌙";
+}
+
+function toggleTheme() {
+  const currentTheme = document.body.getAttribute("data-theme");
+  const newTheme = currentTheme === "dark" ? "light" : "dark";
+  document.body.setAttribute("data-theme", newTheme);
+  chrome.storage.sync.set({ theme: newTheme });
+  updateThemeIcon();
+}
+
+// Tab search functionality
+function initializeSearch() {
+  const searchInput = document.getElementById("search-tabs");
+  searchInput.addEventListener("input", debounce(filterTabs, 300));
+}
+
+function filterTabs() {
+  const searchTerm = document.getElementById("search-tabs").value.toLowerCase();
+  const tabItems = document.querySelectorAll(".tab-item");
+  const tabGroups = document.querySelectorAll(".tab-group");
+
+  tabGroups.forEach((group) => {
+    let hasVisibleTabs = false;
+    const groupTabs = group.querySelectorAll(".tab-item");
+
+    groupTabs.forEach((tab) => {
+      const title = tab.querySelector(".tab-title").textContent.toLowerCase();
+      const isVisible = title.includes(searchTerm);
+      tab.style.display = isVisible ? "" : "none";
+      if (isVisible) hasVisibleTabs = true;
+    });
+
+    group.style.display = hasVisibleTabs ? "" : "none";
+  });
+
+  // Handle ungrouped tabs
+  tabItems.forEach((tab) => {
+    if (!tab.closest(".tab-group")) {
+      const title = tab.querySelector(".tab-title").textContent.toLowerCase();
+      tab.style.display = title.includes(searchTerm) ? "" : "none";
+    }
+  });
+}
+
+// Debounce helper function
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+// Group collapse functionality
+function initializeGroupCollapse() {
+  document.addEventListener("click", (e) => {
+    const groupHeader = e.target.closest(".group-header");
+    if (groupHeader && !e.target.closest(".group-actions")) {
+      const group = groupHeader.closest(".tab-group");
+      toggleGroupCollapse(group);
+    }
+  });
+}
+
+function toggleGroupCollapse(group) {
+  group.classList.toggle("collapsed");
+  const isCollapsed = group.classList.contains("collapsed");
+  const groupId = group.getAttribute("data-group-id");
+
+  // Save collapse state
+  chrome.storage.local.get(["collapsedGroups"], (result) => {
+    const collapsedGroups = result.collapsedGroups || {};
+    if (isCollapsed) {
+      collapsedGroups[groupId] = true;
+    } else {
+      delete collapsedGroups[groupId];
+    }
+    chrome.storage.local.set({ collapsedGroups });
+  });
+}
+
+// Tab backup functionality
+function backupTabs() {
+  showLoading("Creating backup...");
+
+  chrome.tabs.query({}, (tabs) => {
+    const backup = {
+      date: new Date().toISOString(),
+      tabs: tabs.map((tab) => ({
+        url: tab.url,
+        title: tab.title,
+        groupId: tab.groupId,
+      })),
+    };
+
+    chrome.storage.local.get(["tabBackups"], (result) => {
+      const backups = result.tabBackups || [];
+      backups.unshift(backup);
+
+      // Keep only last 10 backups
+      if (backups.length > 10) backups.pop();
+
+      chrome.storage.local.set({ tabBackups: backups }, () => {
+        showStatus("Tabs backed up successfully!", "success");
+      });
+    });
+  });
+}
+
+// Tab suspension functionality
+function suspendInactiveTabs() {
+  showLoading("Checking for inactive tabs...");
+
+  chrome.tabs.query({}, (tabs) => {
+    // Get tabs that haven't been active for more than 30 minutes
+    const thirtyMinutesAgo = Date.now() - 30 * 60 * 1000;
+    const inactiveTabs = tabs.filter((tab) => {
+      return tab.lastAccessed && tab.lastAccessed < thirtyMinutesAgo;
+    });
+
+    if (inactiveTabs.length === 0) {
+      showStatus("No inactive tabs found", "info");
+      return;
+    }
+
+    // Create suspended.html URL with tab info
+    inactiveTabs.forEach((tab) => {
+      const suspendUrl =
+        chrome.runtime.getURL("suspended.html") +
+        `?title=${encodeURIComponent(tab.title)}&url=${encodeURIComponent(
+          tab.url
+        )}`;
+
+      chrome.tabs.update(tab.id, { url: suspendUrl }, () => {
+        showStatus(`Suspended ${inactiveTabs.length} inactive tabs`, "success");
+      });
+    });
+  });
+}
+
+// Save favorite group configurations
+function saveFavoriteConfiguration() {
+  const customGroups = getCustomGroupsFromUI();
+
+  chrome.storage.sync.get(["favoriteConfigs"], (result) => {
+    const configs = result.favoriteConfigs || [];
+    const configName = prompt("Enter a name for this configuration:");
+
+    if (configName) {
+      configs.push({
+        name: configName,
+        groups: customGroups,
+        timestamp: Date.now(),
+      });
+
+      chrome.storage.sync.set({ favoriteConfigs: configs }, () => {
+        showStatus("Configuration saved!", "success");
+      });
+    }
+  });
+}
+
+// Load a favorite configuration
+function loadFavoriteConfiguration(config) {
+  loadCustomGroupsToUI(config.groups);
+  showStatus("Configuration loaded!", "success");
+}
+
+// Track recent groups
+function addToRecentGroups(groupName, color) {
+  chrome.storage.local.get(["recentGroups"], (result) => {
+    const recentGroups = result.recentGroups || [];
+
+    // Remove if already exists
+    const index = recentGroups.findIndex((g) => g.name === groupName);
+    if (index !== -1) {
+      recentGroups.splice(index, 1);
+    }
+
+    // Add to front of array
+    recentGroups.unshift({ name: groupName, color, timestamp: Date.now() });
+
+    // Keep only last 5 groups
+    if (recentGroups.length > 5) recentGroups.pop();
+
+    chrome.storage.local.set({ recentGroups }, updateRecentGroupsList);
+  });
+}
+
+function updateRecentGroupsList() {
+  chrome.storage.local.get(["recentGroups"], (result) => {
+    const recentGroups = result.recentGroups || [];
+    const container = document.querySelector(".recent-groups");
+    const list = document.getElementById("recent-groups-list");
+
+    if (recentGroups.length === 0) {
+      container.classList.add("hidden");
+      return;
+    }
+
+    list.innerHTML = "";
+    container.classList.remove("hidden");
+
+    recentGroups.forEach((group) => {
+      const item = document.createElement("div");
+      item.className = "recent-group-item";
+      item.innerHTML = `
+        <span class="color-dot ${group.color}"></span>
+        <span class="group-name">${group.name}</span>
+      `;
+      item.addEventListener("click", () => {
+        // Create a new group with this configuration
+        chrome.tabs.group(
+          { createProperties: { color: group.color } },
+          (groupId) => {
+            chrome.tabGroups.update(groupId, { title: group.name });
+          }
+        );
+      });
+      list.appendChild(item);
+    });
+  });
+}
+
+// Enhance existing displayTabs function
+function displayTabs() {
+  const tabsList = document.getElementById("tabs-list");
+  tabsList.innerHTML = "";
+
+  chrome.tabs.query({}, (tabs) => {
+    const groupedTabs = {};
+    const ungroupedTabs = [];
+
+    // First pass: identify groups
+    tabs.forEach((tab) => {
+      if (tab.groupId !== chrome.tabs.TAB_GROUP_ID_NONE) {
+        if (!groupedTabs[tab.groupId]) {
+          groupedTabs[tab.groupId] = {
+            id: tab.groupId,
+            tabs: [],
+            title: null,
+            color: null,
+          };
+        }
+        groupedTabs[tab.groupId].tabs.push(tab);
+      } else {
+        ungroupedTabs.push(tab);
+      }
+    });
+
+    // Get collapsed state
+    chrome.storage.local.get(["collapsedGroups"], (result) => {
+      const collapsedGroups = result.collapsedGroups || {};
+
+      // Render groups
+      Object.values(groupedTabs).forEach((group) => {
+        chrome.tabGroups.get(group.id, (tabGroup) => {
+          renderTabGroup(group, tabGroup, collapsedGroups[group.id]);
+        });
+      });
+
+      // Render ungrouped tabs
+      ungroupedTabs.forEach((tab) => renderTab(tab));
+    });
+  });
+}
+
+// Enhanced renderTabGroup function
+function renderTabGroup(group, tabGroup, isCollapsed) {
+  const groupContainer = document.createElement("div");
+  groupContainer.className = `tab-group ${isCollapsed ? "collapsed" : ""}`;
+  groupContainer.setAttribute("data-group-id", group.id);
+
+  const groupHeader = document.createElement("div");
+  groupHeader.className = `group-header ${tabGroup.color || "grey"}`;
+
+  const titleContainer = document.createElement("div");
+  titleContainer.className = "title-container";
+
+  const collapseIndicator = document.createElement("span");
+  collapseIndicator.className = "collapse-indicator";
+  collapseIndicator.textContent = "▼";
+
+  const groupTitle = document.createElement("span");
+  groupTitle.className = "group-title";
+  groupTitle.textContent = tabGroup.title || "Unnamed group";
+
+  const tabCount = document.createElement("span");
+  tabCount.className = "tab-count";
+  tabCount.textContent = group.tabs.length;
+
+  titleContainer.appendChild(collapseIndicator);
+  titleContainer.appendChild(groupTitle);
+  titleContainer.appendChild(tabCount);
+
+  // ...rest of existing renderTabGroup code...
+}
+
 // Initialize the extension
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
   // Display all tabs
   displayTabs();
-  
+
   // Load saved settings
   loadSettings();
-  
+
   // Set up menu button
-  document.getElementById('menu-button').addEventListener('click', (event) => {
+  document.getElementById("menu-button").addEventListener("click", (event) => {
     toggleContextMenu();
     event.stopPropagation();
   });
-  
+
   // Set up menu items
-  document.getElementById('menu-settings').addEventListener('click', () => {
+  document.getElementById("menu-settings").addEventListener("click", () => {
     toggleSettings();
     toggleContextMenu();
   });
-  
+
   // Add event listener for the group tabs button
-  const groupTabsBtn = document.getElementById('group-tabs');
-  groupTabsBtn.addEventListener('click', () => {
+  const groupTabsBtn = document.getElementById("group-tabs");
+  groupTabsBtn.addEventListener("click", () => {
     toggleGroupingButtons(groupTabsBtn);
     groupTabsByDomain();
     hideAiSettings();
   });
-  
+
   // Add event listener for the group by AI button
-  const groupByAiBtn = document.getElementById('group-by-ai');
-  groupByAiBtn.addEventListener('click', () => {
+  const groupByAiBtn = document.getElementById("group-by-ai");
+  groupByAiBtn.addEventListener("click", () => {
     toggleGroupingButtons(groupByAiBtn);
-    
+
     // Check if API key is available before performing AI grouping
-    chrome.storage.sync.get(['apiKey'], (result) => {
+    chrome.storage.sync.get(["apiKey"], (result) => {
       if (result.apiKey) {
         // API key exists, proceed with categorization
         categorizeTabs();
       } else {
         // No API key, show settings
-        showStatus('API key required for AI categorization', 'info');
+        showStatus("API key required for AI categorization", "info");
         showAiSettings();
       }
     });
   });
 
   // Add event listener for the ungroup tabs button
-  const ungroupTabsBtn = document.getElementById('ungroup-tabs');
-  ungroupTabsBtn.addEventListener('click', () => {
+  const ungroupTabsBtn = document.getElementById("ungroup-tabs");
+  ungroupTabsBtn.addEventListener("click", () => {
     toggleGroupingButtons(ungroupTabsBtn);
     ungroupAllTabs();
     hideAiSettings();
   });
-  
+
   // Add event listener for the save settings button
-  document.getElementById('save-settings').addEventListener('click', saveSettings);
-  
+  document
+    .getElementById("save-settings")
+    .addEventListener("click", saveSettings);
+
   // Add event listener for the add group button
-  document.getElementById('add-group').addEventListener('click', addCustomGroup);
+  document
+    .getElementById("add-group")
+    .addEventListener("click", addCustomGroup);
+
+  // Initialize new features
+  initializeTheme();
+  initializeSearch();
+  initializeGroupCollapse();
+
+  // Add event listeners for new features
+  document
+    .getElementById("theme-toggle")
+    .addEventListener("click", toggleTheme);
+  document.getElementById("backup-tabs").addEventListener("click", backupTabs);
+  document
+    .getElementById("suspend-inactive")
+    .addEventListener("click", suspendInactiveTabs);
+  document
+    .getElementById("save-favorite")
+    .addEventListener("click", saveFavoriteConfiguration);
+
+  // Update recent groups list
+  updateRecentGroupsList();
+
+  // Initialize theme options in settings
+  document.querySelectorAll(".theme-option").forEach((button) => {
+    button.addEventListener("click", (e) => {
+      const theme = e.target.id.replace("theme-", "");
+      chrome.storage.sync.set({ theme }, () => {
+        if (theme === "system") {
+          const isDark = window.matchMedia(
+            "(prefers-color-scheme: dark)"
+          ).matches;
+          document.body.setAttribute("data-theme", isDark ? "dark" : "light");
+        } else {
+          document.body.setAttribute("data-theme", theme);
+        }
+        updateThemeIcon();
+      });
+    });
+  });
 });
 
 // Listen for tab events and refresh the list

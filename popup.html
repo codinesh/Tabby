@@ -1,86 +1,158 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Tabby</title>
-  <meta charset="UTF-8">
-  <link rel="stylesheet" href="popup.css">
-</head>
-<body>
-  <div class="header">
-    <h1>Tabby</h1>
-    <!-- Status indicator next to title -->
-    <div id="status-container" class="hidden">
-      <div id="status-message"></div>
-      <div id="loading-spinner"></div>
-    </div>
-  </div>
-  
-  <div id="content">
-    <div class="controls">
-      <div class="group-controls">
-        <button id="group-by-ai">Group by AI</button>
-        <button id="group-tabs" class="active">Group by Domain</button>
+  <head>
+    <title>Tabby</title>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <div class="header">
+      <h1>Tabby</h1>
+      <div class="header-actions">
+        <button class="theme-toggle" id="theme-toggle" title="Toggle dark mode">
+          🌙
+        </button>
+        <div id="status-container" class="hidden">
+          <div id="status-message"></div>
+          <div id="loading-spinner"></div>
+        </div>
       </div>
-      <button id="menu-button" class="menu-button">⋮</button>
     </div>
-    
-    <div id="context-menu" class="context-menu hidden">
-      <ul>
-        <li id="menu-settings">Settings</li>
-        <li id="ungroup-tabs">Ungroup All</li>
-      </ul>
-    </div>
-    
-    <div id="ai-settings" class="hidden">
-      <h3>Settings</h3>
-      <div class="settings-tabs">
-        <button class="settings-tab active" data-tab="groups-settings">Custom Groups</button>
-        <button class="settings-tab" data-tab="api-settings">API</button>
+
+    <div id="content">
+      <!-- Search bar -->
+      <div class="search-container">
+        <input
+          type="text"
+          id="search-tabs"
+          class="search-input"
+          placeholder="Search tabs..."
+        />
+        <span class="search-icon">🔍</span>
       </div>
-      
-      <div id="groups-settings" class="settings-content">
-        <div class="form-group">
-          <p class="help-text">Configure your preferred groups and the keywords that should be included in each group.</p>
-          <div id="custom-groups-container">
-            <!-- Custom groups will be added here dynamically -->
+
+      <div class="controls">
+        <div class="group-controls">
+          <button id="group-by-ai">Group by AI</button>
+          <button id="group-tabs" class="active">Group by Domain</button>
+        </div>
+        <button id="menu-button" class="menu-button">⋮</button>
+      </div>
+
+      <div id="context-menu" class="context-menu hidden">
+        <ul>
+          <li id="menu-settings">Settings</li>
+          <li id="ungroup-tabs">Ungroup All</li>
+          <li id="backup-tabs">Backup Tabs</li>
+          <li id="suspend-inactive">Suspend Inactive</li>
+        </ul>
+      </div>
+
+      <!-- Recent Groups Section -->
+      <div class="recent-groups hidden">
+        <div class="recent-groups-title">Recent Groups</div>
+        <div id="recent-groups-list"></div>
+      </div>
+
+      <div id="ai-settings" class="hidden">
+        <h3>Settings</h3>
+        <div class="settings-tabs">
+          <button class="settings-tab active" data-tab="groups-settings">
+            Custom Groups
+          </button>
+          <button class="settings-tab" data-tab="api-settings">API</button>
+          <button class="settings-tab" data-tab="appearance-settings">
+            Appearance
+          </button>
+        </div>
+
+        <div id="groups-settings" class="settings-content">
+          <div class="form-group">
+            <p class="help-text">
+              Configure your preferred groups and the keywords that should be
+              included in each group.
+            </p>
+            <div id="custom-groups-container">
+              <!-- Custom groups will be added here dynamically -->
+            </div>
+            <div class="group-actions">
+              <button id="add-group" class="small-button">+ Add Group</button>
+              <button id="save-favorite" class="small-button">
+                Save as Favorite
+              </button>
+            </div>
           </div>
-          <div class="group-actions">
-            <button id="add-group" class="small-button">+ Add Group</button>
+        </div>
+
+        <div id="api-settings" class="settings-content hidden">
+          <div class="form-group">
+            <label for="ai-url">API Endpoint:</label>
+            <input
+              type="text"
+              id="ai-url"
+              placeholder="https://api.openai.com/v1/chat/completions"
+              value="https://api.openai.com/v1/chat/completions"
+            />
+          </div>
+          <div class="form-group">
+            <label for="api-key">API Key:</label>
+            <input type="password" id="api-key" placeholder="Your API key" />
           </div>
         </div>
-      </div>
-      
-      <div id="api-settings" class="settings-content hidden">
-        <div class="form-group">
-          <label for="ai-url">API Endpoint:</label>
-          <input type="text" id="ai-url" placeholder="https://api.openai.com/v1/chat/completions" value="https://api.openai.com/v1/chat/completions">
+
+        <div id="appearance-settings" class="settings-content hidden">
+          <div class="form-group">
+            <label>Theme</label>
+            <div class="theme-options">
+              <button id="theme-light" class="theme-option">Light</button>
+              <button id="theme-dark" class="theme-option">Dark</button>
+              <button id="theme-system" class="theme-option">System</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Default Group Colors</label>
+            <div class="color-picker">
+              <div class="color-option grey" data-color="grey"></div>
+              <div class="color-option blue" data-color="blue"></div>
+              <div class="color-option red" data-color="red"></div>
+              <div class="color-option yellow" data-color="yellow"></div>
+              <div class="color-option green" data-color="green"></div>
+              <div class="color-option pink" data-color="pink"></div>
+              <div class="color-option purple" data-color="purple"></div>
+              <div class="color-option cyan" data-color="cyan"></div>
+            </div>
+          </div>
         </div>
-        <div class="form-group">
-          <label for="api-key">API Key:</label>
-          <input type="password" id="api-key" placeholder="Your API key">
+
+        <button id="save-settings">Save Settings</button>
+      </div>
+
+      <div id="tabs-list">
+        <!-- Tabs will be listed here -->
+      </div>
+    </div>
+
+    <template id="custom-group-template">
+      <div class="custom-group">
+        <div class="form-row">
+          <input
+            type="text"
+            class="group-name"
+            placeholder="Group name (e.g., Workflow)"
+          />
+          <div class="color-picker-trigger" title="Choose group color">🎨</div>
+          <button class="remove-group small-button">✕</button>
+        </div>
+        <div class="form-row keywords-container">
+          <input
+            type="text"
+            class="group-keywords"
+            placeholder="Keywords (comma separated, e.g., workflow, process, task)"
+          />
         </div>
       </div>
-      
-      <button id="save-settings">Save Settings</button>
-    </div>
-    
-    <div id="tabs-list">
-      <!-- Tabs will be listed here -->
-    </div>
-  </div>
-  
-  <template id="custom-group-template">
-    <div class="custom-group">
-      <div class="form-row">
-        <input type="text" class="group-name" placeholder="Group name (e.g., Workflow)">
-        <button class="remove-group small-button">✕</button>
-      </div>
-      <div class="form-row keywords-container">
-        <input type="text" class="group-keywords" placeholder="Keywords (comma separated, e.g., workflow, process, task)">
-      </div>
-    </div>
-  </template>
-  
-  <script src="popup.js"></script>
-</body>
+    </template>
+
+    <script src="popup.js"></script>
+  </body>
 </html>
