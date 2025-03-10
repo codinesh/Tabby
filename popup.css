@@ -362,7 +362,6 @@ input[type="password"] {
   color: white;
   font-weight: 500;
   cursor: pointer;
-  user-select: none;
 }
 
 .group-title {
@@ -572,7 +571,6 @@ input[type="password"] {
 }
 
 .group-header {
-  user-select: none;
 }
 
 .collapse-indicator {

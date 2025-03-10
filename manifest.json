@@ -42,7 +42,6 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["suspended.html"],
       "matches": ["<all_urls>"]
     }
   ],
