@@ -295,11 +295,11 @@ function displayTabs() {
       // Save changes on enter or blur
       const saveChanges = () => {
         const newTitle = editField.value.trim();
-        if (newTitle) {
-          chrome.tabGroups.update(parseInt(group.id), { title: newTitle });
-          groupTitle.textContent = newTitle;
-        }
         
+        if (newTitle) {
+          // Check if another group with the same name already exists (ignoring case)
+          chrome.tabs.query({}, (tabs) => {
+            const tabIds = group.tabs.map(tab => tab.id);
         // Remove edit field and show title
         editField.remove();
         groupTitle.style.display = '';

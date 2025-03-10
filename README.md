@@ -2,7 +2,7 @@
 
 Tabby is a browser extension that helps you organize your tabs using AI-powered categorization or domain-based grouping.
 
-![Tabby Extension](images/icon128.png)
+![Sample screenshot](image.png)
 
 ## Features
 
@@ -23,20 +23,6 @@ Tabby is a browser extension that helps you organize your tabs using AI-powered 
 3. Enable "Developer mode" using the toggle in the top-right corner
 4. Click "Load unpacked" and select the Tabby folder
 5. The Tabby extension icon should now appear in your browser toolbar
-
-### Firefox
-
-_Note: This extension was developed for Chromium-based browsers. You may need to make slight modifications for Firefox compatibility._
-
-1. Open Firefox and navigate to `about:debugging#/runtime/this-firefox`
-2. Click "Load Temporary Add-on..."
-3. Navigate to the Tabby folder and select the `manifest.json` file
-4. The extension will be loaded temporarily (it will be removed when Firefox is closed)
-
-For permanent installation in Firefox:
-
-1. You'll need to create a signed extension by submitting it to Mozilla's add-on store or by repackaging it with the necessary changes for Firefox compatibility
-2. Firefox requires a different manifest version, and the Chrome APIs may need to be replaced with Firefox equivalents
 
 ## Configuration
 
