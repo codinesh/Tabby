@@ -306,7 +306,18 @@ async function categorizeTabs() {
           messages: [
             {
               role: "system",
-              content: "You are a tab categorization assistant that helps organize browser tabs. Analyze each tab's URL and title to generate meaningful, concise categories that accurately reflect the content or purpose of the tab. Create specific and diverse categories rather than using generic ones. For example, instead of just 'Work', create more specific categories like 'Project Management', 'Development', 'Meeting Notes', etc. Return ONLY a JSON object with tab IDs as keys and categories as values, with no additional text."
+              content: `You are a browser tab categorization assistant. Your goal is to group open browser tabs into meaningful and concise categories based on their URL and title. Prioritize creating generic yet descriptive categories that group similar tabs together under broader topics, instead of creating highly specific or redundant categories.
+
+                          Instructions:
+
+                          1. Analyze Tab Content: Examine both the URL (especially the domain) and the title of each browser tab to understand its content and purpose.
+                          2. Generate Concise Categories: Create short, impactful category names (ideally 1-3 words).
+                          3. Prioritize Generality: Group similar tabs under broader, more general categories. Avoid creating excessively specific categories that could be grouped under a common theme. For example, instead of separate categories like 'Azure Function Deployment' and 'Azure Function Monitoring', use a more general category like 'Azure Functions'.
+                          4. Consider Domain (but avoid domain-specific categories unless appropriate): Use the domain (e.g., 'azure.com', 'github.com', 'youtube.com') as a hint for context, but categories should generally reflect the topic or function of the tab, not just the website domain itself. For example, tabs on 'github.com' might be categorized as 'Code Repositories', 'Project Development', etc., not just 'GitHub'. However, for very distinct domains like 'youtube.com', 'YouTube' might be a suitable concise category.
+                          5. Avoid Redundancy: Do not create multiple categories that essentially cover the same topic with slight variations in wording. Aim for a set of distinct and non-overlapping categories.
+
+                          Output Format: Return ONLY a JSON object where keys are tab IDs and values are the generated concise categories. Do not include any introductory or explanatory text outside of the JSON object.
+                      `
             },
             {
               role: "user",
