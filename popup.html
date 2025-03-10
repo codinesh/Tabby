@@ -6,7 +6,15 @@
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <h1>Tabby</h1>
+  <div class="header">
+    <h1>Tabby</h1>
+    <!-- Status indicator next to title -->
+    <div id="status-container" class="hidden">
+      <div id="status-message"></div>
+      <div id="loading-spinner"></div>
+    </div>
+  </div>
+  
   <div id="content">
     <div class="controls">
       <div class="group-controls">
@@ -18,31 +26,19 @@
     
     <div id="context-menu" class="context-menu hidden">
       <ul>
-        <li id="menu-refresh">Refresh</li>
         <li id="menu-settings">Settings</li>
         <li id="ungroup-tabs">Ungroup All</li>
       </ul>
     </div>
     
     <div id="ai-settings" class="hidden">
-      <h3>AI Settings</h3>
+      <h3>Settings</h3>
       <div class="settings-tabs">
-        <button class="settings-tab active" data-tab="api-settings">API</button>
-        <button class="settings-tab" data-tab="groups-settings">Custom Groups</button>
+        <button class="settings-tab active" data-tab="groups-settings">Custom Groups</button>
+        <button class="settings-tab" data-tab="api-settings">API</button>
       </div>
       
-      <div id="api-settings" class="settings-content">
-        <div class="form-group">
-          <label for="ai-url">API Endpoint:</label>
-          <input type="text" id="ai-url" placeholder="https://api.openai.com/v1/chat/completions" value="https://api.openai.com/v1/chat/completions">
-        </div>
-        <div class="form-group">
-          <label for="api-key">API Key:</label>
-          <input type="password" id="api-key" placeholder="Your API key">
-        </div>
-      </div>
-      
-      <div id="groups-settings" class="settings-content hidden">
+      <div id="groups-settings" class="settings-content">
         <div class="form-group">
           <p class="help-text">Configure your preferred groups and the keywords that should be included in each group.</p>
           <div id="custom-groups-container">
@@ -51,6 +47,17 @@
           <div class="group-actions">
             <button id="add-group" class="small-button">+ Add Group</button>
           </div>
+        </div>
+      </div>
+      
+      <div id="api-settings" class="settings-content hidden">
+        <div class="form-group">
+          <label for="ai-url">API Endpoint:</label>
+          <input type="text" id="ai-url" placeholder="https://api.openai.com/v1/chat/completions" value="https://api.openai.com/v1/chat/completions">
+        </div>
+        <div class="form-group">
+          <label for="api-key">API Key:</label>
+          <input type="password" id="api-key" placeholder="Your API key">
         </div>
       </div>
       

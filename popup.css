@@ -5,9 +5,65 @@ body {
   font-family: Arial, sans-serif;
 }
 
+/* Header with inline status */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  position: relative;
+}
+
 h1 {
-  text-align: center;
   color: #4285f4;
+  margin: 0;
+  margin-right: 10px;
+}
+
+/* Status message styling */
+#status-container {
+  display: flex;
+  align-items: center;
+  background-color: transparent;
+  padding: 5px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  height: 24px;
+}
+
+#status-message {
+  margin-right: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+#status-container.success {
+  color: #1e8e3e;
+}
+
+#status-container.error {
+  color: #d93025;
+}
+
+#status-container.info {
+  color: #4285f4;
+}
+
+/* Loading spinner */
+#loading-spinner {
+  display: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top-color: #4285f4;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .controls {
