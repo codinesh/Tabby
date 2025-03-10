@@ -97,38 +97,3 @@ chrome.runtime.onInstalled.addListener((details) => {
     });
   }
 });
-
-// Listen for messages from popup
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  switch (request.action) {
-    case "getTabStats":
-      getTabStats().then(sendResponse);
-      return true; // Required for async response
-  }
-});
-
-// Get tab statistics
-async function getTabStats() {
-  const tabs = await chrome.tabs.query({});
-  const groups = new Set();
-
-  // Count groups
-  tabs.forEach((tab) => {
-    if (tab.groupId !== chrome.tabs.TAB_GROUP_ID_NONE) {
-      groups.add(tab.groupId);
-    }
-  });
-
-  return {
-    totalTabs: tabs.length,
-    groupCount: groups.size,
-  };
-}
-
-// Initialize tab access times for existing tabs
-chrome.tabs.query({}, (tabs) => {
-  const currentTime = Date.now();
-  tabs.forEach((tab) => {
-    tabAccessTimes.set(tab.id, currentTime);
-  });
-});

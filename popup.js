@@ -1340,9 +1340,6 @@ document.addEventListener("DOMContentLoaded", () => {
     .addEventListener("click", toggleTheme);
   document.getElementById("backup-tabs").addEventListener("click", backupTabs);
   document
-    .getElementById("suspend-inactive")
-    .addEventListener("click", suspendInactiveTabs);
-  document
     .getElementById("save-favorite")
     .addEventListener("click", saveFavoriteConfiguration);
 
