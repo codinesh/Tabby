@@ -166,14 +166,34 @@ async function categorizeTabs() {
         url: tab.url
       }));
 
-      // Send batch request to AI service
+      // Create content for the OpenAI API request
+      const tabsInfoText = allTabsInfo.map(tab => 
+        `Tab ID: ${tab.id}, Title: ${tab.title}, URL: ${tab.url}`
+      ).join('\n');
+      
+      // Format the request body for OpenAI's API
+      const requestBody = {
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "system",
+            content: "You are a tab categorization assistant. Categorize each tab into one of these categories: Workitems, Documentation, Code, Learning, Entertainment, or Others. Return ONLY a JSON object with tab IDs as keys and categories as values, with no additional text."
+          },
+          {
+            role: "user",
+            content: `Please categorize the following tabs:\n${tabsInfoText}`
+          }
+        ]
+      };
+
+      // Send request to OpenAI API
       const response = await fetch(settings.aiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${settings.apiKey}`
+          'api-key': `${settings.apiKey}`
         },
-        body: JSON.stringify({ tabs: allTabsInfo })
+        body: JSON.stringify(requestBody)
       });
       
       if (!response.ok) {
@@ -182,20 +202,40 @@ async function categorizeTabs() {
       
       const data = await response.json();
       
-      // Process categorization results
-      if (data.categories) {
-        // Store categories
-        for (const tabId in data.categories) {
-          tabCategories[tabId] = data.categories[tabId];
-        }
+      // Process OpenAI's response
+      if (data.choices && data.choices.length > 0) {
+        const assistantMessage = data.choices[0].message.content;
         
-        // Save categories to storage
-        chrome.storage.local.set({ tabCategories }, () => {
-          // Group by categories
-          groupTabsByCategory(data.categories);
-          // Refresh display to show categories
-          displayTabs();
-        });
+        try {
+          // Extract JSON from the response
+          let jsonStr = assistantMessage;
+          
+          // If the response contains markdown code blocks, extract the JSON
+          if (jsonStr.includes('```json')) {
+            jsonStr = jsonStr.split('```json')[1].split('```')[0].trim();
+          } else if (jsonStr.includes('```')) {
+            jsonStr = jsonStr.split('```')[1].split('```')[0].trim();
+          }
+          
+          // Parse the categories
+          const categoriesData = JSON.parse(jsonStr);
+          
+          // Store categories
+          for (const tabId in categoriesData) {
+            tabCategories[tabId] = categoriesData[tabId];
+          }
+          
+          // Save categories to storage
+          chrome.storage.local.set({ tabCategories }, () => {
+            // Group by categories
+            groupTabsByCategory(tabCategories);
+            // Refresh display to show categories
+            displayTabs();
+          });
+        } catch (parseError) {
+          console.error('Error parsing AI response:', parseError);
+          alert(`Error parsing AI response: ${parseError.message}`);
+        }
       } else {
         throw new Error('Invalid response format from AI service');
       }
