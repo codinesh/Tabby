@@ -1,96 +1,89 @@
-# Tabby - Browser Tab Manager with AI
+# Tabby - AI-Powered Tab Manager
 
-Tabby is a browser extension that helps you organize your tabs using AI-powered categorization or domain-based grouping.
+Tabby is a smart browser extension that revolutionizes how you organize your tabs using AI-powered categorization and intelligent domain-based grouping.
 
 <div style="display: flex; justify-content: space-between;">
-   <img src="images/image.png" alt="Tabby home page" width="48%"/>
-   <img src="image.png" alt="Settings page" width="48%"/>
+   <img src="images/screenshots/home.png" alt="Tabby home page" width="48%"/>
+   <img src="images/screenshots/settings.png" alt="Settings page" width="48%"/>
 </div>
 
-## Features
+## Key Features
 
-- **Group tabs by domain** - Automatically group tabs from the same domain
-- **AI-powered categorization** - Group tabs based on their content using AI
-- **Custom grouping rules** - Create your own custom groups with keywords
-- **Easy tab management** - Switch, close, and organize tabs from one place
+- 🤖 **AI-Powered Tab Organization** - Intelligently categorizes your tabs based on content
+- 🔄 **Smart Domain Grouping** - Automatically groups tabs from the same website
+- ⚡️ **Instant Tab Access** - Quick search and switch between tabs
+- 🎯 **Custom Group Rules** - Create personalized grouping rules with keywords
+- 🔒 **Privacy-Focused** - Your data stays local; API calls only when needed
+- ⚙️ **Flexible Configuration** - Customize the extension to work your way
 
-## Installation Instructions
+## Quick Installation
 
-### Chrome / Edge / Brave / Other Chromium-based browsers
+### Chrome Web Store (Recommended)
+1. Visit the [Chrome Web Store](https://chrome.google.com/webstore) (Coming Soon)
+2. Click "Add to Chrome"
+3. Confirm the installation
 
-1. Download or clone this repository to your local machine
-2. Open your browser and navigate to the extensions page:
-   - Chrome: `chrome://extensions/`
-   - Edge: `edge://extensions/`
-   - Brave: `brave://extensions/`
-3. Enable "Developer mode" using the toggle in the top-right corner
+### Manual Installation (Developer Mode)
+1. Download this repository
+2. Go to `chrome://extensions/` (or equivalent for your browser)
+3. Enable "Developer mode"
 4. Click "Load unpacked" and select the Tabby folder
-5. The Tabby extension icon should now appear in your browser toolbar
 
-## Configuration
+## Setup Guide
 
-### API Settings
+### Basic Usage
+1. Click the Tabby icon in your toolbar
+2. Choose your preferred grouping method:
+   - 🤖 AI Categorization
+   - 🌐 Domain-based Grouping
 
-To use the AI categorization feature:
+### AI Feature Setup (Optional)
+1. Open Settings (⋮ menu)
+2. Enter your OpenAI API details:
+   - API Endpoint (default: `https://api.openai.com/v1/chat/completions`)
+   - API Key
+3. Save changes
 
-1. Click on the Tabby icon in your browser toolbar
-2. Click the menu button (⋮) and select "Settings"
-3. Enter your OpenAI API endpoint (default: `https://api.openai.com/v1/chat/completions`)
-4. Enter your OpenAI API key
-5. Click "Save Settings"
+### Custom Groups Configuration
+1. Navigate to Settings > Custom Groups
+2. Add groups with relevant keywords
+3. Save to apply custom grouping rules
 
-### Custom Groups
+## Keyboard Shortcuts
+- `Alt + T`: Open Tabby popup
+- `Alt + G`: Quick group by domain
+- `Alt + U`: Ungroup all tabs
 
-You can define your own groups to override AI categorization:
-
-1. Open the Tabby settings
-2. Click on the "Custom Groups" tab
-3. For each group:
-   - Enter a group name (e.g., "Work")
-   - Enter keywords separated by commas (e.g., "project, report, workflow")
-   - Tabs containing these keywords in their titles or URLs will be assigned to this group
-4. Click "Save Settings"
-
-## Usage
-
-1. Click on the Tabby icon in your browser toolbar
-2. Choose a grouping method:
-   - "Group by Domain" - Groups tabs based on their domain names
-   - "Group by AI" - Uses AI to categorize tabs by content (requires API key)
-3. To ungroup all tabs, click the menu button and select "Ungroup All"
-4. To refresh the tab list, click the menu button and select "Refresh"
-
-## Packaging the Extension
-
-To create a distributable package:
-
-1. Zip the entire contents of the Tabby folder:
-
-   - manifest.json
-   - popup.html
-   - popup.css
-   - popup.js
-   - images/ (folder with all icons)
-   - README.md (optional)
-
-2. The resulting .zip file can be:
-   - Uploaded to the Chrome Web Store (requires developer account)
-   - Shared with others for manual installation
+## Browser Compatibility
+- ✅ Google Chrome (v88+)
+- ✅ Microsoft Edge
+- ✅ Brave Browser
+- ✅ Other Chromium-based browsers
 
 ## Troubleshooting
 
-- **API errors**: Ensure your API key is correct and has sufficient credits/permissions
-- **Tabs not grouping**: Make sure you've granted the extension the necessary permissions
-- **Custom groups not working**: Check that your keywords match the content of the tabs
+### Common Issues
+- **API Not Working**: Verify API key and endpoint
+- **Groups Not Forming**: Check browser permissions
+- **Custom Rules Not Applied**: Verify keyword formatting
+
+### Need Help?
+- 📜 Check our [Wiki](https://github.com/yourusername/tabby/wiki)
+- 🐛 Report issues on [GitHub](https://github.com/yourusername/tabby/issues)
+- 📧 Contact: [your-support-email]
+
+## Privacy & Security
+- ✅ No user data collection
+- ✅ Local storage only
+- ✅ Optional AI feature with your own API key
+- ✅ Open-source code
+
+## Contributing
+We welcome contributions! See our [Contributing Guidelines](CONTRIBUTING.md) for details.
 
 ## License
+MIT License - See [LICENSE](LICENSE) file for details
 
-This extension is provided as-is under an open-source license.
+---
 
-## Privacy
-
-- This extension requires permissions to access tab information and group tabs
-- If using the AI feature, tab information is sent to the configured API endpoint
-- No data is collected by the extension developers
-
-For more information or support, please create an issue in the GitHub repository.
+*Made with ❤️ by the Tabby team*

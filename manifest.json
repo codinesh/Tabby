@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Tabby",
-  "version": "1.0",
-  "description": "A Chrome extension for managing tabs",
+  "name": "Tabby - AI Tab Manager",
+  "version": "1.0.0",
+  "description": "Organize your browser tabs effortlessly using AI-powered categorization and domain-based grouping. Boost your productivity with smart tab management.",
   "permissions": ["tabs", "storage", "tabGroups"],
   "action": {
     "default_popup": "popup.html",
@@ -16,5 +16,10 @@
     "16": "images/icon16.png",
     "48": "images/icon48.png",
     "128": "images/icon128.png"
-  }
+  },
+  "author": "Dinesh",
+  "homepage_url": "https://github.com/codinesh",
+  "minimum_chrome_version": "88",
+  "offline_enabled": true,
+  "short_name": "Tabby"
 }
