@@ -40,11 +40,6 @@
       "description": "Ungroup all tabs"
     }
   },
-  "web_accessible_resources": [
-    {
-      "matches": ["<all_urls>"]
-    }
-  ],
   "author": "Tabby",
   "homepage_url": "https://github.com/yourusername/tabby",
   "minimum_chrome_version": "88",

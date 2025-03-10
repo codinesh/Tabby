@@ -42,6 +42,13 @@ body {
   position: relative;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
 h1 {
   color: #4285f4;
   margin: 0;
@@ -145,12 +152,12 @@ button:hover {
   display: flex;
   align-items: center;
   padding: 8px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-color);
   cursor: pointer;
 }
 
 .tab-item:hover {
-  background-color: #f5f5f5;
+  background-color: var(--hover-bg);
 }
 
 .tab-favicon {
@@ -164,15 +171,19 @@ button:hover {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-size: 13px;
 }
 
 .tab-close {
   opacity: 0.6;
   cursor: pointer;
+  padding: 2px 6px;
 }
 
 .tab-close:hover {
   opacity: 1;
+  background-color: var(--hover-bg);
+  border-radius: 4px;
 }
 
 .hidden {
@@ -310,7 +321,7 @@ input[type="password"] {
   margin-left: 10px;
 }
 
-.menu-button:hover {
+menu-button:hover {
   background-color: #f0f0f0;
 }
 
@@ -473,12 +484,12 @@ input[type="password"] {
   display: flex;
   align-items: center;
   padding: 8px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-color);
   cursor: pointer;
 }
 
 .tab-item:hover {
-  background-color: #f5f5f5;
+  background-color: var(--hover-bg);
 }
 
 .tab-favicon {
@@ -503,7 +514,7 @@ input[type="password"] {
 
 .tab-close:hover {
   opacity: 1;
-  background-color: #f0f0f0;
+  background-color: var(--hover-bg);
   border-radius: 4px;
 }
 
@@ -639,17 +650,6 @@ input[type="password"] {
 
 .recent-group-item:hover {
   background-color: var(--hover-bg);
-}
-
-/* Suspended tab styling */
-.tab-item.suspended {
-  opacity: 0.7;
-}
-
-.suspended-indicator {
-  font-size: 12px;
-  color: var(--text-secondary);
-  margin-left: 8px;
 }
 
 /* Keep existing color classes but update them for dark mode */
