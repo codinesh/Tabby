@@ -1,3 +1,48 @@
+// Store settings in Chrome storage
+function saveSettings() {
+  const aiUrl = document.getElementById('ai-url').value;
+  const apiKey = document.getElementById('api-key').value;
+
+  chrome.storage.sync.set({
+    aiUrl: aiUrl,
+    apiKey: apiKey
+  }, () => {
+    alert('Settings saved!');
+    hideAiSettings(); // Hide settings after saving
+  });
+}
+
+// Load settings from Chrome storage
+function loadSettings() {
+  chrome.storage.sync.get(['aiUrl', 'apiKey'], (result) => {
+    if (result.aiUrl) {
+      document.getElementById('ai-url').value = result.aiUrl;
+    } else {
+      // Set default API URL if not already set
+      document.getElementById('ai-url').value = 'https://api.openai.com/v1/chat/completions';
+    }
+    
+    if (result.apiKey) {
+      document.getElementById('api-key').value = result.apiKey;
+    }
+    
+    // Check if we need to show settings automatically
+    // (only if API key is not set and user clicks Group by AI)
+    checkIfSettingsNeeded();
+  });
+}
+
+// Function to check if settings panel needs to be shown
+function checkIfSettingsNeeded() {
+  chrome.storage.sync.get(['apiKey'], (result) => {
+    if (!result.apiKey) {
+      // If no API key is set, we'll need to show settings when AI grouping is selected
+      const groupByAiBtn = document.getElementById('group-by-ai');
+      groupByAiBtn.addEventListener('click', showAiSettings, { once: true });
+    }
+  });
+}
+
 // Function to display all tabs
 function displayTabs() {
   const tabsList = document.getElementById('tabs-list');
@@ -16,6 +61,16 @@ function displayTabs() {
       const title = document.createElement('div');
       title.className = 'tab-title';
       title.textContent = tab.title;
+      
+      // Add category span if we have it stored
+      chrome.storage.local.get(['tabCategories'], (result) => {
+        if (result.tabCategories && result.tabCategories[tab.id]) {
+          const category = document.createElement('span');
+          category.className = 'category';
+          category.textContent = `[${result.tabCategories[tab.id]}]`;
+          title.appendChild(category);
+        }
+      });
       
       const closeBtn = document.createElement('div');
       closeBtn.className = 'tab-close';
@@ -74,16 +129,205 @@ function groupTabsByDomain() {
   });
 }
 
+// Ungroup all tabs
+function ungroupAllTabs() {
+  chrome.tabs.query({}, (tabs) => {
+    tabs.forEach((tab) => {
+      if (tab.groupId !== chrome.tabs.TAB_GROUP_ID_NONE) {
+        chrome.tabs.ungroup(tab.id);
+      }
+    });
+  });
+}
+
+// Categorize tabs using AI
+async function categorizeTabs() {
+  // Get settings
+  chrome.storage.sync.get(['aiUrl', 'apiKey'], async (settings) => {
+    if (!settings.aiUrl || !settings.apiKey) {
+      alert('Please configure AI settings first');
+      showAiSettings();
+      return;
+    }
+    
+    const tabCategories = {};
+    let allTabsInfo = [];
+
+    try {
+      // Get all tabs
+      const tabs = await new Promise(resolve => 
+        chrome.tabs.query({}, resolve)
+      );
+      
+      // Prepare data for batch processing
+      allTabsInfo = tabs.map(tab => ({
+        id: tab.id,
+        title: tab.title,
+        url: tab.url
+      }));
+
+      // Send batch request to AI service
+      const response = await fetch(settings.aiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${settings.apiKey}`
+        },
+        body: JSON.stringify({ tabs: allTabsInfo })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`AI service returned status ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      // Process categorization results
+      if (data.categories) {
+        // Store categories
+        for (const tabId in data.categories) {
+          tabCategories[tabId] = data.categories[tabId];
+        }
+        
+        // Save categories to storage
+        chrome.storage.local.set({ tabCategories }, () => {
+          // Group by categories
+          groupTabsByCategory(data.categories);
+          // Refresh display to show categories
+          displayTabs();
+        });
+      } else {
+        throw new Error('Invalid response format from AI service');
+      }
+    } catch (error) {
+      console.error('Error categorizing tabs:', error);
+      alert(`Error categorizing tabs: ${error.message}`);
+    }
+  });
+}
+
+// Group tabs by category
+function groupTabsByCategory(categories) {
+  // Organize tabs by category
+  const categoryGroups = {};
+  
+  for (const tabId in categories) {
+    const category = categories[tabId];
+    if (!categoryGroups[category]) {
+      categoryGroups[category] = [];
+    }
+    categoryGroups[category].push(parseInt(tabId));
+  }
+  
+  // Create tab groups by category
+  for (const category in categoryGroups) {
+    const tabIds = categoryGroups[category];
+    if (tabIds.length > 0) {
+      chrome.tabs.group({ tabIds }, (groupId) => {
+        // Set color based on category type
+        let color = 'blue'; // Default
+        
+        if (category.toLowerCase().includes('work')) {
+          color = 'red';
+        } else if (category.toLowerCase().includes('documentation')) {
+          color = 'yellow';
+        } else if (category.toLowerCase().includes('code')) {
+          color = 'green';
+        } else if (category.toLowerCase().includes('learning')) {
+          color = 'purple';
+        } else if (category.toLowerCase().includes('entertainment')) {
+          color = 'pink';
+        }
+        
+        chrome.tabGroups.update(groupId, { 
+          title: category,
+          color: color
+        });
+      });
+    }
+  }
+}
+
+// Show AI settings panel
+function showAiSettings() {
+  document.getElementById('ai-settings').classList.remove('hidden');
+}
+
+// Hide AI settings panel
+function hideAiSettings() {
+  document.getElementById('ai-settings').classList.add('hidden');
+}
+
+// Toggle settings visibility
+function toggleSettings() {
+  const settingsPanel = document.getElementById('ai-settings');
+  if (settingsPanel.classList.contains('hidden')) {
+    settingsPanel.classList.remove('hidden');
+  } else {
+    settingsPanel.classList.add('hidden');
+  }
+}
+
+// Toggle between domain and AI grouping buttons
+function toggleGroupingButtons(activeBtn) {
+  document.getElementById('group-tabs').classList.remove('active');
+  document.getElementById('group-by-ai').classList.remove('active');
+  document.getElementById('ungroup-tabs').classList.remove('active');
+  activeBtn.classList.add('active');
+}
+
 // Initialize the extension
 document.addEventListener('DOMContentLoaded', () => {
   // Display all tabs
   displayTabs();
   
+  // Load saved settings
+  loadSettings();
+  
   // Add event listener for the refresh button
   document.getElementById('refresh').addEventListener('click', displayTabs);
   
   // Add event listener for the group tabs button
-  document.getElementById('group-tabs').addEventListener('click', groupTabsByDomain);
+  const groupTabsBtn = document.getElementById('group-tabs');
+  groupTabsBtn.addEventListener('click', () => {
+    toggleGroupingButtons(groupTabsBtn);
+    groupTabsByDomain();
+    hideAiSettings();
+  });
+  
+  // Add event listener for the group by AI button
+  const groupByAiBtn = document.getElementById('group-by-ai');
+  groupByAiBtn.addEventListener('click', () => {
+    toggleGroupingButtons(groupByAiBtn);
+    
+    // Check if API key is available before performing AI grouping
+    chrome.storage.sync.get(['apiKey'], (result) => {
+      if (result.apiKey) {
+        // API key exists, proceed with categorization
+        categorizeTabs();
+      } else {
+        // No API key, show settings
+        showAiSettings();
+      }
+    });
+  });
+
+  // Add event listener for the ungroup tabs button
+  const ungroupTabsBtn = document.getElementById('ungroup-tabs');
+  ungroupTabsBtn.addEventListener('click', () => {
+    toggleGroupingButtons(ungroupTabsBtn);
+    ungroupAllTabs();
+    hideAiSettings();
+  });
+  
+  // Add event listener for the settings toggle button
+  document.getElementById('settings-toggle').addEventListener('click', toggleSettings);
+  
+  // Add event listener for the save settings button
+  document.getElementById('save-settings').addEventListener('click', () => {
+    saveSettings();
+    categorizeTabs();
+  });
 });
 
 // Listen for tab events and refresh the list

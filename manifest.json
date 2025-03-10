@@ -3,7 +3,7 @@
   "name": "Tabby",
   "version": "1.0",
   "description": "A Chrome extension for managing tabs",
-  "permissions": ["tabs"],
+  "permissions": ["tabs", "storage", "tabGroups"],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {

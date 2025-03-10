@@ -12,8 +12,14 @@ h1 {
 
 .controls {
   display: flex;
-  justify-content: space-around;
+  flex-direction: column;
   margin-bottom: 15px;
+  gap: 10px;
+}
+
+.group-controls {
+  display: flex;
+  justify-content: space-between;
 }
 
 button {
@@ -26,8 +32,22 @@ button {
   transition: background-color 0.2s;
 }
 
+button.active {
+  background-color: #3367d6;
+  font-weight: bold;
+}
+
 button:hover {
   background-color: #3367d6;
+}
+
+.settings-button {
+  background-color: #888;
+  align-self: flex-end;
+}
+
+.settings-button:hover {
+  background-color: #666;
 }
 
 #tabs-list {
@@ -67,4 +87,40 @@ button:hover {
 
 .tab-close:hover {
   opacity: 1;
+}
+
+.hidden {
+  display: none;
+}
+
+#ai-settings {
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  padding: 10px;
+  margin-bottom: 15px;
+}
+
+.form-group {
+  margin-bottom: 10px;
+}
+
+label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: bold;
+}
+
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.category {
+  font-size: 12px;
+  color: #666;
+  margin-left: 5px;
 }
