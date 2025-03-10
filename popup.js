@@ -202,18 +202,27 @@ function checkIfSettingsNeeded() {
 
 // Function to display all tabs organized by groups
 function displayTabs() {
+  console.log("displayTabs function called"); // Add logging
   const tabsList = document.getElementById("tabs-list");
   tabsList.innerHTML = "";
 
   // Get all tabs and group information
   chrome.tabs.query({}, (tabs) => {
+    console.log("Retrieved tabs:", tabs.length); // Add logging
+
+    // Show an error message if no tabs found
+    if (!tabs || tabs.length === 0) {
+      tabsList.innerHTML = "<div class='no-tabs'>No tabs found</div>";
+      return;
+    }
+
     // Organize tabs by groups
     const groupedTabs = {};
     const ungroupedTabs = [];
 
     // First pass: identify all groups and their properties
     tabs.forEach((tab) => {
-      if (tab.groupId !== chrome.tabs.TAB_GROUP_ID_NONE) {
+      if (tab.groupId && tab.groupId !== chrome.tabs.TAB_GROUP_ID_NONE) {
         if (!groupedTabs[tab.groupId]) {
           groupedTabs[tab.groupId] = {
             id: tab.groupId,
@@ -228,32 +237,79 @@ function displayTabs() {
       }
     });
 
+    console.log("Grouped tabs:", Object.keys(groupedTabs).length); // Add logging
+    console.log("Ungrouped tabs:", ungroupedTabs.length); // Add logging
+
     // Get group details (title, color)
     const groupIds = Object.keys(groupedTabs);
+
+    // If we have grouped tabs, process them
     if (groupIds.length > 0) {
+      let processedGroups = 0;
+      const totalGroups = groupIds.length;
+
       const getGroupDetails = (groupId) => {
         chrome.tabGroups.get(parseInt(groupId), (group) => {
           if (chrome.runtime.lastError) {
-            console.error(chrome.runtime.lastError);
-            return;
-          }
+            console.error(
+              "Error getting group details:",
+              chrome.runtime.lastError
+            );
 
-          groupedTabs[groupId].title = group.title;
-          groupedTabs[groupId].color = group.color;
+            // Still render the group with default values if we can't get details
+            groupedTabs[groupId].title = "Unknown Group";
+            groupedTabs[groupId].color = "grey";
+          } else {
+            groupedTabs[groupId].title = group.title;
+            groupedTabs[groupId].color = group.color;
+          }
 
           // Render the group after getting details
           renderTabGroup(groupedTabs[groupId]);
+
+          // Track processed groups to know when we're done
+          processedGroups++;
+
+          // If all groups have been processed, render the ungrouped tabs
+          if (processedGroups === totalGroups) {
+            renderUngroupedTabs();
+          }
         });
       };
 
       // Get details for each group
       groupIds.forEach(getGroupDetails);
+
+      // Safety check: if no groups are processed within 2 seconds, render ungrouped tabs anyway
+      setTimeout(() => {
+        if (processedGroups < totalGroups) {
+          console.log("Safety timeout - rendering ungrouped tabs");
+          renderUngroupedTabs();
+        }
+      }, 2000);
+    } else {
+      // No grouped tabs, render ungrouped tabs right away
+      renderUngroupedTabs();
     }
 
-    // Render ungrouped tabs
-    ungroupedTabs.forEach((tab) => {
-      renderTab(tab, null);
-    });
+    // Function to render ungrouped tabs
+    function renderUngroupedTabs() {
+      // Avoid rendering ungrouped tabs multiple times
+      if (document.querySelector(".ungrouped-tabs-rendered")) {
+        return;
+      }
+
+      // Mark that we've rendered the ungrouped tabs
+      const marker = document.createElement("div");
+      marker.className = "ungrouped-tabs-rendered";
+      marker.style.display = "none";
+      tabsList.appendChild(marker);
+
+      // Render each ungrouped tab
+      ungroupedTabs.forEach((tab) => {
+        renderTab(tab, null);
+      });
+    }
   });
 
   // Function to render a tab group
@@ -1223,9 +1279,33 @@ function displayTabs() {
 
       // Render groups
       Object.values(groupedTabs).forEach((group) => {
-        chrome.tabGroups.get(group.id, (tabGroup) => {
-          renderTabGroup(group, tabGroup, collapsedGroups[group.id]);
-        });
+        // Add validation to ensure group ID is valid (must be >= 0)
+        if (group && group.id != null && group.id >= 0) {
+          chrome.tabGroups.get(group.id, (tabGroup) => {
+            if (chrome.runtime.lastError) {
+              console.error(
+                "Error getting tab group:",
+                chrome.runtime.lastError
+              );
+              // Render the group with default values if we can't get details
+              renderTabGroup(
+                group,
+                { title: "Unknown Group", color: "grey" },
+                collapsedGroups[group.id]
+              );
+            } else {
+              renderTabGroup(group, tabGroup, collapsedGroups[group.id]);
+            }
+          });
+        } else {
+          console.warn("Invalid group ID detected:", group.id);
+          // Still render the group with default values
+          renderTabGroup(
+            group,
+            { title: "Unknown Group", color: "grey" },
+            collapsedGroups[group.id]
+          );
+        }
       });
 
       // Render ungrouped tabs
@@ -1236,6 +1316,9 @@ function displayTabs() {
 
 // Enhanced renderTabGroup function
 function renderTabGroup(group, tabGroup, isCollapsed) {
+  // Ensure tabGroup is valid
+  tabGroup = tabGroup || { title: "Unknown Group", color: "grey" };
+
   const groupContainer = document.createElement("div");
   groupContainer.className = `tab-group ${isCollapsed ? "collapsed" : ""}`;
   groupContainer.setAttribute("data-group-id", group.id);
@@ -1262,7 +1345,71 @@ function renderTabGroup(group, tabGroup, isCollapsed) {
   titleContainer.appendChild(groupTitle);
   titleContainer.appendChild(tabCount);
 
-  // ...rest of existing renderTabGroup code...
+  // Add the title container to the header
+  groupHeader.appendChild(titleContainer);
+
+  // Add actions container for group controls
+  const groupActions = document.createElement("div");
+  groupActions.className = "group-actions";
+
+  // Add close button
+  const groupCloseBtn = document.createElement("div");
+  groupCloseBtn.className = "group-close";
+  groupCloseBtn.textContent = "✕";
+  groupCloseBtn.title = "Close group";
+  groupCloseBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    // Close all tabs in this group
+    const tabIds = group.tabs.map((tab) => tab.id);
+    chrome.tabs.remove(tabIds);
+    groupContainer.remove();
+  });
+
+  groupActions.appendChild(groupCloseBtn);
+  groupHeader.appendChild(groupActions);
+
+  // Make the header clickable to collapse/expand
+  groupHeader.addEventListener("click", () => {
+    groupContainer.classList.toggle("collapsed");
+  });
+
+  // Add group header to container
+  groupContainer.appendChild(groupHeader);
+
+  // Add tabs within this group
+  group.tabs.forEach((tab) => {
+    renderTab(tab, groupContainer);
+  });
+
+  // Check if only one tab is in the group and add a special indicator
+  if (group.tabs.length === 1) {
+    const singleTabIndicator = document.createElement("div");
+    singleTabIndicator.className = "single-tab-indicator";
+    singleTabIndicator.textContent =
+      "Single tab in group - consider ungrouping";
+    singleTabIndicator.addEventListener("click", () => {
+      // Ungroup the single tab
+      chrome.tabs.ungroup(group.tabs[0].id, () => {
+        if (chrome.runtime.lastError) {
+          console.error("Error ungrouping tab:", chrome.runtime.lastError);
+          showStatus("Error ungrouping tab", "error");
+        } else {
+          showStatus("Tab ungrouped", "success");
+          displayTabs();
+        }
+      });
+    });
+    groupContainer.appendChild(singleTabIndicator);
+  }
+
+  tabsList.appendChild(groupContainer);
+}
+
+// Function to refresh tabs list
+function refreshTabsList() {
+  showLoading("Refreshing tabs list...");
+  displayTabs();
+  showStatus("Tabs list refreshed", "success");
 }
 
 // Initialize the extension
@@ -1282,6 +1429,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // Set up menu items
   document.getElementById("menu-settings").addEventListener("click", () => {
     toggleSettings();
+    toggleContextMenu();
+  });
+
+  // Add event listener for refresh tabs menu item
+  document.getElementById("menu-refresh-tabs").addEventListener("click", () => {
+    refreshTabsList();
     toggleContextMenu();
   });
 
