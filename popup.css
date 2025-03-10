@@ -1,0 +1,70 @@
+body {
+  width: 350px;
+  min-height: 300px;
+  padding: 10px;
+  font-family: Arial, sans-serif;
+}
+
+h1 {
+  text-align: center;
+  color: #4285f4;
+}
+
+.controls {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 15px;
+}
+
+button {
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: #3367d6;
+}
+
+#tabs-list {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.tab-item {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+.tab-item:hover {
+  background-color: #f5f5f5;
+}
+
+.tab-favicon {
+  margin-right: 10px;
+  width: 16px;
+  height: 16px;
+}
+
+.tab-title {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tab-close {
+  opacity: 0.6;
+  cursor: pointer;
+}
+
+.tab-close:hover {
+  opacity: 1;
+}
