@@ -146,7 +146,7 @@ export class TabManager {
         messages: [
           {
             role: "system",
-            content: "You are a helpful assistant that categorizes browser tabs into groups. Respond only with a JSON array where each element has a \"category\" and \"indices\" field. The category should be a short, descriptive name, and indices should be an array of tab indices that belong to that category."
+            content: "You are a helpful assistant that categorizes browser tabs into groups. Return a JSON array where each element has a 'category' and 'indices' field. The category should be a short, descriptive name, and indices should be an array of tab indices that belong to that category. IMPORTANT: Return ONLY the JSON array, with no markdown formatting or explanation."
           },
           {
             role: "user",
@@ -161,7 +161,17 @@ export class TabManager {
     }
 
     const data = await response.json();
-    return JSON.parse(data.choices[0].message.content);
+    const content = data.choices[0].message.content;
+    
+    // Remove any markdown formatting
+    const jsonStr = content.replace(/```json\n|\n```|```/g, '').trim();
+    
+    try {
+      return JSON.parse(jsonStr);
+    } catch (e) {
+      console.error("Failed to parse AI response:", jsonStr);
+      throw new Error("Invalid response format from AI");
+    }
   }
 
   getColorForDomain(domain) {
