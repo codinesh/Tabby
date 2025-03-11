@@ -17,6 +17,8 @@
   --accent-color: #4285f4;
   --hover-bg: #f5f5f5;
   --group-collapsed-height: 40px;
+  --child-indent: 20px;
+  --child-border-color: rgba(0, 0, 0, 0.1);
 }
 
 :root[data-theme="dark"] {
@@ -36,6 +38,7 @@
   --text-secondary: #9aa0a6;
   --accent-color: #8ab4f8;
   --hover-bg: #35363a;
+  --child-border-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Base styles */
@@ -93,23 +96,39 @@ h1 {
   margin-right: 8px;
 }
 
-#status-container.hidden {
-  display: none;
+#status-container.error {
+  background-color: var(--error-color);
+  color: white;
 }
 
-#status-message {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 200px;
+#status-container.success {
+  background-color: var(--success-color);
+  color: white;
 }
 
-#status-message.error {
-  color: var(--error-color);
+#status-container.warning {
+  background-color: var(--warning-color);
+  color: black;
 }
 
-#status-message.success {
-  color: var(--success-color);
+#status-container.info {
+  background-color: var(--info-color);
+  color: white;
+}
+
+#loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Loading spinner */
@@ -156,7 +175,7 @@ button {
 
 button.primary-button {
   background-color: var(--primary-color);
-  color: var(--text-primary);
+  color: var(--text-secondary);
 }
 
 button.secondary-button {
@@ -187,7 +206,6 @@ button:hover {
   display: flex;
   align-items: center;
   padding: 8px;
-  margin-bottom: 8px;
   border: 1px solid var(--border-color);
   border-radius: 4px;
   background-color: var(--secondary-color);
@@ -248,58 +266,14 @@ button:hover {
   overflow: hidden;
 }
 
-.group-header {
-  display: flex;
-  align-items: center;
-  padding: 8px;
-  background-color: var(--bg-secondary);
-  cursor: pointer;
-  transition: background-color 0.2s;
+/* Parent-child relationship styles */
+.tabs-container {
+  padding-left: var(--child-indent);
+  background-color: var(--bg-primary);
+  border-top: 1px solid var(--border-color);
 }
 
-.group-header:hover {
-  background-color: var(--hover-color);
-}
-
-.collapse-indicator {
-  margin-right: 8px;
-  transition: transform 0.2s;
-}
-
-.group-title {
-  flex: 1;
-  margin-right: 8px;
-}
-
-.group-count {
-  color: var(--text-secondary);
-  font-size: 0.8em;
-  margin-right: 8px;
-}
-
-.group-actions {
-  display: flex;
-  gap: 4px;
-}
-
-.group-close {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.2s;
-}
-
-.group-close:hover {
-  background-color: var(--hover-color);
-  color: var(--error-color);
-}
-
+/* Add proper collapsed state handling */
 .tab-group.collapsed .tabs-container {
   display: none;
 }
@@ -308,38 +282,65 @@ button:hover {
   transform: rotate(-90deg);
 }
 
-/* Group colors */
-.group-header.grey {
-  background-color: #757575;
-  color: white;
+/* Parent-child relationship styles */
+.tabs-container {
+  padding-left: var(--child-indent);
+  background-color: var(--bg-primary);
+  border-top: 1px solid var(--border-color);
 }
-.group-header.blue {
-  background-color: #1a73e8;
-  color: white;
+
+.tabs-container .tab {
+  position: relative;
+  margin-left: 0;
+  border-left: 3px solid var(--child-border-color);
+  border-right: none;
+  border-radius: 0;
+  border-bottom: none;
+  border-top: none;
 }
-.group-header.red {
-  background-color: #ea4335;
-  color: white;
+
+.tabs-container .tab:hover {
+  background-color: var(--hover-color);
 }
-.group-header.yellow {
-  background-color: #fbbc04;
-  color: black;
+
+.tabs-container .tab:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
 }
-.group-header.green {
-  background-color: #34a853;
-  color: white;
+
+.tabs-container .tab:focus {
+  color: var(--text-color);
 }
-.group-header.pink {
-  background-color: #e91e63;
-  color: white;
+
+.tabs-container .tab-title {
+  display: flex;
 }
-.group-header.purple {
-  background-color: #9c27b0;
-  color: white;
+
+.tabs-container .tab-title i {
+  margin-left: 0.7em;
 }
-.group-header.cyan {
-  background-color: #00acc1;
-  color: white;
+
+/* Group header styling enhancements for better contrast with child tabs */
+.group-header {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  background-color: var(--bg-secondary);
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border-bottom: none;
+  font-weight: 500;
+}
+
+/* Collapse indicator with improved alignment */
+.collapse-indicator {
+  margin-right: 8px;
+  transition: transform 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
 }
 
 /* Search */
@@ -386,7 +387,6 @@ button:hover {
   display: none !important;
 }
 
-/* Recent groups section */
 .recent-groups {
   margin-top: 16px;
   padding: 8px;
@@ -696,7 +696,7 @@ button:hover {
   background: none;
   color: var(--text-color);
   cursor: pointer;
-  border-radius: 4px 4px 0 0;
+  border-radius: 4px 0 0 0;
   transition: all 0.2s;
 }
 

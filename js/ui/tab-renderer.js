@@ -105,29 +105,34 @@ export class TabRenderer {
 
     // Add event listener for collapse/expand
     header.addEventListener("click", async (e) => {
-      if (e.target.matches(".group-close")) return;
+      // Skip if clicking on close button
+      if (e.target.closest(".group-close")) return;
 
+      // Toggle collapsed state for UI
       const wasCollapsed = groupElement.classList.contains("collapsed");
       const newCollapsedState = !wasCollapsed;
-      
-      // Update UI
+
+      // Debug logging
+      console.log(`Toggling group ${group.id} collapsed state: ${wasCollapsed} -> ${newCollapsedState}`);
+
+      // Update UI immediately for better feedback
       groupElement.classList.toggle("collapsed");
       collapseIndicator.textContent = newCollapsedState ? "▶" : "🔽";
       collapseIndicator.setAttribute("aria-label", newCollapsedState ? "Expand group" : "Collapse group");
 
       // Update browser tab group and storage
-      if (group.id && group.id !== "ungrouped") {
-        try {
+      try {
+        if (group.id && group.id !== "ungrouped") {
           await this.tabManager.setTabGroupCollapsed(group.id, newCollapsedState);
-        } catch (error) {
-          console.error("Error updating tab group collapsed state:", error);
-          // Revert UI if browser update fails
-          groupElement.classList.toggle("collapsed");
-          collapseIndicator.textContent = wasCollapsed ? "▶" : "🔽";
+        } else if (group.id === "ungrouped") {
+          // Just save the state for ungrouped tabs
+          await this.settingsManager.setCollapsedState(group.id, newCollapsedState);
         }
-      } else if (group.id === "ungrouped") {
-        // Just save the state for ungrouped tabs
-        await this.settingsManager.setCollapsedState(group.id, newCollapsedState);
+      } catch (error) {
+        console.error("Error updating tab group collapsed state:", error);
+        // Revert UI if update fails
+        groupElement.classList.toggle("collapsed");
+        collapseIndicator.textContent = wasCollapsed ? "▶" : "🔽";
       }
     });
 
