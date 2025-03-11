@@ -20,6 +20,7 @@ chrome.commands.onCommand.addListener((command) => {
 
 // Group tabs by domain
 async function groupTabsByDomain() {
+  console.log("Grouping tabs by domain...");
   const tabs = await chrome.tabs.query({});
   const domainGroups = new Map();
 
@@ -56,6 +57,7 @@ async function groupTabsByDomain() {
 
 // Ungroup all tabs
 async function ungroupAllTabs() {
+  console.log("Ungrouping all tabs...");
   const tabs = await chrome.tabs.query({});
   for (const tab of tabs) {
     if (tab.groupId !== chrome.tabs.TAB_GROUP_ID_NONE) {
