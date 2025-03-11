@@ -148,6 +148,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
+  // Group by AI button
+  const groupByAIBtn = document.getElementById("group-by-ai");
+  groupByAIBtn.addEventListener("click", async () => {
+    try {
+      showLoading("Grouping tabs by AI...");
+      await groupTabsByAI();
+    } finally {
+      hideLoading();
+    }
+  });
+
   // Ungroup all button
   document
     .getElementById("ungroup-tabs")
