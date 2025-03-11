@@ -2,6 +2,8 @@ import { TabManager } from "./js/core/tabs.js";
 import { SettingsManager } from "./js/core/settings.js";
 import { TabRenderer } from "./js/ui/tab-renderer.js";
 import { SettingsUI } from "./js/ui/settings-ui.js";
+import { ThemeManager } from "./js/ui/theme-manager.js";
+import { MenuManager } from "./js/ui/menu-manager.js";
 
 // Initialize core managers
 const tabManager = new TabManager();
@@ -10,6 +12,8 @@ const settingsManager = new SettingsManager();
 // Initialize UI components
 const tabRenderer = new TabRenderer(tabManager);
 const settingsUI = new SettingsUI(settingsManager);
+const themeManager = new ThemeManager();
+const menuManager = new MenuManager();
 
 // Helper function for debouncing
 function debounce(func, wait) {
@@ -33,9 +37,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Load settings
     await settingsUI.loadSettings();
 
-    // Initialize theme
-    initializeTheme();
-
+    // Initialize theme and menu
+    themeManager.initialize();
+    
     // Initialize all event listeners
     initializeEventListeners();
   } catch (error) {
@@ -46,7 +50,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 function initializeEventListeners() {
   // Theme toggle
   const themeToggle = document.getElementById("theme-toggle");
-  themeToggle.addEventListener("click", toggleTheme);
+  themeToggle.addEventListener("click", () => themeManager.toggle());
 
   // Search functionality
   const searchInput = document.getElementById("search-input");
@@ -123,71 +127,13 @@ function initializeEventListeners() {
 
   // Menu button
   const menuButton = document.getElementById("menu-button");
-  menuButton.addEventListener("click", toggleContextMenu);
-
-  // Close context menu when clicking outside
-  document.addEventListener("click", (e) => {
-    const contextMenu = document.getElementById("context-menu");
-    if (!contextMenu.contains(e.target) && e.target !== menuButton) {
-      contextMenu.classList.add("hidden");
-    }
-  });
+  menuButton.addEventListener("click", () => menuManager.toggleContextMenu());
 
   // Refresh tabs button
   document
     .getElementById("menu-refresh-tabs")
     .addEventListener("click", async () => {
       await tabRenderer.renderTabs();
-      toggleContextMenu();
+      menuManager.toggleContextMenu();
     });
-}
-
-// Theme related functions
-function initializeTheme() {
-  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)");
-  const theme = localStorage.getItem("theme") || "system";
-  applyTheme(theme);
-
-  // Listen for system theme changes
-  prefersDark.addEventListener("change", () => {
-    if (localStorage.getItem("theme") === "system") {
-      applyTheme("system");
-    }
-  });
-}
-
-function applyTheme(theme) {
-  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)");
-  if (theme === "system") {
-    document.documentElement.setAttribute(
-      "data-theme",
-      prefersDark.matches ? "dark" : "light"
-    );
-  } else {
-    document.documentElement.setAttribute("data-theme", theme);
-  }
-
-  // Update theme options
-  document.querySelectorAll(".theme-option").forEach((btn) => {
-    btn.classList.toggle("active", btn.id === `theme-${theme}`);
-  });
-
-  // Update theme toggle button
-  const themeToggle = document.getElementById("theme-toggle");
-  themeToggle.textContent =
-    document.documentElement.getAttribute("data-theme") === "dark"
-      ? "☀️"
-      : "🌙";
-}
-
-function toggleTheme() {
-  const currentTheme = document.documentElement.getAttribute("data-theme");
-  const newTheme = currentTheme === "dark" ? "light" : "dark";
-  localStorage.setItem("theme", newTheme);
-  applyTheme(newTheme);
-}
-
-function toggleContextMenu() {
-  const contextMenu = document.getElementById("context-menu");
-  contextMenu.classList.toggle("hidden");
 }

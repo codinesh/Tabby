@@ -53,6 +53,7 @@ body {
   width: auto;
   min-width: 600px;
   max-width: 1000px;
+  padding-bottom: 2rem;
   background-color: var(--secondary-color);
   color: var(--text-color);
   padding: 20px;
@@ -130,12 +131,11 @@ h1 {
 }
 
 .controls {
-  position: sticky;
   top: 52px;
   z-index: 10;
   background-color: var(--secondary-color);
   padding: 8px 0;
-  margin-bottom: 16px;
+  margin-bottom: 0.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -178,7 +178,6 @@ button:hover {
 
 #tabs-list {
   padding-right: 8px;
-  margin-right: -8px;
 }
 
 .tab {
@@ -190,7 +189,6 @@ button:hover {
   border-radius: 4px;
   background-color: var(--secondary-color);
   transition: background-color 0.2s;
-  overflow: hidden;
 }
 
 .tab:hover {
@@ -491,8 +489,6 @@ input[type="password"] {
 }
 
 .tabs-container {
-  padding: 8px 12px;
-  display: block !important;
 }
 
 .tab-group.collapsed .tabs-container {
@@ -740,7 +736,6 @@ input[type="password"] {
   z-index: 10;
   background-color: var(--secondary-color);
   padding: 8px 0;
-  margin-bottom: 16px;
 }
 
 .search-input {
@@ -1046,7 +1041,7 @@ input[type="password"] {
 /* Content areas */
 #main-content,
 #settings-content {
-  height: calc(100% - 100px);
+  height: "100%";
   position: relative;
   overflow: hidden;
 }
@@ -1055,5 +1050,4 @@ input[type="password"] {
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 0 4px;
 }
