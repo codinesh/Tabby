@@ -42,11 +42,22 @@ export async function displayTabs() {
       
       const header = document.createElement('div');
       header.className = 'group-header';
-      header.innerHTML = `
-        <span class="collapse-indicator">▼</span>
-        <span class="group-title">Ungrouped Tabs</span>
-        <span class="group-count">${ungroupedTabs.length} tabs</span>
-      `;
+      
+      const collapseIndicator = document.createElement('span');
+      collapseIndicator.className = 'collapse-indicator';
+      collapseIndicator.textContent = '▼';
+      
+      const groupTitle = document.createElement('span');
+      groupTitle.className = 'group-title';
+      groupTitle.textContent = 'Ungrouped Tabs';
+      
+      const groupCount = document.createElement('span');
+      groupCount.className = 'group-count';
+      groupCount.textContent = `${ungroupedTabs.length} tabs`;
+      
+      header.appendChild(collapseIndicator);
+      header.appendChild(groupTitle);
+      header.appendChild(groupCount);
       
       const tabsContainer = document.createElement('div');
       tabsContainer.className = 'tabs-container';
@@ -90,14 +101,32 @@ function createGroupElement(group, tabs) {
   header.className = 'group-header';
   if (group.color) header.classList.add(group.color);
   
-  header.innerHTML = `
-    <span class="collapse-indicator">▼</span>
-    <span class="group-title">${group.title || 'Unnamed Group'}</span>
-    <span class="group-count">${tabs.length} tabs</span>
-    <div class="group-actions">
-      <button class="group-close" title="Ungroup tabs">×</button>
-    </div>
-  `;
+  const collapseIndicator = document.createElement('span');
+  collapseIndicator.className = 'collapse-indicator';
+  collapseIndicator.textContent = '▼';
+  
+  const groupTitle = document.createElement('span');
+  groupTitle.className = 'group-title';
+  groupTitle.textContent = group.title || 'Unnamed Group';
+  
+  const groupCount = document.createElement('span');
+  groupCount.className = 'group-count';
+  groupCount.textContent = `${tabs.length} tabs`;
+  
+  const groupActions = document.createElement('div');
+  groupActions.className = 'group-actions';
+  
+  const ungroupButton = document.createElement('button');
+  ungroupButton.className = 'group-close';
+  ungroupButton.title = 'Ungroup tabs';
+  ungroupButton.textContent = '×';
+  
+  groupActions.appendChild(ungroupButton);
+  
+  header.appendChild(collapseIndicator);
+  header.appendChild(groupTitle);
+  header.appendChild(groupCount);
+  header.appendChild(groupActions);
   
   const tabsContainer = document.createElement('div');
   tabsContainer.className = 'tabs-container';
@@ -111,7 +140,6 @@ function createGroupElement(group, tabs) {
   groupElement.appendChild(tabsContainer);
   
   // Add event listener for ungroup button
-  const ungroupButton = header.querySelector('.group-close');
   ungroupButton.addEventListener('click', async (e) => {
     e.stopPropagation();
     try {
@@ -122,6 +150,19 @@ function createGroupElement(group, tabs) {
     }
   });
   
+  // Add event listener for collapse/expand
+  header.addEventListener('click', () => {
+    groupElement.classList.toggle('collapsed');
+    collapseIndicator.textContent = groupElement.classList.contains('collapsed') ? '▶' : '▼';
+    
+    // Save collapsed state
+    chrome.storage.local.get(['collapsedGroups'], (result) => {
+      const collapsedGroups = result.collapsedGroups || {};
+      collapsedGroups[group.id] = groupElement.classList.contains('collapsed');
+      chrome.storage.local.set({ collapsedGroups });
+    });
+  });
+  
   return groupElement;
 }
 
@@ -130,18 +171,39 @@ function createTabElement(tab) {
   tabElement.className = 'tab';
   tabElement.setAttribute('data-tab-id', tab.id);
   
-  const favicon = tab.favIconUrl || 'icon.png';
+  const favicon = document.createElement('img');
+  favicon.className = 'tab-icon';
+  favicon.src = tab.favIconUrl || chrome.runtime.getURL('images/default-favicon.png');
+  favicon.addEventListener('error', () => {
+    favicon.src = chrome.runtime.getURL('images/default-favicon.png');
+  });
   
-  tabElement.innerHTML = `
-    <img class="tab-icon" src="${favicon}" onerror="this.src='icon.png'">
-    <div class="tab-info">
-      <div class="tab-title">${tab.title}</div>
-      <div class="tab-url">${tab.url}</div>
-    </div>
-    <div class="tab-actions">
-      <button class="tab-close" title="Close tab">×</button>
-    </div>
-  `;
+  const tabInfo = document.createElement('div');
+  tabInfo.className = 'tab-info';
+  
+  const tabTitle = document.createElement('div');
+  tabTitle.className = 'tab-title';
+  tabTitle.textContent = tab.title;
+  
+  const tabUrl = document.createElement('div');
+  tabUrl.className = 'tab-url';
+  tabUrl.textContent = tab.url;
+  
+  const tabActions = document.createElement('div');
+  tabActions.className = 'tab-actions';
+  
+  const closeButton = document.createElement('button');
+  closeButton.className = 'tab-close';
+  closeButton.title = 'Close tab';
+  closeButton.textContent = '×';
+  
+  tabInfo.appendChild(tabTitle);
+  tabInfo.appendChild(tabUrl);
+  tabActions.appendChild(closeButton);
+  
+  tabElement.appendChild(favicon);
+  tabElement.appendChild(tabInfo);
+  tabElement.appendChild(tabActions);
   
   // Add event listener for tab click
   tabElement.addEventListener('click', (e) => {
@@ -152,7 +214,6 @@ function createTabElement(tab) {
   });
   
   // Add event listener for close button
-  const closeButton = tabElement.querySelector('.tab-close');
   closeButton.addEventListener('click', async (e) => {
     e.stopPropagation();
     try {
@@ -168,6 +229,36 @@ function createTabElement(tab) {
 
 export async function refreshTabsList() {
   await displayTabs();
+}
+
+async function getDomainCategory(domain, tabs) {
+  // First check user-configured groups
+  const settings = await chrome.storage.local.get(['customGroups']);
+  const customGroups = settings.customGroups || [];
+  
+  // Check if any tab in this group matches user-defined keywords
+  for (const group of customGroups) {
+    const keywords = group.keywords.toLowerCase().split(',').map(k => k.trim());
+    const matchingTab = tabs.find(tab => 
+      keywords.some(keyword => 
+        tab.title.toLowerCase().includes(keyword) || 
+        tab.url.toLowerCase().includes(keyword)
+      )
+    );
+    
+    if (matchingTab) {
+      return {
+        title: group.name,
+        color: group.color || 'grey'
+      };
+    }
+  }
+  
+  // If no custom group matches, use the domain name
+  return {
+    title: domain.replace(/^www\./, ''),
+    color: 'grey'
+  };
 }
 
 export async function groupTabsByDomain() {
@@ -191,7 +282,17 @@ export async function groupTabsByDomain() {
     for (const [domain, domainTabs] of domainGroups) {
       if (domainTabs.length > 1) {
         const tabIds = domainTabs.map(tab => tab.id);
-        await chrome.tabs.group({ tabIds });
+        const group = await chrome.tabGroups.group({ tabIds });
+        
+        // Get category for the group
+        const category = await getDomainCategory(domain, domainTabs);
+        
+        // Update group with title and color
+        await chrome.tabGroups.update(group, { 
+          title: category.title,
+          color: category.color,
+          collapsed: false
+        });
       }
     }
     
@@ -217,50 +318,107 @@ export async function ungroupAllTabs() {
 }
 
 export async function groupTabsByAI() {
-  const settings = await chrome.storage.local.get(['apiKey', 'aiUrl']);
-  if (!settings.apiKey) {
-    throw new Error('API key not configured');
-  }
-
   try {
-    const tabs = await chrome.tabs.query({});
-    const tabTitles = tabs.map(tab => ({ id: tab.id, title: tab.title }));
-
-    const response = await fetch(settings.aiUrl || 'https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${settings.apiKey}`
-      },
-      body: JSON.stringify({
-        model: "gpt-3.5-turbo",
-        messages: [{
-          role: "system",
-          content: "You are a helpful assistant that groups browser tabs into meaningful categories."
-        }, {
-          role: "user",
-          content: `Group these tabs into 3-5 meaningful categories. Return only JSON in this format: {"groups":[{"name":"category name","tabIds":[tab ids]}]}. Here are the tabs: ${JSON.stringify(tabTitles)}`
-        }]
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error('API request failed');
+    const settings = await chrome.storage.local.get(['apiKey', 'apiUrl', 'customGroups']);
+    if (!settings.apiKey) {
+      throw new Error('API key not configured');
     }
 
-    const data = await response.json();
-    const groups = JSON.parse(data.choices[0].message.content).groups;
+    const tabs = await chrome.tabs.query({});
+    const customGroups = settings.customGroups || [];
+    
+    // First try to match with custom groups
+    const matchedGroups = new Map();
+    const unmatchedTabs = [];
+    
+    tabs.forEach(tab => {
+      let matched = false;
+      for (const group of customGroups) {
+        const keywords = group.keywords.toLowerCase().split(',').map(k => k.trim());
+        if (keywords.some(keyword => 
+          tab.title.toLowerCase().includes(keyword) || 
+          tab.url.toLowerCase().includes(keyword)
+        )) {
+          if (!matchedGroups.has(group.name)) {
+            matchedGroups.set(group.name, {
+              tabs: [],
+              color: group.color || 'grey'
+            });
+          }
+          matchedGroups.get(group.name).tabs.push(tab);
+          matched = true;
+          break;
+        }
+      }
+      if (!matched) {
+        unmatchedTabs.push(tab);
+      }
+    });
 
-    // Create tab groups
-    for (const group of groups) {
-      if (group.tabIds.length > 0) {
-        const groupId = await chrome.tabs.group({ tabIds: group.tabIds });
-        await chrome.tabGroups.update(groupId, { title: group.name });
+    // Create groups for matched tabs
+    for (const [groupName, groupData] of matchedGroups) {
+      if (groupData.tabs.length > 1) {
+        const tabIds = groupData.tabs.map(tab => tab.id);
+        const group = await chrome.tabs.group({ tabIds });
+        await chrome.tabGroups.update(group, {
+          title: groupName,
+          color: groupData.color,
+          collapsed: false
+        });
+      }
+    }
+
+    // Use AI to categorize remaining tabs
+    if (unmatchedTabs.length > 0) {
+      const tabInfo = unmatchedTabs.map(tab => ({
+        title: tab.title,
+        url: tab.url
+      }));
+
+      const response = await fetch(settings.apiUrl || 'https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${settings.apiKey}`
+        },
+        body: JSON.stringify({
+          model: 'gpt-3.5-turbo',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are a helpful assistant that categorizes browser tabs into groups. Respond only with a JSON array where each element has a "category" and "indices" field. The category should be a short, descriptive name, and indices should be an array of tab indices that belong to that category.'
+            },
+            {
+              role: 'user',
+              content: `Please categorize these tabs:\n${JSON.stringify(tabInfo, null, 2)}`
+            }
+          ]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get AI categories');
+      }
+
+      const data = await response.json();
+      const categories = JSON.parse(data.choices[0].message.content);
+
+      // Create AI-suggested groups
+      for (const category of categories) {
+        const tabIds = category.indices.map(i => unmatchedTabs[i].id);
+        if (tabIds.length > 1) {
+          const group = await chrome.tabs.group({ tabIds });
+          await chrome.tabGroups.update(group, {
+            title: category.category,
+            color: 'blue',
+            collapsed: false
+          });
+        }
       }
     }
 
     await refreshTabsList();
   } catch (error) {
-    throw new Error('Failed to group tabs using AI: ' + error.message);
+    showStatus('Error grouping tabs by AI: ' + error.message, 'error');
   }
 }

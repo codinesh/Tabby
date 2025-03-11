@@ -60,12 +60,12 @@ body {
 /* Header with inline status */
 .header {
   height: 60px;
-  margin-bottom: 20px;
   padding-bottom: 16px;
   border-bottom: 1px solid var(--border-color);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin: 0 0 20px 0;
 }
 
 .header-actions {
@@ -129,7 +129,7 @@ h1 {
 
 .controls {
   position: sticky;
-  top: 52px; /* Height of search container */
+  top: 52px;
   z-index: 10;
   background-color: var(--secondary-color);
   padding: 8px 0;
@@ -173,12 +173,8 @@ button:hover {
 }
 
 #tabs-list {
-  height: calc(100% - 120px); /* Account for search and controls */
-  overflow-y: auto;
-  overflow-x: hidden;
   padding-right: 8px;
   margin-right: -8px;
-  display: block !important;
 }
 
 .tab {
@@ -1014,8 +1010,14 @@ input[type="password"] {
 /* Content areas */
 #main-content,
 #settings-content {
-  height: calc(100% - 100px); /* Account for header + margins */
-  padding: 0 4px;
+  height: calc(100% - 100px);
   position: relative;
+  overflow: hidden;
+}
+
+.content-scroll {
+  height: 100%;
   overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 4px;
 }
