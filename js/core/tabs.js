@@ -293,7 +293,7 @@ export class TabManager {
       throw new Error("Failed to update tab group collapsed state");
     }
   }
-  
+
   async syncSavedCollapsedStates() {
     try {
       const collapsedStates = await this.settingsManager.getCollapsedStates();
@@ -311,6 +311,56 @@ export class TabManager {
       await Promise.all(updatePromises);
     } catch (error) {
       console.error("Error syncing collapsed states:", error);
+    }
+  }
+
+  async collapseAllTabGroups() {
+    try {
+      // Get all tab groups
+      const tabGroups = await this.getAllTabGroups();
+      if (tabGroups.length === 0) return;
+
+      // Create a batch of promises to update each group
+      const updatePromises = tabGroups.map(async group => {
+        // Update the browser tab group
+        await chrome.tabGroups.update(group.id, { collapsed: true });
+        
+        // Update our saved state
+        await this.settingsManager.setCollapsedState(group.id.toString(), true);
+      });
+      
+      // Also set ungrouped tabs as collapsed in our saved state
+      await this.settingsManager.setCollapsedState("ungrouped", true);
+      
+      await Promise.all(updatePromises);
+    } catch (error) {
+      console.error("Error collapsing all tab groups:", error);
+      throw new Error("Failed to collapse all tab groups");
+    }
+  }
+  
+  async expandAllTabGroups() {
+    try {
+      // Get all tab groups
+      const tabGroups = await this.getAllTabGroups();
+      if (tabGroups.length === 0) return;
+      
+      // Create a batch of promises to update each group
+      const updatePromises = tabGroups.map(async group => {
+        // Update the browser tab group
+        await chrome.tabGroups.update(group.id, { collapsed: false });
+        
+        // Update our saved state
+        await this.settingsManager.setCollapsedState(group.id.toString(), false);
+      });
+      
+      // Also set ungrouped tabs as expanded in our saved state
+      await this.settingsManager.setCollapsedState("ungrouped", false);
+      
+      await Promise.all(updatePromises);
+    } catch (error) {
+      console.error("Error expanding all tab groups:", error);
+      throw new Error("Failed to expand all tab groups");
     }
   }
 }

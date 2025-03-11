@@ -119,6 +119,38 @@ function initializeEventListeners() {
       }
     });
 
+  // Collapse all tab groups
+  document.querySelectorAll("#collapse-tabs").forEach(button => {
+    button.addEventListener("click", async () => {
+      try {
+        statusManager.showLoading("Collapsing all tab groups...");
+        menuManager.closeContextMenu();
+        await tabManager.collapseAllTabGroups();
+        await tabRenderer.renderTabs();
+        statusManager.showStatus("All tab groups collapsed");
+      } catch (error) {
+        console.error("Error collapsing tab groups:", error);
+        statusManager.showStatus("Error collapsing tab groups: " + error.message, true);
+      }
+    });
+  });
+
+  // Expand all tab groups
+  document.querySelectorAll("#expand-tabs").forEach(button => {
+    button.addEventListener("click", async () => {
+      try {
+        statusManager.showLoading("Expanding all tab groups...");
+        menuManager.closeContextMenu();
+        await tabManager.expandAllTabGroups();
+        await tabRenderer.renderTabs();
+        statusManager.showStatus("All tab groups expanded");
+      } catch (error) {
+        console.error("Error expanding tab groups:", error);
+        statusManager.showStatus("Error expanding tab groups: " + error.message, true);
+      }
+    });
+  });
+
   // Settings related buttons
   document.getElementById("menu-settings").addEventListener("click", () => {
     menuManager.closeContextMenu();

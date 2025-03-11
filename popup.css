@@ -49,10 +49,8 @@ body {
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
-  width: auto;
   height: 120vh;
-  min-width: 600px;
-  max-width: 1000px;
+  width: 80vmax;
   background-color: var(--secondary-color);
   color: var(--text-color);
   padding: 20px;
