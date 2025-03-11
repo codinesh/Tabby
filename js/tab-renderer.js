@@ -7,9 +7,9 @@ export function renderTab(tab, container = null) {
   // Create favicon container
   const favicon = document.createElement("img");
   favicon.className = "tab-favicon";
-  favicon.src = tab.favIconUrl || "default-favicon.png";
+  favicon.src = tab.favIconUrl || "./images/favicon.png";
   favicon.onerror = () => {
-    favicon.src = "default-favicon.png";
+    favicon.src = "./images/favicon.png";
   };
 
   // Create title element

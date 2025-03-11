@@ -1,5 +1,5 @@
-import { showLoading, showStatus } from './status.js';
-import { hideAiSettings } from './ui.js';
+import { showLoading, showStatus } from "./status.js";
+import { hideAiSettings, showAiSettings } from "./ui.js";
 
 // Store settings in Chrome storage
 export function saveSettings() {

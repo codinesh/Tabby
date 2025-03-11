@@ -111,8 +111,7 @@ h1 {
 
 .group-controls {
   display: flex;
-  justify-content: space-between;
-  flex: 1;
+  gap: 8px;
 }
 
 button {
@@ -312,6 +311,42 @@ input[type="password"] {
   margin-left: 5px;
 }
 
+.menu-container {
+  position: relative;
+  display: inline-block;
+}
+
+.context-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  min-width: 150px;
+  margin-top: 4px;
+}
+
+.context-menu ul {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+}
+
+.context-menu li {
+  padding: 8px 16px;
+  cursor: pointer;
+  color: var(--text-primary);
+  transition: background-color 0.2s;
+  font-size: 14px;
+}
+
+.context-menu li:hover {
+  background-color: var(--hover-bg);
+}
+
 .menu-button {
   background: none;
   border: none;
@@ -320,39 +355,18 @@ input[type="password"] {
   padding: 4px 8px;
   cursor: pointer;
   border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
 }
 
 .menu-button:hover {
   background-color: var(--hover-bg);
 }
 
-/* Context menu styling */
-.context-menu {
-  position: absolute;
-  right: 0;
-  top: 100%;
-  background-color: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-  min-width: 150px;
-}
-
-.context-menu ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.context-menu li {
-  padding: 8px 16px;
-  cursor: pointer;
-  color: var(--text-primary);
-  transition: background-color 0.2s;
-}
-
-.context-menu li:hover {
+.menu-button:focus {
+  outline: none;
   background-color: var(--hover-bg);
 }
 
@@ -362,6 +376,7 @@ input[type="password"] {
   border: 1px solid var(--border-color);
   border-radius: 4px;
   overflow: hidden;
+  transition: all 0.3s ease;
 }
 
 .group-header {
@@ -372,6 +387,8 @@ input[type="password"] {
   cursor: pointer;
   background-color: var(--bg-secondary);
   border-bottom: 1px solid var(--border-color);
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .title-container {
@@ -381,18 +398,26 @@ input[type="password"] {
 }
 
 .collapse-indicator {
-  margin-right: 8px;
-  transition: transform 0.3s;
   display: inline-block;
+  transition: transform 0.3s ease;
+  width: 16px;
+  height: 16px;
+  text-align: center;
+  line-height: 16px;
 }
 
 .tab-group.collapsed .collapse-indicator {
   transform: rotate(-90deg);
 }
 
-.tab-group.collapsed {
-  height: var(--group-collapsed-height);
+.tabs-container {
+  transition: max-height 0.3s ease;
+  max-height: 1000px;
   overflow: hidden;
+}
+
+.tab-group.collapsed .tabs-container {
+  max-height: 0;
 }
 
 .tab {

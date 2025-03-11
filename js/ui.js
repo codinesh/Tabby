@@ -20,14 +20,32 @@ export function toggleGroupingButtons(activeBtn) {
   activeBtn.classList.add("active");
 }
 
+// Context menu functionality
 export function toggleContextMenu() {
   const contextMenu = document.getElementById("context-menu");
-  contextMenu.classList.toggle("hidden");
+  
+  if (contextMenu.classList.contains("hidden")) {
+    contextMenu.classList.remove("hidden");
+    
+    // Add a one-time click handler to close the menu
+    setTimeout(() => {
+      document.addEventListener("click", (e) => {
+        const menuButton = document.getElementById("menu-button");
+        if (!contextMenu.contains(e.target) && e.target !== menuButton) {
+          contextMenu.classList.add("hidden");
+        }
+      }, { once: true });
+    }, 0);
+  } else {
+    contextMenu.classList.add("hidden");
+  }
 }
 
 export function closeContextMenuOnClickOutside(event) {
   const contextMenu = document.getElementById("context-menu");
-  if (!contextMenu.contains(event.target) && !event.target.matches("#menu-button")) {
+  const menuButton = document.getElementById("menu-button");
+  
+  if (!contextMenu.contains(event.target) && event.target !== menuButton) {
     contextMenu.classList.add("hidden");
   }
 }
@@ -93,23 +111,42 @@ function debounce(func, wait) {
 }
 
 // Group collapse functionality
-export function initializeGroupCollapse() {
-  document.addEventListener("click", (e) => {
-    if (e.target.closest(".group-header")) {
-      const group = e.target.closest(".tab-group");
-      toggleGroupCollapse(group);
-    }
-  });
+export function toggleGroupCollapse(group) {
+  if (!group) return;
+  
+  const wasCollapsed = group.classList.contains("collapsed");
+  const tabsContainer = group.querySelector(".tabs-container");
+  const indicator = group.querySelector(".collapse-indicator");
+  
+  // Update the collapse indicator
+  if (indicator) {
+    indicator.textContent = wasCollapsed ? "▼" : "▶";
+  }
+  
+  // Toggle the collapsed class
+  group.classList.toggle("collapsed");
+  
+  // Store collapsed state
+  const groupId = group.getAttribute("data-group-id");
+  if (groupId) {
+    chrome.storage.local.get(["collapsedGroups"], (result) => {
+      const collapsedGroups = result.collapsedGroups || {};
+      collapsedGroups[groupId] = !wasCollapsed;
+      chrome.storage.local.set({ collapsedGroups });
+    });
+  }
 }
 
-export function toggleGroupCollapse(group) {
-  const isCollapsed = group.classList.toggle("collapsed");
-  const groupId = group.getAttribute("data-group-id");
-
-  // Store collapsed state
-  chrome.storage.local.get(["collapsedGroups"], (result) => {
-    const collapsedGroups = result.collapsedGroups || {};
-    collapsedGroups[groupId] = isCollapsed;
-    chrome.storage.local.set({ collapsedGroups });
+// Initialize group collapse
+export function initializeGroupCollapse() {
+  document.addEventListener("click", (e) => {
+    const header = e.target.closest(".group-header");
+    if (header && !e.target.closest(".group-close")) {
+      e.stopPropagation();
+      const group = header.closest(".tab-group");
+      if (group) {
+        toggleGroupCollapse(group);
+      }
+    }
   });
 }

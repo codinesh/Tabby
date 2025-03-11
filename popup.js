@@ -15,9 +15,9 @@ import {
 } from './js/ui.js';
 
 // Initialize the extension
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   // Display all tabs
-  displayTabs();
+  await displayTabs();
 
   // Load saved settings
   loadSettings();
@@ -31,32 +31,35 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initialize group collapse
   initializeGroupCollapse();
 
-  // Set up menu button
-  document.getElementById("menu-button").addEventListener("click", (event) => {
-    toggleContextMenu();
+  // Set up menu button with proper event handling
+  const menuButton = document.getElementById("menu-button");
+  menuButton.addEventListener("click", (event) => {
     event.stopPropagation();
+    toggleContextMenu();
   });
 
   // Close context menu when clicking outside
   document.addEventListener("click", closeContextMenuOnClickOutside);
 
-  // Set up menu items
-  document.getElementById("menu-settings").addEventListener("click", () => {
+  // Set up menu items with proper event handling
+  document.getElementById("menu-settings").addEventListener("click", (event) => {
+    event.stopPropagation();
     toggleSettings();
     toggleContextMenu();
   });
 
   // Add event listener for refresh tabs menu item
-  document.getElementById("menu-refresh-tabs").addEventListener("click", () => {
+  document.getElementById("menu-refresh-tabs").addEventListener("click", (event) => {
+    event.stopPropagation();
     refreshTabsList();
     toggleContextMenu();
   });
 
   // Add event listener for the group tabs button
   const groupTabsBtn = document.getElementById("group-tabs");
-  groupTabsBtn.addEventListener("click", () => {
+  groupTabsBtn.addEventListener("click", async () => {
     toggleGroupingButtons(groupTabsBtn);
-    groupTabsByDomain();
+    await groupTabsByDomain();
     hideAiSettings();
   });
 
@@ -68,8 +71,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Add event listener for ungroup all button
-  document.getElementById("ungroup-tabs").addEventListener("click", () => {
-    ungroupAllTabs();
+  document.getElementById("ungroup-tabs").addEventListener("click", async (event) => {
+    event.stopPropagation();
+    await ungroupAllTabs();
     toggleContextMenu();
   });
 
