@@ -5,11 +5,10 @@ export function showStatus(message, type = "info", autoHide = true) {
   const loadingSpinner = document.getElementById("loading-spinner");
   
   // Remove all status classes
-  statusContainer.classList.remove("error", "success", "warning", "info");
+  statusContainer.classList.remove("error", "success", "warning", "info", "hidden");
   
   // Add the appropriate status class
   statusContainer.classList.add(type);
-  statusContainer.classList.remove("hidden");
   
   // Hide loading spinner for status messages
   loadingSpinner.style.display = "none";
@@ -31,9 +30,8 @@ export function showLoading(message = "Loading...") {
   const loadingSpinner = document.getElementById("loading-spinner");
   
   // Remove all status classes
-  statusContainer.classList.remove("error", "success", "warning");
+  statusContainer.classList.remove("error", "success", "warning", "info", "hidden");
   statusContainer.classList.add("info");
-  statusContainer.classList.remove("hidden");
   
   // Show loading spinner
   loadingSpinner.style.display = "inline-block";

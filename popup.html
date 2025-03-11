@@ -14,9 +14,26 @@
           <div id="status-message"></div>
           <div id="loading-spinner"></div>
         </div>
-        <button class="theme-toggle" id="theme-toggle" title="Toggle dark mode">
-          🌙
+        <button
+          class="menu-button theme-toggle"
+          id="theme-toggle"
+          title="Toggle dark mode"
+        >
+          <span class="menu-icon">🌙</span>
         </button>
+        <div class="menu-container">
+          <button id="menu-button" class="menu-button" aria-label="Menu">
+            <span class="menu-icon">⚙️</span>
+          </button>
+          <div id="context-menu" class="context-menu hidden">
+            <ul>
+              <li id="menu-refresh-tabs">Refresh Tabs</li>
+              <li id="menu-settings">Settings</li>
+              <li id="ungroup-tabs">Ungroup All</li>
+              <li id="backup-tabs">Backup Tabs</li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -35,19 +52,10 @@
 
         <div class="controls">
           <div class="group-controls">
-            <button id="group-by-ai">Group by AI</button>
-            <button id="group-tabs" class="active">Group by Domain</button>
-          </div>
-          <div class="menu-container">
-            <button id="menu-button" class="menu-button" aria-label="Menu">⋮</button>
-            <div id="context-menu" class="context-menu hidden">
-              <ul>
-                <li id="menu-refresh-tabs">Refresh Tabs</li>
-                <li id="menu-settings">Settings</li>
-                <li id="ungroup-tabs">Ungroup All</li>
-                <li id="backup-tabs">Backup Tabs</li>
-              </ul>
-            </div>
+            <button id="group-by-ai" class="primary-button">Group by AI</button>
+            <button id="group-by-domain" class="secondary-button">
+              Group by Domain
+            </button>
           </div>
         </div>
 
@@ -68,7 +76,7 @@
         <div class="settings-header">
           <h2>Settings</h2>
         </div>
-        
+
         <div class="settings-body">
           <div class="settings-tabs">
             <button class="settings-tab active" data-tab="groups-settings">
@@ -151,7 +159,9 @@
             class="group-name"
             placeholder="Group name (e.g., Workflow)"
           />
-          <button class="color-picker-trigger" title="Choose group color">🎨</button>
+          <button class="color-picker-trigger" title="Choose group color">
+            🎨
+          </button>
           <button class="remove-group small-button">✕</button>
         </div>
         <div class="form-row keywords-container">

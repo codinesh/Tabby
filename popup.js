@@ -1,6 +1,12 @@
-import { showStatus, showLoading, hideLoading } from './js/status.js';
-import { saveSettings, loadSettings, addCustomGroup } from './js/settings.js';
-import { displayTabs, refreshTabsList, groupTabsByDomain, ungroupAllTabs, groupTabsByAI } from './js/tabs.js';
+import { showStatus, showLoading, hideLoading } from "./js/status.js";
+import { saveSettings, loadSettings, addCustomGroup } from "./js/settings.js";
+import {
+  displayTabs,
+  refreshTabsList,
+  groupTabsByDomain,
+  ungroupAllTabs,
+  groupTabsByAI,
+} from "./js/tabs.js";
 
 // Initialize the extension
 document.addEventListener("DOMContentLoaded", async () => {
@@ -18,27 +24,33 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Initialize theme
   const prefersDark = window.matchMedia("(prefers-color-scheme: dark)");
   const theme = localStorage.getItem("theme") || "system";
-  
+
   function applyTheme(theme) {
     if (theme === "system") {
-      document.documentElement.setAttribute("data-theme", prefersDark.matches ? "dark" : "light");
+      document.documentElement.setAttribute(
+        "data-theme",
+        prefersDark.matches ? "dark" : "light"
+      );
     } else {
       document.documentElement.setAttribute("data-theme", theme);
     }
-    
+
     // Update theme options
-    document.querySelectorAll(".theme-option").forEach(btn => {
+    document.querySelectorAll(".theme-option").forEach((btn) => {
       btn.classList.toggle("active", btn.id === `theme-${theme}`);
     });
-    
+
     // Update theme toggle button
     const themeToggle = document.getElementById("theme-toggle");
-    themeToggle.textContent = document.documentElement.getAttribute("data-theme") === "dark" ? "☀️" : "🌙";
+    themeToggle.textContent =
+      document.documentElement.getAttribute("data-theme") === "dark"
+        ? "☀️"
+        : "🌙";
   }
-  
+
   // Initialize theme
   applyTheme(theme);
-  
+
   // Theme toggle button click handler
   document.getElementById("theme-toggle").addEventListener("click", () => {
     const currentTheme = document.documentElement.getAttribute("data-theme");
@@ -46,16 +58,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     localStorage.setItem("theme", newTheme);
     applyTheme(newTheme);
   });
-  
+
   // Theme option buttons click handlers
-  document.querySelectorAll(".theme-option").forEach(btn => {
+  document.querySelectorAll(".theme-option").forEach((btn) => {
     btn.addEventListener("click", () => {
       const theme = btn.id.replace("theme-", "");
       localStorage.setItem("theme", theme);
       applyTheme(theme);
     });
   });
-  
+
   // Listen for system theme changes
   prefersDark.addEventListener("change", (e) => {
     if (localStorage.getItem("theme") === "system") {
@@ -65,21 +77,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Initialize search
   const searchInput = document.getElementById("search-input");
-  searchInput.addEventListener("input", debounce((e) => {
-    const query = e.target.value.toLowerCase();
-    const tabs = document.querySelectorAll(".tab");
-    
-    tabs.forEach((tab) => {
-      const title = tab.querySelector(".tab-title").textContent.toLowerCase();
-      const url = tab.querySelector(".tab-url").textContent.toLowerCase();
-      
-      if (title.includes(query) || url.includes(query)) {
-        tab.style.display = "";
-      } else {
-        tab.style.display = "none";
-      }
-    });
-  }, 300));
+  searchInput.addEventListener(
+    "input",
+    debounce((e) => {
+      const query = e.target.value.toLowerCase();
+      const tabs = document.querySelectorAll(".tab");
+
+      tabs.forEach((tab) => {
+        const title = tab.querySelector(".tab-title").textContent.toLowerCase();
+        const url = tab.querySelector(".tab-url").textContent.toLowerCase();
+
+        if (title.includes(query) || url.includes(query)) {
+          tab.style.display = "";
+        } else {
+          tab.style.display = "none";
+        }
+      });
+    }, 300)
+  );
 
   // Initialize group collapse
   document.addEventListener("click", (e) => {
@@ -97,6 +112,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const menuButton = document.getElementById("menu-button");
   menuButton.addEventListener("click", (event) => {
     event.stopPropagation();
+    showSettings();
     toggleContextMenu();
   });
 
@@ -104,7 +120,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.addEventListener("click", (e) => {
     const contextMenu = document.getElementById("context-menu");
     const menuButton = document.getElementById("menu-button");
-    
+
     if (!contextMenu.contains(e.target) && e.target !== menuButton) {
       contextMenu.classList.add("hidden");
     }
@@ -123,11 +139,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   // Group tabs button
-  const groupTabsBtn = document.getElementById("group-tabs");
+  const groupTabsBtn = document.getElementById("group-by-domain");
   groupTabsBtn.addEventListener("click", async () => {
     try {
-      groupTabsBtn.classList.add("active");
-      document.getElementById("group-by-ai").classList.remove("active");
       showLoading("Grouping tabs by domain...");
       await groupTabsByDomain();
     } finally {
@@ -139,14 +153,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   const groupByAiBtn = document.getElementById("group-by-ai");
   groupByAiBtn.addEventListener("click", async () => {
     try {
-      const settings = await chrome.storage.local.get(['apiKey']);
+      const settings = await chrome.storage.local.get(["apiKey"]);
       if (!settings.apiKey) {
         showStatus("Please set up your API key in settings first", "warning");
         return;
       }
 
-      groupByAiBtn.classList.add("active");
-      document.getElementById("group-tabs").classList.remove("active");
       showLoading("Grouping tabs by AI...");
       await groupTabsByAI();
     } catch (error) {
@@ -157,20 +169,22 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   // Ungroup all button
-  document.getElementById("ungroup-tabs").addEventListener("click", async () => {
-    await ungroupAllTabs();
-    toggleContextMenu();
-  });
+  document
+    .getElementById("ungroup-tabs")
+    .addEventListener("click", async () => {
+      await ungroupAllTabs();
+      toggleContextMenu();
+    });
 
   // Settings tabs
   const settingsTabs = document.querySelectorAll(".settings-tab");
   const settingsContents = document.querySelectorAll(".settings-content");
 
-  settingsTabs.forEach(tab => {
+  settingsTabs.forEach((tab) => {
     tab.addEventListener("click", () => {
-      settingsTabs.forEach(t => t.classList.remove("active"));
-      settingsContents.forEach(c => c.classList.add("hidden"));
-      
+      settingsTabs.forEach((t) => t.classList.remove("active"));
+      settingsContents.forEach((c) => c.classList.add("hidden"));
+
       tab.classList.add("active");
       const contentId = tab.getAttribute("data-tab");
       document.getElementById(contentId).classList.remove("hidden");
@@ -178,24 +192,30 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   // Save settings button
-  document.getElementById("save-settings").addEventListener("click", async () => {
-    try {
-      showLoading("Saving settings...");
-      await saveSettings();
-      hideSettings();
-      showStatus("Settings saved successfully", "success");
-    } catch (error) {
-      showStatus("Failed to save settings", "error");
-    } finally {
-      hideLoading();
-    }
-  });
+  document
+    .getElementById("save-settings")
+    .addEventListener("click", async () => {
+      try {
+        showLoading("Saving settings...");
+        await saveSettings();
+        hideSettings();
+        showStatus("Settings saved successfully", "success");
+      } catch (error) {
+        showStatus("Failed to save settings", "error");
+      } finally {
+        hideLoading();
+      }
+    });
 
   // Cancel settings button
-  document.getElementById("cancel-settings").addEventListener("click", hideSettings);
+  document
+    .getElementById("cancel-settings")
+    .addEventListener("click", hideSettings);
 
   // Add group button
-  document.getElementById("add-group").addEventListener("click", addCustomGroup);
+  document
+    .getElementById("add-group")
+    .addEventListener("click", addCustomGroup);
 });
 
 // Helper functions
@@ -219,11 +239,15 @@ function toggleContextMenu() {
 function showSettings(tab = "groups-settings") {
   document.getElementById("main-content").classList.add("hidden");
   document.getElementById("settings-content").classList.remove("hidden");
-  
+
   // Activate the specified tab
-  document.querySelectorAll(".settings-tab").forEach(t => t.classList.remove("active"));
-  document.querySelectorAll(".settings-content").forEach(c => c.classList.add("hidden"));
-  
+  document
+    .querySelectorAll(".settings-tab")
+    .forEach((t) => t.classList.remove("active"));
+  document
+    .querySelectorAll(".settings-content")
+    .forEach((c) => c.classList.add("hidden"));
+
   document.querySelector(`[data-tab="${tab}"]`).classList.add("active");
   document.getElementById(tab).classList.remove("hidden");
 }
@@ -235,16 +259,16 @@ function hideSettings() {
 
 function toggleGroupCollapse(group) {
   if (!group) return;
-  
+
   const wasCollapsed = group.classList.contains("collapsed");
   const indicator = group.querySelector(".collapse-indicator");
-  
+
   if (indicator) {
     indicator.textContent = wasCollapsed ? "▼" : "▶";
   }
-  
+
   group.classList.toggle("collapsed");
-  
+
   const groupId = group.getAttribute("data-group-id");
   if (groupId) {
     chrome.storage.local.get(["collapsedGroups"], (result) => {

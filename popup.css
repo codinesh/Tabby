@@ -39,7 +39,8 @@
 }
 
 /* Base styles */
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   height: 600px;
@@ -47,7 +48,8 @@ html, body {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
   width: auto;
   min-width: 600px;
   max-width: 1000px;
@@ -70,6 +72,7 @@ body {
 
 .header-actions {
   display: flex;
+  gap: 0.3rem;
   align-items: center;
   justify-content: space-between;
   position: relative;
@@ -145,18 +148,20 @@ h1 {
 }
 
 button {
-  background-color: #4285f4;
-  color: white;
-  border: none;
-  padding: 8px 15px;
-  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  padding: 4px 8px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  border-radius: 4px;
 }
 
-button.active {
-  background-color: #3367d6;
-  font-weight: bold;
+button.primary-button {
+  background-color: var(--primary-color);
+  color: var(--text-primary);
+}
+
+button.secondary-button {
+  color: var(--text-secondary);
+  background-color: transparent;
 }
 
 button:hover {
@@ -561,14 +566,30 @@ input[type="password"] {
 }
 
 /* Group colors */
-.group-header.grey { background-color: #9aa0a6; }
-.group-header.blue { background-color: #8ab4f8; }
-.group-header.red { background-color: #f28b82; }
-.group-header.yellow { background-color: #fdd663; }
-.group-header.green { background-color: #81c995; }
-.group-header.pink { background-color: #ff8bcb; }
-.group-header.purple { background-color: #d7aefb; }
-.group-header.cyan { background-color: #78d9ec; }
+.group-header.grey {
+  background-color: #9aa0a6;
+}
+.group-header.blue {
+  background-color: #8ab4f8;
+}
+.group-header.red {
+  background-color: #f28b82;
+}
+.group-header.yellow {
+  background-color: #fdd663;
+}
+.group-header.green {
+  background-color: #81c995;
+}
+.group-header.pink {
+  background-color: #ff8bcb;
+}
+.group-header.purple {
+  background-color: #d7aefb;
+}
+.group-header.cyan {
+  background-color: #78d9ec;
+}
 
 /* Recent groups section */
 .recent-groups {
@@ -880,14 +901,30 @@ input[type="password"] {
   border-color: var(--primary-color);
 }
 
-.color-option.grey { background-color: #9e9e9e; }
-.color-option.blue { background-color: #2196f3; }
-.color-option.red { background-color: #f44336; }
-.color-option.yellow { background-color: #ffeb3b; }
-.color-option.green { background-color: #4caf50; }
-.color-option.pink { background-color: #e91e63; }
-.color-option.purple { background-color: #9c27b0; }
-.color-option.cyan { background-color: #00bcd4; }
+.color-option.grey {
+  background-color: #9e9e9e;
+}
+.color-option.blue {
+  background-color: #2196f3;
+}
+.color-option.red {
+  background-color: #f44336;
+}
+.color-option.yellow {
+  background-color: #ffeb3b;
+}
+.color-option.green {
+  background-color: #4caf50;
+}
+.color-option.pink {
+  background-color: #e91e63;
+}
+.color-option.purple {
+  background-color: #9c27b0;
+}
+.color-option.cyan {
+  background-color: #00bcd4;
+}
 
 .settings-actions {
   display: flex;
