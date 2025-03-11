@@ -275,4 +275,42 @@ export class TabManager {
       throw new Error("Failed to close tab group");
     }
   }
+
+  async setTabGroupCollapsed(groupId, isCollapsed) {
+    try {
+      if (groupId === "ungrouped" || groupId === -1) {
+        return; // Skip for ungrouped tabs which don't have a browser tab group
+      }
+      
+      await chrome.tabGroups.update(parseInt(groupId), {
+        collapsed: isCollapsed
+      });
+      
+      // Also update our saved state
+      await this.settingsManager.setCollapsedState(groupId, isCollapsed);
+    } catch (error) {
+      console.error("Error updating tab group collapsed state:", error);
+      throw new Error("Failed to update tab group collapsed state");
+    }
+  }
+  
+  async syncSavedCollapsedStates() {
+    try {
+      const collapsedStates = await this.settingsManager.getCollapsedStates();
+      const tabGroups = await this.getAllTabGroups();
+      
+      const updatePromises = tabGroups.map(async group => {
+        const groupId = group.id.toString();
+        if (groupId in collapsedStates) {
+          await chrome.tabGroups.update(group.id, {
+            collapsed: collapsedStates[groupId]
+          });
+        }
+      });
+      
+      await Promise.all(updatePromises);
+    } catch (error) {
+      console.error("Error syncing collapsed states:", error);
+    }
+  }
 }

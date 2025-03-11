@@ -108,12 +108,26 @@ export class TabRenderer {
       if (e.target.matches(".group-close")) return;
 
       const wasCollapsed = groupElement.classList.contains("collapsed");
+      const newCollapsedState = !wasCollapsed;
+      
+      // Update UI
       groupElement.classList.toggle("collapsed");
-      collapseIndicator.textContent = wasCollapsed ? "▼" : "▶";
-      collapseIndicator.setAttribute("aria-label", wasCollapsed ? "Collapse group" : "Expand group");
+      collapseIndicator.textContent = newCollapsedState ? "▶" : "▼";
+      collapseIndicator.setAttribute("aria-label", newCollapsedState ? "Expand group" : "Collapse group");
 
-      if (group.id) {
-        await this.settingsManager.setCollapsedState(group.id, !wasCollapsed);
+      // Update browser tab group and storage
+      if (group.id && group.id !== "ungrouped") {
+        try {
+          await this.tabManager.setTabGroupCollapsed(group.id, newCollapsedState);
+        } catch (error) {
+          console.error("Error updating tab group collapsed state:", error);
+          // Revert UI if browser update fails
+          groupElement.classList.toggle("collapsed");
+          collapseIndicator.textContent = wasCollapsed ? "▶" : "▼";
+        }
+      } else if (group.id === "ungrouped") {
+        // Just save the state for ungrouped tabs
+        await this.settingsManager.setCollapsedState(group.id, newCollapsedState);
       }
     });
 

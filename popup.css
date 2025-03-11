@@ -137,11 +137,8 @@ h1 {
 
 /* Controls */
 .controls {
-  top: 52px;
-  z-index: 10;
   background-color: var(--secondary-color);
   padding: 8px 0;
-  margin-bottom: 0.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -350,7 +347,6 @@ button:hover {
 /* Search */
 .search-container {
   position: relative;
-  margin-bottom: 1rem;
 }
 
 .search-input {

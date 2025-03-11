@@ -34,6 +34,10 @@ function debounce(func, wait) {
 document.addEventListener("DOMContentLoaded", async () => {
   try {
     statusManager.showLoading("Loading tabs...");
+    
+    // Sync saved tab group collapsed states with browser
+    await tabManager.syncSavedCollapsedStates();
+    
     // Load and display tabs
     await tabRenderer.renderTabs();
 
