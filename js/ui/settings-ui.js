@@ -2,48 +2,48 @@
 export class SettingsUI {
   constructor(settingsManager) {
     this.settingsManager = settingsManager;
-    this.settingsContent = document.getElementById('settings-content');
-    this.mainContent = document.getElementById('main-content');
+    this.settingsContent = document.getElementById("settings-content");
+    this.mainContent = document.getElementById("main-content");
   }
 
   show() {
-    this.mainContent.classList.add('hidden');
-    this.settingsContent.classList.remove('hidden');
+    this.mainContent.classList.add("hidden");
+    this.settingsContent.classList.remove("hidden");
   }
 
   hide() {
-    this.mainContent.classList.add('hidden');
-    this.settingsContent.classList.remove('hidden');
+    this.mainContent.classList.remove("hidden");
+    this.settingsContent.classList.add("hidden");
   }
 
   createCustomGroupElement() {
-    const template = document.getElementById('custom-group-template');
+    const template = document.getElementById("custom-group-template");
     const clone = document.importNode(template.content, true);
-    const groupElement = clone.querySelector('.custom-group');
+    const groupElement = clone.querySelector(".custom-group");
 
-    const removeButton = clone.querySelector('.remove-group');
-    removeButton.addEventListener('click', () => groupElement.remove());
+    const removeButton = clone.querySelector(".remove-group");
+    removeButton.addEventListener("click", () => groupElement.remove());
 
     return groupElement;
   }
 
   getCustomGroupsFromUI() {
     const groups = [];
-    const groupElements = document.querySelectorAll('.custom-group');
+    const groupElements = document.querySelectorAll(".custom-group");
 
-    groupElements.forEach(element => {
-      const nameInput = element.querySelector('.group-name');
-      const keywordsInput = element.querySelector('.group-keywords');
+    groupElements.forEach((element) => {
+      const nameInput = element.querySelector(".group-name");
+      const keywordsInput = element.querySelector(".group-keywords");
 
       if (nameInput.value.trim()) {
         const keywords = keywordsInput.value
-          .split(',')
-          .map(k => k.trim().toLowerCase())
-          .filter(k => k !== '');
+          .split(",")
+          .map((k) => k.trim().toLowerCase())
+          .filter((k) => k !== "");
 
         groups.push({
           name: nameInput.value.trim(),
-          keywords
+          keywords,
         });
       }
     });
@@ -52,16 +52,16 @@ export class SettingsUI {
   }
 
   async loadCustomGroupsToUI(groups) {
-    const container = document.getElementById('custom-groups-container');
-    container.innerHTML = '';
+    const container = document.getElementById("custom-groups-container");
+    container.innerHTML = "";
 
-    groups.forEach(group => {
+    groups.forEach((group) => {
       const element = this.createCustomGroupElement();
-      const nameInput = element.querySelector('.group-name');
-      const keywordsInput = element.querySelector('.group-keywords');
+      const nameInput = element.querySelector(".group-name");
+      const keywordsInput = element.querySelector(".group-keywords");
 
       nameInput.value = group.name;
-      keywordsInput.value = group.keywords.join(', ');
+      keywordsInput.value = group.keywords.join(", ");
       container.appendChild(element);
     });
 
@@ -72,38 +72,38 @@ export class SettingsUI {
   }
 
   async saveSettings() {
-    const aiUrl = document.getElementById('ai-url').value;
-    const apiKey = document.getElementById('api-key').value;
+    const aiUrl = document.getElementById("ai-url").value;
+    const apiKey = document.getElementById("api-key").value;
     const customGroups = this.getCustomGroupsFromUI();
 
     await this.settingsManager.saveSettings({
       aiUrl,
       apiKey,
-      customGroups
+      customGroups,
     });
   }
 
   async loadSettings() {
     const settings = await this.settingsManager.loadSettings();
-    
-    document.getElementById('ai-url').value = settings.aiUrl;
-    document.getElementById('api-key').value = settings.apiKey;
-    
+
+    document.getElementById("ai-url").value = settings.aiUrl;
+    document.getElementById("api-key").value = settings.apiKey;
+
     await this.loadCustomGroupsToUI(settings.customGroups);
   }
 
   initializeSettingsTabs() {
-    const tabs = document.querySelectorAll('.settings-tab');
-    const contents = document.querySelectorAll('.settings-content');
+    const tabs = document.querySelectorAll(".settings-tab");
+    const contents = document.querySelectorAll(".settings-content");
 
-    tabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        tabs.forEach(t => t.classList.remove('active'));
-        contents.forEach(c => c.classList.add('hidden'));
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        tabs.forEach((t) => t.classList.remove("active"));
+        contents.forEach((c) => c.classList.add("hidden"));
 
-        tab.classList.add('active');
-        const contentId = tab.getAttribute('data-tab');
-        document.getElementById(contentId).classList.remove('hidden');
+        tab.classList.add("active");
+        const contentId = tab.getAttribute("data-tab");
+        document.getElementById(contentId).classList.remove("hidden");
       });
     });
   }
