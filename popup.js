@@ -2,7 +2,6 @@ import { showStatus, showLoading, hideLoading } from "./js/status.js";
 import { saveSettings, loadSettings, addCustomGroup } from "./js/settings.js";
 import {
   displayTabs,
-  refreshTabsList,
   groupTabsByDomain,
   ungroupAllTabs,
   groupTabsByAI,
@@ -134,7 +133,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   document.getElementById("menu-refresh-tabs").addEventListener("click", () => {
-    refreshTabsList();
+    displayTabs();
     toggleContextMenu();
   });
 
@@ -144,25 +143,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     try {
       showLoading("Grouping tabs by domain...");
       await groupTabsByDomain();
-    } finally {
-      hideLoading();
-    }
-  });
-
-  // Group by AI button
-  const groupByAiBtn = document.getElementById("group-by-ai");
-  groupByAiBtn.addEventListener("click", async () => {
-    try {
-      const settings = await chrome.storage.local.get(["apiKey"]);
-      if (!settings.apiKey) {
-        showStatus("Please set up your API key in settings first", "warning");
-        return;
-      }
-
-      showLoading("Grouping tabs by AI...");
-      await groupTabsByAI();
-    } catch (error) {
-      showStatus(error.message || "Failed to group tabs by AI", "error");
     } finally {
       hideLoading();
     }

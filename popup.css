@@ -89,10 +89,10 @@ h1 {
   display: flex;
   align-items: center;
   background-color: transparent;
-  padding: 5px;
+  padding: 2px;
   border-radius: 4px;
   transition: all 0.3s ease;
-  height: 24px;
+  height: 12px;
 }
 
 #status-message {
