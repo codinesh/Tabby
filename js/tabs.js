@@ -1,209 +1,266 @@
-import { showStatus, showLoading } from './status.js';
-import { renderTab } from './tab-renderer.js';
-import { toggleGroupCollapse } from './ui.js';
+import { showStatus } from './status.js';
 
-// Function to display all tabs organized by groups
 export async function displayTabs() {
+  const tabsList = document.getElementById("tabs-list");
+  tabsList.innerHTML = ''; // Clear existing tabs
+  
   try {
     const tabs = await chrome.tabs.query({});
     const tabGroups = await chrome.tabGroups.query({});
-    const tabsList = document.getElementById("tabs-list");
-    tabsList.innerHTML = "";
-
-    // Get collapsed state from storage
-    const { collapsedGroups = {} } = await chrome.storage.local.get(['collapsedGroups']);
-
-    // Group tabs by their group ID
-    const groupedTabs = {};
-    for (const tab of tabs) {
-      if (tab.groupId > 0) {
-        if (!groupedTabs[tab.groupId]) {
-          groupedTabs[tab.groupId] = { tabs: [] };
+    
+    // Create a map of group IDs to their details
+    const groupMap = new Map(tabGroups.map(group => [group.id, group]));
+    
+    // Separate grouped and ungrouped tabs
+    const groupedTabs = new Map();
+    const ungroupedTabs = [];
+    
+    tabs.forEach(tab => {
+      if (tab.groupId !== -1) {
+        if (!groupedTabs.has(tab.groupId)) {
+          groupedTabs.set(tab.groupId, []);
         }
-        groupedTabs[tab.groupId].tabs.push(tab);
-      }
-    }
-
-    // Add group information
-    for (const group of tabGroups) {
-      if (groupedTabs[group.id]) {
-        groupedTabs[group.id] = { ...group, tabs: groupedTabs[group.id].tabs };
-      }
-    }
-
-    // Render grouped tabs first
-    for (const group of Object.values(groupedTabs)) {
-      if (group.tabs && group.tabs.length > 0) {
-        renderTabGroup(group, group, collapsedGroups[group.id] || false);
-      }
-    }
-
-    // Render ungrouped tabs
-    const ungroupedTabs = tabs.filter(tab => tab.groupId === -1);
-    ungroupedTabs.forEach(tab => renderTab(tab, tabsList));
-
-  } catch (error) {
-    console.error('Error displaying tabs:', error);
-    showStatus('Error displaying tabs', 'error');
-  }
-}
-
-// Enhanced renderTabGroup function
-export function renderTabGroup(group, tabGroup, isCollapsed) {
-  const tabsList = document.getElementById("tabs-list");
-  
-  // Ensure tabGroup is valid
-  tabGroup = tabGroup || { title: "Unknown Group", color: "grey" };
-
-  const groupContainer = document.createElement("div");
-  groupContainer.className = `tab-group ${isCollapsed ? "collapsed" : ""}`;
-  groupContainer.setAttribute("data-group-id", group.id);
-
-  const groupHeader = document.createElement("div");
-  groupHeader.className = `group-header ${tabGroup.color || "grey"}`;
-
-  const titleContainer = document.createElement("div");
-  titleContainer.className = "title-container";
-
-  const collapseIndicator = document.createElement("span");
-  collapseIndicator.className = "collapse-indicator";
-  collapseIndicator.textContent = isCollapsed ? "▶" : "▼";
-
-  const groupTitle = document.createElement("span");
-  groupTitle.className = "group-title";
-  groupTitle.textContent = tabGroup.title || "Unnamed group";
-
-  const tabCount = document.createElement("span");
-  tabCount.className = "tab-count";
-  tabCount.textContent = group.tabs.length;
-
-  titleContainer.appendChild(collapseIndicator);
-  titleContainer.appendChild(groupTitle);
-  titleContainer.appendChild(tabCount);
-
-  // Add the title container to the header
-  groupHeader.appendChild(titleContainer);
-
-  // Add actions container for group controls
-  const groupActions = document.createElement("div");
-  groupActions.className = "group-actions";
-
-  // Add close button
-  const groupCloseBtn = document.createElement("div");
-  groupCloseBtn.className = "group-close";
-  groupCloseBtn.textContent = "✕";
-  groupCloseBtn.title = "Close group";
-  groupCloseBtn.addEventListener("click", async (e) => {
-    e.stopPropagation();
-    // Close all tabs in this group
-    const tabIds = group.tabs.map((tab) => tab.id);
-    await chrome.tabs.remove(tabIds);
-    groupContainer.remove();
-  });
-
-  groupActions.appendChild(groupCloseBtn);
-  groupHeader.appendChild(groupActions);
-
-  // Add click handler for group header to toggle collapse
-  groupHeader.addEventListener("click", (e) => {
-    e.stopPropagation();
-    toggleGroupCollapse(groupContainer);
-  });
-
-  // Add group header to container
-  groupContainer.appendChild(groupHeader);
-
-  // Add tabs within this group
-  const tabsContainer = document.createElement("div");
-  tabsContainer.className = "tabs-container";
-  group.tabs.forEach((tab) => {
-    renderTab(tab, tabsContainer);
-  });
-  groupContainer.appendChild(tabsContainer);
-
-  // Check if only one tab is in the group and add a special indicator
-  if (group.tabs.length === 1) {
-    const singleTabIndicator = document.createElement("div");
-    singleTabIndicator.className = "single-tab-indicator";
-    singleTabIndicator.textContent = "Single tab in group - consider ungrouping";
-    singleTabIndicator.addEventListener("click", async () => {
-      // Ungroup the single tab
-      try {
-        await chrome.tabs.ungroup(group.tabs[0].id);
-        showStatus("Tab ungrouped", "success");
-        await displayTabs();
-      } catch (error) {
-        console.error("Error ungrouping tab:", error);
-        showStatus("Error ungrouping tab", "error");
+        groupedTabs.get(tab.groupId).push(tab);
+      } else {
+        ungroupedTabs.push(tab);
       }
     });
-    groupContainer.appendChild(singleTabIndicator);
+    
+    // Display grouped tabs first
+    for (const [groupId, tabs] of groupedTabs) {
+      const group = groupMap.get(groupId);
+      if (!group) continue;
+      
+      const groupElement = createGroupElement(group, tabs);
+      tabsList.appendChild(groupElement);
+    }
+    
+    // Display ungrouped tabs
+    if (ungroupedTabs.length > 0) {
+      const ungroupedElement = document.createElement('div');
+      ungroupedElement.className = 'tab-group';
+      
+      const header = document.createElement('div');
+      header.className = 'group-header';
+      header.innerHTML = `
+        <span class="collapse-indicator">▼</span>
+        <span class="group-title">Ungrouped Tabs</span>
+        <span class="group-count">${ungroupedTabs.length} tabs</span>
+      `;
+      
+      const tabsContainer = document.createElement('div');
+      tabsContainer.className = 'tabs-container';
+      
+      ungroupedTabs.forEach(tab => {
+        const tabElement = createTabElement(tab);
+        tabsContainer.appendChild(tabElement);
+      });
+      
+      ungroupedElement.appendChild(header);
+      ungroupedElement.appendChild(tabsContainer);
+      tabsList.appendChild(ungroupedElement);
+    }
+    
+    // Restore collapsed state
+    chrome.storage.local.get(['collapsedGroups'], (result) => {
+      const collapsedGroups = result.collapsedGroups || {};
+      document.querySelectorAll('.tab-group').forEach(group => {
+        const groupId = group.getAttribute('data-group-id');
+        if (groupId && collapsedGroups[groupId]) {
+          group.classList.add('collapsed');
+          const indicator = group.querySelector('.collapse-indicator');
+          if (indicator) {
+            indicator.textContent = '▶';
+          }
+        }
+      });
+    });
+    
+  } catch (error) {
+    showStatus('Error loading tabs: ' + error.message, 'error');
   }
-
-  tabsList.appendChild(groupContainer);
 }
 
-// Group tabs by domain
+function createGroupElement(group, tabs) {
+  const groupElement = document.createElement('div');
+  groupElement.className = 'tab-group';
+  groupElement.setAttribute('data-group-id', group.id);
+  
+  const header = document.createElement('div');
+  header.className = 'group-header';
+  if (group.color) header.classList.add(group.color);
+  
+  header.innerHTML = `
+    <span class="collapse-indicator">▼</span>
+    <span class="group-title">${group.title || 'Unnamed Group'}</span>
+    <span class="group-count">${tabs.length} tabs</span>
+    <div class="group-actions">
+      <button class="group-close" title="Ungroup tabs">×</button>
+    </div>
+  `;
+  
+  const tabsContainer = document.createElement('div');
+  tabsContainer.className = 'tabs-container';
+  
+  tabs.forEach(tab => {
+    const tabElement = createTabElement(tab);
+    tabsContainer.appendChild(tabElement);
+  });
+  
+  groupElement.appendChild(header);
+  groupElement.appendChild(tabsContainer);
+  
+  // Add event listener for ungroup button
+  const ungroupButton = header.querySelector('.group-close');
+  ungroupButton.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    try {
+      await chrome.tabGroups.ungroup(group.id);
+      await refreshTabsList();
+    } catch (error) {
+      showStatus('Error ungrouping tabs: ' + error.message, 'error');
+    }
+  });
+  
+  return groupElement;
+}
+
+function createTabElement(tab) {
+  const tabElement = document.createElement('div');
+  tabElement.className = 'tab';
+  tabElement.setAttribute('data-tab-id', tab.id);
+  
+  const favicon = tab.favIconUrl || 'icon.png';
+  
+  tabElement.innerHTML = `
+    <img class="tab-icon" src="${favicon}" onerror="this.src='icon.png'">
+    <div class="tab-info">
+      <div class="tab-title">${tab.title}</div>
+      <div class="tab-url">${tab.url}</div>
+    </div>
+    <div class="tab-actions">
+      <button class="tab-close" title="Close tab">×</button>
+    </div>
+  `;
+  
+  // Add event listener for tab click
+  tabElement.addEventListener('click', (e) => {
+    if (!e.target.classList.contains('tab-close')) {
+      chrome.tabs.update(tab.id, { active: true });
+      chrome.windows.update(tab.windowId, { focused: true });
+    }
+  });
+  
+  // Add event listener for close button
+  const closeButton = tabElement.querySelector('.tab-close');
+  closeButton.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    try {
+      await chrome.tabs.remove(tab.id);
+      tabElement.remove();
+    } catch (error) {
+      showStatus('Error closing tab: ' + error.message, 'error');
+    }
+  });
+  
+  return tabElement;
+}
+
+export async function refreshTabsList() {
+  await displayTabs();
+}
+
 export async function groupTabsByDomain() {
   try {
-    showLoading(true);
     const tabs = await chrome.tabs.query({});
-    const domains = {};
-
+    
     // Group tabs by domain
+    const domainGroups = new Map();
+    
     tabs.forEach(tab => {
       const url = new URL(tab.url);
       const domain = url.hostname;
-      if (!domains[domain]) {
-        domains[domain] = [];
+      
+      if (!domainGroups.has(domain)) {
+        domainGroups.set(domain, []);
       }
-      domains[domain].push(tab);
+      domainGroups.get(domain).push(tab);
+    });
+    
+    // Create tab groups
+    for (const [domain, domainTabs] of domainGroups) {
+      if (domainTabs.length > 1) {
+        const tabIds = domainTabs.map(tab => tab.id);
+        await chrome.tabs.group({ tabIds });
+      }
+    }
+    
+    await refreshTabsList();
+  } catch (error) {
+    showStatus('Error grouping tabs: ' + error.message, 'error');
+  }
+}
+
+export async function ungroupAllTabs() {
+  try {
+    const tabs = await chrome.tabs.query({});
+    const groupedTabs = tabs.filter(tab => tab.groupId !== -1);
+    
+    for (const tab of groupedTabs) {
+      await chrome.tabs.ungroup(tab.id);
+    }
+    
+    await refreshTabsList();
+  } catch (error) {
+    showStatus('Error ungrouping tabs: ' + error.message, 'error');
+  }
+}
+
+export async function groupTabsByAI() {
+  const settings = await chrome.storage.local.get(['apiKey', 'aiUrl']);
+  if (!settings.apiKey) {
+    throw new Error('API key not configured');
+  }
+
+  try {
+    const tabs = await chrome.tabs.query({});
+    const tabTitles = tabs.map(tab => ({ id: tab.id, title: tab.title }));
+
+    const response = await fetch(settings.aiUrl || 'https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${settings.apiKey}`
+      },
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo",
+        messages: [{
+          role: "system",
+          content: "You are a helpful assistant that groups browser tabs into meaningful categories."
+        }, {
+          role: "user",
+          content: `Group these tabs into 3-5 meaningful categories. Return only JSON in this format: {"groups":[{"name":"category name","tabIds":[tab ids]}]}. Here are the tabs: ${JSON.stringify(tabTitles)}`
+        }]
+      })
     });
 
-    // Create tab groups for each domain
-    for (const [domain, domainTabs] of Object.entries(domains)) {
-      if (domainTabs.length > 1) {
-        const groupId = await chrome.tabs.group({ tabIds: domainTabs.map(tab => tab.id) });
-        await chrome.tabGroups.update(groupId, { title: domain });
+    if (!response.ok) {
+      throw new Error('API request failed');
+    }
+
+    const data = await response.json();
+    const groups = JSON.parse(data.choices[0].message.content).groups;
+
+    // Create tab groups
+    for (const group of groups) {
+      if (group.tabIds.length > 0) {
+        const groupId = await chrome.tabs.group({ tabIds: group.tabIds });
+        await chrome.tabGroups.update(groupId, { title: group.name });
       }
     }
 
-    showStatus('Tabs grouped by domain', 'success');
-    await displayTabs();
+    await refreshTabsList();
   } catch (error) {
-    console.error('Error grouping tabs:', error);
-    showStatus('Error grouping tabs', 'error');
-  } finally {
-    showLoading(false);
-  }
-}
-
-// Ungroup all tabs
-export async function ungroupAllTabs() {
-  try {
-    showLoading(true);
-    const tabs = await chrome.tabs.query({});
-    await Promise.all(tabs.map(tab => chrome.tabs.ungroup(tab.id)));
-    showStatus('All tabs ungrouped', 'success');
-    await displayTabs();
-  } catch (error) {
-    console.error('Error ungrouping tabs:', error);
-    showStatus('Error ungrouping tabs', 'error');
-  } finally {
-    showLoading(false);
-  }
-}
-
-// Refresh tabs list
-export async function refreshTabsList() {
-  try {
-    showLoading(true);
-    await displayTabs();
-    showStatus('Tabs refreshed', 'success');
-  } catch (error) {
-    console.error('Error refreshing tabs:', error);
-    showStatus('Error refreshing tabs', 'error');
-  } finally {
-    showLoading(false);
+    throw new Error('Failed to group tabs using AI: ' + error.message);
   }
 }

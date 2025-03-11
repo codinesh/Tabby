@@ -1,14 +1,19 @@
-import { showStatus, showLoading } from './js/status.js';
+import { showStatus, showLoading, hideLoading } from './js/status.js';
 import { saveSettings, loadSettings, addCustomGroup } from './js/settings.js';
-import { displayTabs, refreshTabsList, groupTabsByDomain, ungroupAllTabs } from './js/tabs.js';
+import { displayTabs, refreshTabsList, groupTabsByDomain, ungroupAllTabs, groupTabsByAI } from './js/tabs.js';
 
 // Initialize the extension
 document.addEventListener("DOMContentLoaded", async () => {
   // Display all tabs
-  await displayTabs();
+  try {
+    showLoading("Loading tabs...");
+    await displayTabs();
+  } finally {
+    hideLoading();
+  }
 
   // Load saved settings
-  loadSettings();
+  await loadSettings();
 
   // Initialize theme
   const prefersDark = window.matchMedia("(prefers-color-scheme: dark)");
@@ -120,18 +125,35 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Group tabs button
   const groupTabsBtn = document.getElementById("group-tabs");
   groupTabsBtn.addEventListener("click", async () => {
-    groupTabsBtn.classList.add("active");
-    document.getElementById("group-by-ai").classList.remove("active");
-    await groupTabsByDomain();
-    hideSettings();
+    try {
+      groupTabsBtn.classList.add("active");
+      document.getElementById("group-by-ai").classList.remove("active");
+      showLoading("Grouping tabs by domain...");
+      await groupTabsByDomain();
+    } finally {
+      hideLoading();
+    }
   });
 
   // Group by AI button
   const groupByAiBtn = document.getElementById("group-by-ai");
-  groupByAiBtn.addEventListener("click", () => {
-    groupByAiBtn.classList.add("active");
-    document.getElementById("group-tabs").classList.remove("active");
-    showSettings("api-settings");
+  groupByAiBtn.addEventListener("click", async () => {
+    try {
+      const settings = await chrome.storage.local.get(['apiKey']);
+      if (!settings.apiKey) {
+        showStatus("Please set up your API key in settings first", "warning");
+        return;
+      }
+
+      groupByAiBtn.classList.add("active");
+      document.getElementById("group-tabs").classList.remove("active");
+      showLoading("Grouping tabs by AI...");
+      await groupTabsByAI();
+    } catch (error) {
+      showStatus(error.message || "Failed to group tabs by AI", "error");
+    } finally {
+      hideLoading();
+    }
   });
 
   // Ungroup all button
@@ -156,9 +178,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   // Save settings button
-  document.getElementById("save-settings").addEventListener("click", () => {
-    saveSettings();
-    hideSettings();
+  document.getElementById("save-settings").addEventListener("click", async () => {
+    try {
+      showLoading("Saving settings...");
+      await saveSettings();
+      hideSettings();
+      showStatus("Settings saved successfully", "success");
+    } catch (error) {
+      showStatus("Failed to save settings", "error");
+    } finally {
+      hideLoading();
+    }
   });
 
   // Cancel settings button
