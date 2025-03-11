@@ -9,6 +9,8 @@ export class SettingsUI {
   show() {
     this.mainContent.classList.add("hidden");
     this.settingsContent.classList.remove("hidden");
+    // Initialize settings tabs when showing settings
+    this.initializeSettingsTabs();
   }
 
   hide() {
@@ -90,12 +92,29 @@ export class SettingsUI {
     document.getElementById("api-key").value = settings.apiKey;
 
     await this.loadCustomGroupsToUI(settings.customGroups);
+    this.initializeSettingsTabs();
   }
 
   initializeSettingsTabs() {
     const tabs = document.querySelectorAll(".settings-tab");
     const contents = document.querySelectorAll(".settings-content");
 
+    // First hide all content sections
+    contents.forEach((content) => content.classList.add("hidden"));
+    tabs.forEach((tab) => tab.classList.remove("active"));
+
+    // Show the first tab by default
+    const firstTab = tabs[0];
+    if (firstTab) {
+      firstTab.classList.add("active");
+      const contentId = firstTab.getAttribute("data-tab");
+      const content = document.getElementById(contentId);
+      if (content) {
+        content.classList.remove("hidden");
+      }
+    }
+
+    // Add click handlers
     tabs.forEach((tab) => {
       tab.addEventListener("click", () => {
         tabs.forEach((t) => t.classList.remove("active"));
@@ -103,7 +122,10 @@ export class SettingsUI {
 
         tab.classList.add("active");
         const contentId = tab.getAttribute("data-tab");
-        document.getElementById(contentId).classList.remove("hidden");
+        const content = document.getElementById(contentId);
+        if (content) {
+          content.classList.remove("hidden");
+        }
       });
     });
   }
