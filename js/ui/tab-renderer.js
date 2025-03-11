@@ -19,27 +19,30 @@ export class TabRenderer {
     const title = document.createElement("div");
     title.className = "tab-title";
     title.textContent = tab.title;
+    title.title = tab.title; // Add tooltip for long titles
 
     const url = document.createElement("div");
     url.className = "tab-url";
     url.textContent = tab.url;
+    url.title = tab.url; // Add tooltip for long URLs
 
     const closeBtn = document.createElement("button");
     closeBtn.className = "tab-close";
     closeBtn.textContent = "✕";
     closeBtn.title = "Close tab";
+    closeBtn.setAttribute("aria-label", "Close tab");
 
     // Add event listeners
-    tabElement.addEventListener("click", async (e) => {
+    tabElement.addEventListener("click", (e) => {
       if (!e.target.matches(".tab-close")) {
-        await this.tabManager.activateTab(tab.id, tab.windowId);
+        this.tabManager.activateTab(tab.id, tab.windowId);
       }
     });
 
     closeBtn.addEventListener("click", async (e) => {
       e.stopPropagation();
       await this.tabManager.closeTab(tab.id);
-      await this.renderTabs(); // Re-render to update group counts
+      await this.renderTabs();
     });
 
     tabElement.append(favicon, title, url, closeBtn);
@@ -59,6 +62,7 @@ export class TabRenderer {
     const collapseIndicator = document.createElement("span");
     collapseIndicator.className = "collapse-indicator";
     collapseIndicator.textContent = isCollapsed ? "▶" : "▼";
+    collapseIndicator.setAttribute("aria-label", isCollapsed ? "Expand group" : "Collapse group");
 
     const groupTitle = document.createElement("span");
     groupTitle.className = "group-title";
@@ -71,46 +75,43 @@ export class TabRenderer {
     const groupActions = document.createElement("div");
     groupActions.className = "group-actions";
 
-    const ungroupButton = document.createElement("button");
-    ungroupButton.className = "group-close";
-    ungroupButton.title = "Ungroup tabs";
-    ungroupButton.textContent = "×";
+    if (group.id !== "ungrouped") {
+      const ungroupButton = document.createElement("button");
+      ungroupButton.className = "group-close";
+      ungroupButton.title = "Ungroup tabs";
+      ungroupButton.textContent = "×";
+      ungroupButton.setAttribute("aria-label", "Ungroup tabs");
 
-    groupActions.appendChild(ungroupButton);
+      ungroupButton.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        try {
+          await this.tabManager.ungroupTabs(group.id);
+          await this.renderTabs();
+        } catch (error) {
+          console.error("Error ungrouping tabs:", error);
+        }
+      });
+
+      groupActions.appendChild(ungroupButton);
+    }
+
     header.append(collapseIndicator, groupTitle, groupCount, groupActions);
 
     const tabsContainer = document.createElement("div");
     tabsContainer.className = "tabs-container";
-    tabs.forEach((tab) => {
-      const tabElement = this.createTabElement(tab);
-      tabsContainer.appendChild(tabElement);
-    });
+    tabs.forEach(tab => tabsContainer.appendChild(this.createTabElement(tab)));
 
     groupElement.append(header, tabsContainer);
 
-    // Add event listener for ungroup button
-    ungroupButton.addEventListener("click", async (e) => {
-      e.stopPropagation();
-      try {
-        if (group.id !== "ungrouped") {
-          await this.tabManager.ungroupTabs(group.id);
-          await this.renderTabs();
-        }
-      } catch (error) {
-        console.error("Error ungrouping tabs:", error);
-      }
-    });
-
     // Add event listener for collapse/expand
     header.addEventListener("click", async (e) => {
-      // Don't collapse if clicking the ungroup button
       if (e.target.matches(".group-close")) return;
 
       const wasCollapsed = groupElement.classList.contains("collapsed");
       groupElement.classList.toggle("collapsed");
       collapseIndicator.textContent = wasCollapsed ? "▼" : "▶";
+      collapseIndicator.setAttribute("aria-label", wasCollapsed ? "Collapse group" : "Expand group");
 
-      // Save collapsed state
       if (group.id) {
         await this.settingsManager.setCollapsedState(group.id, !wasCollapsed);
       }
@@ -120,25 +121,24 @@ export class TabRenderer {
   }
 
   async renderTabs() {
-    this.tabsList.innerHTML = "";
     try {
-      const tabs = await this.tabManager.getAllTabs();
-      const tabGroups = await this.tabManager.getAllTabGroups();
+      const [tabs, tabGroups, collapsedGroups] = await Promise.all([
+        this.tabManager.getAllTabs(),
+        this.tabManager.getAllTabGroups(),
+        this.settingsManager.getCollapsedStates()
+      ]);
 
       // Create a map of group IDs to their details
-      const groupMap = new Map(tabGroups.map((group) => [group.id, group]));
+      const groupMap = new Map(tabGroups.map(group => [group.id, group]));
 
-      // Get collapsed state
-      const collapsedGroups = await this.settingsManager.getCollapsedStates();
-
-      // Clear loading message
+      // Clear existing tabs
       this.tabsList.innerHTML = "";
 
-      // Separate grouped and ungrouped tabs
+      // Organize tabs by groups
       const groupedTabs = new Map();
       const ungroupedTabs = [];
 
-      tabs.forEach((tab) => {
+      tabs.forEach(tab => {
         if (tab.groupId !== -1) {
           if (!groupedTabs.has(tab.groupId)) {
             groupedTabs.set(tab.groupId, []);
@@ -154,8 +154,11 @@ export class TabRenderer {
         const group = groupMap.get(groupId);
         if (!group) continue;
 
-        const isCollapsed = collapsedGroups[groupId] || false;
-        const groupElement = this.createGroupElement(group, tabs, isCollapsed);
+        const groupElement = this.createGroupElement(
+          group,
+          tabs,
+          collapsedGroups[groupId] || false
+        );
         this.tabsList.appendChild(groupElement);
       }
 
@@ -177,23 +180,26 @@ export class TabRenderer {
   filterTabs(query) {
     const searchText = query.toLowerCase();
     const tabElements = document.querySelectorAll(".tab");
+    let visibleTabsCount = new Map();
 
-    tabElements.forEach((tabElement) => {
-      const title = tabElement
-        .querySelector(".tab-title")
-        .textContent.toLowerCase();
-      const url = tabElement
-        .querySelector(".tab-url")
-        .textContent.toLowerCase();
+    tabElements.forEach(tabElement => {
+      const title = tabElement.querySelector(".tab-title").textContent.toLowerCase();
+      const url = tabElement.querySelector(".tab-url").textContent.toLowerCase();
       const matches = title.includes(searchText) || url.includes(searchText);
       tabElement.style.display = matches ? "" : "none";
+
+      if (matches) {
+        const group = tabElement.closest(".tab-group");
+        const groupId = group.dataset.groupId;
+        visibleTabsCount.set(groupId, (visibleTabsCount.get(groupId) || 0) + 1);
+      }
     });
 
     // Update group visibility and counts
-    document.querySelectorAll(".tab-group").forEach((group) => {
-      const visibleTabs = group.querySelectorAll('.tab[style=""]').length;
-      const countElement = group.querySelector(".group-count");
-      countElement.textContent = `${visibleTabs} tabs`;
+    document.querySelectorAll(".tab-group").forEach(group => {
+      const groupId = group.dataset.groupId;
+      const visibleTabs = visibleTabsCount.get(groupId) || 0;
+      group.querySelector(".group-count").textContent = `${visibleTabs} tabs`;
       group.style.display = visibleTabs > 0 ? "" : "none";
     });
   }

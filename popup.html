@@ -22,15 +22,47 @@
           🌙
         </button>
         <div class="menu-container">
-          <button id="menu-button" class="menu-button" aria-label="Menu">
-            ⚙️
+          <button 
+            id="menu-button" 
+            class="menu-button" 
+            aria-label="Menu"
+            aria-haspopup="menu" 
+            aria-expanded="false"
+            aria-controls="context-menu"
+          >
+            <i aria-hidden="true">⚙️</i>
           </button>
-          <div id="context-menu" class="context-menu hidden">
-            <ul>
-              <li id="menu-refresh-tabs">Refresh Tabs</li>
-              <li id="menu-settings">Settings</li>
-              <li id="ungroup-tabs">Ungroup All</li>
-              <li id="backup-tabs">Backup Tabs</li>
+          <div 
+            id="context-menu" 
+            class="context-menu hidden" 
+            role="menu" 
+            aria-labelledby="menu-button"
+          >
+            <ul role="none">
+              <li role="none">
+                <button id="menu-refresh-tabs" role="menuitem" tabindex="-1">
+                  <i aria-hidden="true">🔄</i>
+                  <span>Refresh Tabs</span>
+                </button>
+              </li>
+              <li role="none">
+                <button id="menu-settings" role="menuitem" tabindex="-1">
+                  <i aria-hidden="true">⚙️</i>
+                  <span>Settings</span>
+                </button>
+              </li>
+              <li role="none">
+                <button id="ungroup-tabs" role="menuitem" tabindex="-1">
+                  <i aria-hidden="true">📂</i>
+                  <span>Ungroup All</span>
+                </button>
+              </li>
+              <li role="none">
+                <button id="backup-tabs" role="menuitem" tabindex="-1">
+                  <i aria-hidden="true">💾</i>
+                  <span>Backup Tabs</span>
+                </button>
+              </li>
             </ul>
           </div>
         </div>

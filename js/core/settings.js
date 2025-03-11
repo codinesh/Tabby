@@ -5,70 +5,111 @@ export class SettingsManager {
       apiUrl: "https://api.openai.com/v1/chat/completions",
       theme: "system",
       customGroups: [],
+      apiKey: "",
+      collapsedGroups: {}
     };
   }
 
   processCustomGroups(groups) {
-    if (!groups) return [];
+    if (!Array.isArray(groups)) return [];
     return groups.map(group => ({
       ...group,
-      keywords: typeof group.keywords === 'string' 
-        ? group.keywords.split(',').map(k => k.trim())
-        : group.keywords
+      keywords: Array.isArray(group.keywords) 
+        ? group.keywords 
+        : (group.keywords || "").split(',').map(k => k.trim()).filter(Boolean)
     }));
   }
 
   async saveSettings(settings) {
-    if (settings.customGroups) {
-      settings.customGroups = this.processCustomGroups(settings.customGroups);
+    const validatedSettings = {
+      apiUrl: settings.apiUrl || this.defaultSettings.apiUrl,
+      apiKey: settings.apiKey || "",
+      theme: settings.theme || this.defaultSettings.theme,
+      customGroups: settings.customGroups ? this.processCustomGroups(settings.customGroups) : []
+    };
+
+    try {
+      await chrome.storage.sync.set(validatedSettings);
+    } catch (error) {
+      console.error("Error saving settings:", error);
+      throw new Error("Failed to save settings");
     }
-    await chrome.storage.sync.set(settings);
   }
 
   async loadSettings() {
-    const result = await chrome.storage.sync.get([
-      "apiUrl",
-      "apiKey",
-      "customGroups",
-      "theme",
-    ]);
-
-    return {
-      apiUrl: result.apiUrl || this.defaultSettings.apiUrl,
-      apiKey: result.apiKey || "",
-      customGroups: result.customGroups || [],
-      theme: result.theme || this.defaultSettings.theme,
-    };
+    try {
+      const result = await chrome.storage.sync.get(Object.keys(this.defaultSettings));
+      return {
+        apiUrl: result.apiUrl || this.defaultSettings.apiUrl,
+        apiKey: result.apiKey || "",
+        customGroups: this.processCustomGroups(result.customGroups),
+        theme: result.theme || this.defaultSettings.theme
+      };
+    } catch (error) {
+      console.error("Error loading settings:", error);
+      return { ...this.defaultSettings };
+    }
   }
 
   async saveCustomGroups(groups) {
-    const processedGroups = this.processCustomGroups(groups);
-    await chrome.storage.sync.set({ customGroups: processedGroups });
+    try {
+      const processedGroups = this.processCustomGroups(groups);
+      await chrome.storage.sync.set({ customGroups: processedGroups });
+    } catch (error) {
+      console.error("Error saving custom groups:", error);
+      throw new Error("Failed to save custom groups");
+    }
   }
 
   async getCustomGroups() {
-    const result = await chrome.storage.sync.get(["customGroups"]);
-    return result.customGroups || [];
+    try {
+      const { customGroups } = await chrome.storage.sync.get(["customGroups"]);
+      return this.processCustomGroups(customGroups);
+    } catch (error) {
+      console.error("Error getting custom groups:", error);
+      return [];
+    }
   }
 
   async saveTheme(theme) {
-    await chrome.storage.sync.set({ theme });
+    try {
+      if (!theme) throw new Error("Invalid theme");
+      await chrome.storage.sync.set({ theme });
+    } catch (error) {
+      console.error("Error saving theme:", error);
+      throw new Error("Failed to save theme");
+    }
   }
 
   async getTheme() {
-    const result = await chrome.storage.sync.get(["theme"]);
-    return result.theme || this.defaultSettings.theme;
+    try {
+      const { theme } = await chrome.storage.sync.get(["theme"]);
+      return theme || this.defaultSettings.theme;
+    } catch (error) {
+      console.error("Error getting theme:", error);
+      return this.defaultSettings.theme;
+    }
   }
 
   async setCollapsedState(groupId, isCollapsed) {
-    const result = await chrome.storage.local.get(["collapsedGroups"]);
-    const collapsedGroups = result.collapsedGroups || {};
-    collapsedGroups[groupId] = isCollapsed;
-    await chrome.storage.local.set({ collapsedGroups });
+    try {
+      if (!groupId) throw new Error("Invalid group ID");
+      const { collapsedGroups = {} } = await chrome.storage.local.get(["collapsedGroups"]);
+      collapsedGroups[groupId] = Boolean(isCollapsed);
+      await chrome.storage.local.set({ collapsedGroups });
+    } catch (error) {
+      console.error("Error setting collapsed state:", error);
+      throw new Error("Failed to save collapsed state");
+    }
   }
 
   async getCollapsedStates() {
-    const result = await chrome.storage.local.get(["collapsedGroups"]);
-    return result.collapsedGroups || {};
+    try {
+      const { collapsedGroups } = await chrome.storage.local.get(["collapsedGroups"]);
+      return collapsedGroups || this.defaultSettings.collapsedGroups;
+    } catch (error) {
+      console.error("Error getting collapsed states:", error);
+      return this.defaultSettings.collapsedGroups;
+    }
   }
 }

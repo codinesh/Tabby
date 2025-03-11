@@ -2,95 +2,103 @@
 export class TabManager {
   constructor(settingsManager) {
     this.settingsManager = settingsManager;
-    this.tabs = [];
-    this.tabGroups = [];
-    this.colors = [
-      "blue",
-      "red",
-      "yellow",
-      "green",
-      "pink",
-      "purple",
-      "cyan"
-    ];
+    this.colors = ["blue", "red", "yellow", "green", "pink", "purple", "cyan"];
   }
 
   async getAllTabs() {
-    return await chrome.tabs.query({});
+    try {
+      return await chrome.tabs.query({});
+    } catch (error) {
+      console.error("Error getting tabs:", error);
+      throw new Error("Failed to get tabs");
+    }
   }
 
   async getAllTabGroups() {
-    return await chrome.tabGroups.query({});
+    try {
+      return await chrome.tabGroups.query({});
+    } catch (error) {
+      console.error("Error getting tab groups:", error);
+      throw new Error("Failed to get tab groups");
+    }
   }
 
   getColorForText(text) {
-    const hash = Array.from(text.toLowerCase()).reduce(
-      (acc, char) => acc + char.charCodeAt(0),
-      0
-    );
+    if (!text) return "grey";
+    const hash = Array.from(text.toLowerCase())
+      .reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return this.colors[hash % this.colors.length];
   }
 
   async createTabGroup(tabs, title, color = "grey") {
-    if (tabs.length > 1) {
-      try {
-        const tabIds = tabs.map(tab => tab.id);
-        const group = await chrome.tabs.group({ tabIds });
-        await chrome.tabGroups.update(group, {
-          title,
-          color,
-          collapsed: false
-        });
-        return group;
-      } catch (e) {
-        console.error("Error creating group:", title, e);
-        return null;
-      }
+    if (!Array.isArray(tabs) || tabs.length < 2) return null;
+
+    try {
+      const tabIds = tabs.map(tab => tab.id);
+      const group = await chrome.tabs.group({ tabIds });
+      await chrome.tabGroups.update(group, {
+        title: title || "New Group",
+        color,
+        collapsed: false
+      });
+      return group;
+    } catch (error) {
+      console.error("Error creating group:", title, error);
+      throw new Error(`Failed to create group: ${title}`);
     }
-    return null;
   }
 
   async groupTabsByDomain() {
-    const tabs = await this.getAllTabs();
-    const domains = new Map();
-    const settings = await this.settingsManager.loadSettings();
-    const customGroups = settings.customGroups || [];
-    
-    // Group tabs by domain
-    tabs.forEach(tab => {
-      try {
-        const url = new URL(tab.url);
-        const domain = url.hostname;
-        if (!domains.has(domain)) {
-          domains.set(domain, {
-            tabs: [],
-            customGroup: this.findMatchingCustomGroup(tab, customGroups)
-          });
-        }
-        domains.get(domain).tabs.push(tab);
-      } catch (e) {
-        console.error("Invalid URL:", tab.url);
-      }
-    });
+    try {
+      const [tabs, settings] = await Promise.all([
+        this.getAllTabs(),
+        this.settingsManager.loadSettings()
+      ]);
 
-    // Create tab groups
-    for (const [domain, domainData] of domains) {
-      const { tabs, customGroup } = domainData;
-      const title = customGroup ? customGroup.name : domain.replace(/^www\./, '');
-      const color = customGroup ? customGroup.color || "grey" : this.getColorForText(domain);
-      await this.createTabGroup(tabs, title, color);
+      const domains = new Map();
+      const customGroups = settings.customGroups || [];
+      
+      // Group tabs by domain
+      for (const tab of tabs) {
+        try {
+          const url = new URL(tab.url);
+          const domain = url.hostname;
+          if (!domains.has(domain)) {
+            domains.set(domain, {
+              tabs: [],
+              customGroup: this.findMatchingCustomGroup(tab, customGroups)
+            });
+          }
+          domains.get(domain).tabs.push(tab);
+        } catch (error) {
+          console.warn("Invalid URL:", tab.url);
+        }
+      }
+
+      // Create tab groups
+      const groupPromises = Array.from(domains.entries()).map(async ([domain, domainData]) => {
+        const { tabs, customGroup } = domainData;
+        const title = customGroup ? customGroup.name : domain.replace(/^www\./, '');
+        const color = customGroup ? customGroup.color || "grey" : this.getColorForText(domain);
+        return this.createTabGroup(tabs, title, color);
+      });
+
+      await Promise.all(groupPromises);
+    } catch (error) {
+      console.error("Error grouping tabs by domain:", error);
+      throw new Error("Failed to group tabs by domain");
     }
   }
 
   findMatchingCustomGroup(tab, customGroups) {
-    if (!customGroups) return null;
+    if (!Array.isArray(customGroups) || !tab) return null;
 
     for (const group of customGroups) {
-      if (!group || !group.keywords || !Array.isArray(group.keywords)) continue;
+      if (!group?.keywords?.length) continue;
       
+      const tabText = (tab.title + " " + tab.url).toLowerCase();
       if (group.keywords.some(keyword => 
-        tab.title.toLowerCase().includes(keyword.toLowerCase()) || 
-        tab.url.toLowerCase().includes(keyword.toLowerCase())
+        keyword && tabText.includes(keyword.toLowerCase())
       )) {
         return group;
       }
@@ -99,117 +107,159 @@ export class TabManager {
   }
 
   async groupTabsByAI() {
-    const tabs = await this.getAllTabs();
-    const settings = await this.settingsManager.loadSettings();
-    
-    if (!settings.apiKey) {
-      throw new Error("API key not configured");
-    }
+    try {
+      const [tabs, settings] = await Promise.all([
+        this.getAllTabs(),
+        this.settingsManager.loadSettings()
+      ]);
 
-    const customGroups = settings.customGroups || [];
+      if (!settings.apiKey) {
+        throw new Error("API key not configured");
+      }
 
-    // First try to match with custom groups
-    const matchedGroups = new Map();
-    const unmatchedTabs = [];
+      const customGroups = settings.customGroups || [];
+      const matchedGroups = new Map();
+      const unmatchedTabs = [];
 
-    tabs.forEach(tab => {
-      const matchingGroup = this.findMatchingCustomGroup(tab, customGroups);
-      
-      if (matchingGroup) {
-        const groupName = matchingGroup.name;
-        if (!matchedGroups.has(groupName)) {
-          matchedGroups.set(groupName, {
-            tabs: [],
-            color: matchingGroup.color || 'grey'
-          });
+      // First try to match with custom groups
+      for (const tab of tabs) {
+        const matchingGroup = this.findMatchingCustomGroup(tab, customGroups);
+        if (matchingGroup) {
+          const groupName = matchingGroup.name;
+          if (!matchedGroups.has(groupName)) {
+            matchedGroups.set(groupName, {
+              tabs: [],
+              color: matchingGroup.color || 'grey'
+            });
+          }
+          matchedGroups.get(groupName).tabs.push(tab);
+        } else {
+          unmatchedTabs.push(tab);
         }
-        matchedGroups.get(groupName).tabs.push(tab);
-      } else {
-        unmatchedTabs.push(tab);
       }
-    });
 
-    // Create groups for matched tabs
-    for (const [groupName, groupData] of matchedGroups) {
-      await this.createTabGroup(groupData.tabs, groupName, groupData.color);
-    }
+      // Create groups for matched tabs
+      const matchedGroupPromises = Array.from(matchedGroups.entries()).map(
+        async ([groupName, groupData]) => {
+          return this.createTabGroup(groupData.tabs, groupName, groupData.color);
+        }
+      );
 
-    // Use AI to categorize remaining tabs
-    if (unmatchedTabs.length > 0) {
-      const categories = await this.callAIApi(settings.apiUrl, settings.apiKey, unmatchedTabs);
-      
-      // Create AI-suggested groups
-      for (const category of categories) {
-        const categoryTabs = category.indices.map(i => unmatchedTabs[i]);
-        const color = this.getColorForText(category.category);
-        await this.createTabGroup(categoryTabs, category.category, color);
+      await Promise.all(matchedGroupPromises);
+
+      // Use AI to categorize remaining tabs
+      if (unmatchedTabs.length > 0) {
+        const categories = await this.callAIApi(settings.apiUrl, settings.apiKey, unmatchedTabs);
+        
+        // Create AI-suggested groups in parallel
+        const aiGroupPromises = categories.map(category => {
+          const categoryTabs = category.indices.map(i => unmatchedTabs[i]);
+          const color = this.getColorForText(category.category);
+          return this.createTabGroup(categoryTabs, category.category, color);
+        });
+
+        await Promise.all(aiGroupPromises);
       }
+    } catch (error) {
+      console.error("Error grouping tabs by AI:", error);
+      throw error;
     }
   }
 
   async callAIApi(apiUrl, apiKey, tabs) {
+    if (!apiUrl || !apiKey || !Array.isArray(tabs) || tabs.length === 0) {
+      throw new Error("Invalid parameters for AI API call");
+    }
+
     const tabInfo = tabs.map(tab => ({
       title: tab.title,
       url: tab.url
     }));
 
-    const response = await fetch(apiUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": apiKey,
-      },
-      body: JSON.stringify({
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content: "You are a helpful assistant that categorizes browser tabs into groups. Return a JSON array where each element has a 'category' and 'indices' field. The category should be a short, descriptive name, and indices should be an array of tab indices that belong to that category. IMPORTANT: Return ONLY the JSON array, with no markdown formatting or explanation."
-          },
-          {
-            role: "user",
-            content: `Please categorize these tabs:\n${JSON.stringify(tabInfo, null, 2)}`
-          }
-        ]
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to get AI categories");
-    }
-
-    const data = await response.json();
-    const content = data.choices[0].message.content;
-    
-    // Remove any markdown formatting
-    const jsonStr = content.replace(/```json\n|\n```|```/g, '').trim();
-    
     try {
-      return JSON.parse(jsonStr);
-    } catch (e) {
-      console.error("Failed to parse AI response:", jsonStr);
-      throw new Error("Invalid response format from AI");
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "api-key": apiKey,
+        },
+        body: JSON.stringify({
+          model: "gpt-3.5-turbo",
+          messages: [
+            {
+              role: "system",
+              content: "You are a helpful assistant that categorizes browser tabs into groups. Return a JSON array where each element has a 'category' and 'indices' field. The category should be a short, descriptive name, and indices should be an array of tab indices that belong to that category. IMPORTANT: Return ONLY the JSON array, with no markdown formatting or explanation."
+            },
+            {
+              role: "user",
+              content: `Please categorize these tabs:\n${JSON.stringify(tabInfo, null, 2)}`
+            }
+          ]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      if (!data?.choices?.[0]?.message?.content) {
+        throw new Error("Invalid API response format");
+      }
+
+      const content = data.choices[0].message.content;
+      const jsonStr = content.replace(/```json\n|\n```|```/g, '').trim();
+      
+      try {
+        const parsed = JSON.parse(jsonStr);
+        if (!Array.isArray(parsed)) {
+          throw new Error("Response is not an array");
+        }
+        return parsed;
+      } catch (error) {
+        console.error("Failed to parse AI response:", jsonStr);
+        throw new Error("Invalid JSON response from AI");
+      }
+    } catch (error) {
+      console.error("AI API call failed:", error);
+      throw new Error("Failed to get AI categories: " + error.message);
     }
   }
 
   async ungroupAllTabs() {
-    const tabs = await this.getAllTabs();
-    const groupedTabs = tabs.filter(tab => tab.groupId !== -1);
-    for (const tab of groupedTabs) {
-      await chrome.tabs.ungroup(tab.id);
+    try {
+      const tabs = await this.getAllTabs();
+      const groupedTabs = tabs.filter(tab => tab.groupId !== -1);
+      
+      if (groupedTabs.length === 0) return;
+
+      const ungroupPromises = groupedTabs.map(tab => 
+        chrome.tabs.ungroup(tab.id)
+      );
+      
+      await Promise.all(ungroupPromises);
+    } catch (error) {
+      console.error("Error ungrouping tabs:", error);
+      throw new Error("Failed to ungroup tabs");
+    }
+  }
+
+  async activateTab(tabId, windowId) {
+    try {
+      await chrome.windows.update(windowId, { focused: true });
+      await chrome.tabs.update(tabId, { active: true });
+    } catch (error) {
+      console.error("Error activating tab:", error);
+      throw new Error("Failed to activate tab");
     }
   }
 
   async closeTab(tabId) {
-    await chrome.tabs.remove(tabId);
-  }
-
-  async activateTab(tabId, windowId) {
-    await chrome.tabs.update(tabId, { active: true });
-    await chrome.windows.update(windowId, { focused: true });
-  }
-
-  async ungroupTabs(groupId) {
-    await chrome.tabGroups.ungroup(groupId);
+    try {
+      await chrome.tabs.remove(tabId);
+    } catch (error) {
+      console.error("Error closing tab:", error);
+      throw new Error("Failed to close tab");
+    }
   }
 }
