@@ -88,40 +88,46 @@ h1 {
 #status-container {
   display: flex;
   align-items: center;
-  background-color: transparent;
-  padding: 2px;
+  gap: 8px;
+  padding: 4px 8px;
   border-radius: 4px;
+  font-size: 12px;
   transition: all 0.3s ease;
-  height: 12px;
+  margin-right: 8px;
+}
+
+#status-container.hidden {
+  display: none;
 }
 
 #status-message {
-  margin-right: 8px;
-  font-size: 14px;
-  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
 }
 
-#status-container.success {
-  color: #1e8e3e;
+#status-message.error {
+  color: var(--error-color);
 }
 
-#status-container.error {
-  color: #d93025;
-}
-
-#status-container.info {
-  color: #4285f4;
+#status-message.success {
+  color: var(--success-color);
 }
 
 /* Loading spinner */
 #loading-spinner {
-  display: none;
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(0, 0, 0, 0.1);
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--bg-secondary);
   border-radius: 50%;
-  border-top-color: #4285f4;
+  border-top-color: var(--primary-color);
   animation: spin 1s linear infinite;
+}
+
+[data-theme="dark"] #loading-spinner {
+  border-color: var(--bg-primary);
+  border-top-color: var(--primary-color);
 }
 
 @keyframes spin {
@@ -130,6 +136,7 @@ h1 {
   }
 }
 
+/* Controls */
 .controls {
   top: 52px;
   z-index: 10;
@@ -223,6 +230,7 @@ button:hover {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 200px;
 }
 
 .tab-actions {
