@@ -305,83 +305,56 @@ button:hover {
 }
 
 .custom-group {
-  background-color: white;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 10px;
-  margin-bottom: 10px;
+  background: var(--bg-secondary);
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
 }
 
 .form-row {
   display: flex;
-  margin-bottom: 8px;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  align-items: center;
 }
 
-.group-name {
-  flex: 1;
-  margin-right: 4px;
+.form-row input,
+.form-row select {
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.form-row .group-name {
+  flex: 2;
+}
+
+.form-row .group-color {
+  width: 100px;
+  cursor: pointer;
+}
+
+.form-row .remove-group {
+  padding: 0.25rem 0.5rem;
+  border: none;
+  background: var(--bg-danger);
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.form-row .remove-group:hover {
+  background: var(--bg-danger-hover);
 }
 
 .keywords-container {
-  display: flex;
-  flex-direction: column;
+  margin-top: 0.5rem;
 }
 
 .group-keywords {
   width: 100%;
-}
-
-.small-button {
-  padding: 3px 8px;
-  font-size: 12px;
-}
-
-.group-actions {
-  display: flex;
-  justify-content: flex-start;
-  gap: 0.5rem;
-}
-
-.remove-group {
-  background-color: #ff4444;
-  color: white;
-}
-
-.remove-group:hover {
-  background-color: #cc0000;
-}
-
-#add-group {
-  background-color: #4caf50;
-}
-
-#add-group:hover {
-  background-color: #45a049;
-}
-
-.form-group {
-  margin-bottom: 10px;
-}
-
-label {
-  display: block;
-  margin-bottom: 4px;
-  font-weight: bold;
-}
-
-input[type="text"],
-input[type="password"] {
-  width: 100%;
-  padding: 6px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-}
-
-.category {
-  font-size: 12px;
-  color: #666;
-  margin-left: 5px;
 }
 
 .menu-container {

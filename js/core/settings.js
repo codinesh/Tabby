@@ -2,9 +2,9 @@
 export class SettingsManager {
   constructor() {
     this.defaultSettings = {
-      aiUrl: 'https://api.openai.com/v1/chat/completions',
-      theme: 'system',
-      customGroups: []
+      apiUrl: "https://api.openai.com/v1/chat/completions",
+      theme: "system",
+      customGroups: [],
     };
   }
 
@@ -14,17 +14,17 @@ export class SettingsManager {
 
   async loadSettings() {
     const result = await chrome.storage.sync.get([
-      'aiUrl',
-      'apiKey',
-      'customGroups',
-      'theme'
+      "apiUrl",
+      "apiKey",
+      "customGroups",
+      "theme",
     ]);
 
     return {
-      aiUrl: result.aiUrl || this.defaultSettings.aiUrl,
-      apiKey: result.apiKey || '',
+      apiUrl: result.apiUrl || this.defaultSettings.apiUrl,
+      apiKey: result.apiKey || "",
       customGroups: result.customGroups || [],
-      theme: result.theme || this.defaultSettings.theme
+      theme: result.theme || this.defaultSettings.theme,
     };
   }
 
@@ -33,7 +33,7 @@ export class SettingsManager {
   }
 
   async getCustomGroups() {
-    const result = await chrome.storage.sync.get(['customGroups']);
+    const result = await chrome.storage.sync.get(["customGroups"]);
     return result.customGroups || [];
   }
 
@@ -42,19 +42,19 @@ export class SettingsManager {
   }
 
   async getTheme() {
-    const result = await chrome.storage.sync.get(['theme']);
+    const result = await chrome.storage.sync.get(["theme"]);
     return result.theme || this.defaultSettings.theme;
   }
 
   async saveCollapsedState(groupId, isCollapsed) {
-    const result = await chrome.storage.local.get(['collapsedGroups']);
+    const result = await chrome.storage.local.get(["collapsedGroups"]);
     const collapsedGroups = result.collapsedGroups || {};
     collapsedGroups[groupId] = isCollapsed;
     await chrome.storage.local.set({ collapsedGroups });
   }
 
   async getCollapsedStates() {
-    const result = await chrome.storage.local.get(['collapsedGroups']);
+    const result = await chrome.storage.local.get(["collapsedGroups"]);
     return result.collapsedGroups || {};
   }
 }

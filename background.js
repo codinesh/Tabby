@@ -38,7 +38,7 @@ async function groupTabsByDomain() {
       if (!domainGroups.has(domain)) {
         domainGroups.set(domain, {
           tabs: [],
-          customGroup: findMatchingCustomGroup(tab, customGroups)
+          customGroup: findMatchingCustomGroup(tab, customGroups),
         });
       }
       domainGroups.get(domain).tabs.push(tab.id);
@@ -56,7 +56,9 @@ async function groupTabsByDomain() {
         const groupId = await chrome.tabs.group({ tabIds });
         await chrome.tabGroups.update(groupId, {
           title: customGroup ? customGroup.name : domain,
-          color: customGroup ? (customGroup.color || 'grey') : getColorForDomain(domain),
+          color: customGroup
+            ? customGroup.color || "grey"
+            : getColorForDomain(domain),
         });
       } catch (e) {
         console.error("Error creating group for domain:", domain, e);
@@ -67,11 +69,17 @@ async function groupTabsByDomain() {
 
 function findMatchingCustomGroup(tab, customGroups) {
   for (const group of customGroups) {
-    const keywords = group.keywords.toLowerCase().split(',').map(k => k.trim());
-    if (keywords.some(keyword => 
-      tab.title.toLowerCase().includes(keyword) || 
-      tab.url.toLowerCase().includes(keyword)
-    )) {
+    const keywords = group.keywords
+      .toLowerCase()
+      .split(",")
+      .map((k) => k.trim());
+    if (
+      keywords.some(
+        (keyword) =>
+          tab.title.toLowerCase().includes(keyword) ||
+          tab.url.toLowerCase().includes(keyword)
+      )
+    ) {
       return group;
     }
   }
@@ -119,7 +127,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     await settingsManager.saveSettings({
       theme: "system",
       customGroups: [],
-      aiUrl: "https://api.openai.com/v1/chat/completions"
+      apiUrl: "https://api.openai.com/v1/chat/completions",
     });
   }
 });

@@ -6,8 +6,8 @@ import { ThemeManager } from "./js/ui/theme-manager.js";
 import { MenuManager } from "./js/ui/menu-manager.js";
 
 // Initialize core managers
-const tabManager = new TabManager();
 const settingsManager = new SettingsManager();
+const tabManager = new TabManager(settingsManager);
 
 // Initialize UI components
 const tabRenderer = new TabRenderer(tabManager, settingsManager);
@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Initialize theme and menu
     themeManager.initialize();
-    
+
     // Initialize all event listeners
     initializeEventListeners();
   } catch (error) {

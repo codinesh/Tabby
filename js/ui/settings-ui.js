@@ -36,16 +36,17 @@ export class SettingsUI {
     groupElements.forEach((element) => {
       const nameInput = element.querySelector(".group-name");
       const keywordsInput = element.querySelector(".group-keywords");
+      const colorSelect = element.querySelector(".group-color");
 
-      if (nameInput.value.trim()) {
-        const keywords = keywordsInput.value
-          .split(",")
-          .map((k) => k.trim().toLowerCase())
-          .filter((k) => k !== "");
+      const name = nameInput.value.trim();
+      const keywords = keywordsInput.value.trim();
+      const color = colorSelect ? colorSelect.value : "grey";
 
+      if (name && keywords) {
         groups.push({
-          name: nameInput.value.trim(),
+          name,
           keywords,
+          color,
         });
       }
     });
@@ -53,7 +54,7 @@ export class SettingsUI {
     return groups;
   }
 
-  async loadCustomGroupsToUI(groups) {
+  async loadCustomGroupsToUI(groups = []) {
     const container = document.getElementById("custom-groups-container");
     container.innerHTML = "";
 
@@ -61,9 +62,16 @@ export class SettingsUI {
       const element = this.createCustomGroupElement();
       const nameInput = element.querySelector(".group-name");
       const keywordsInput = element.querySelector(".group-keywords");
+      const colorSelect = element.querySelector(".group-color");
 
-      nameInput.value = group.name;
-      keywordsInput.value = group.keywords.join(", ");
+      nameInput.value = group.name || "";
+      keywordsInput.value = Array.isArray(group.keywords)
+        ? group.keywords.join(", ")
+        : group.keywords || "";
+      if (colorSelect && group.color) {
+        colorSelect.value = group.color;
+      }
+
       container.appendChild(element);
     });
 
@@ -74,12 +82,12 @@ export class SettingsUI {
   }
 
   async saveSettings() {
-    const aiUrl = document.getElementById("ai-url").value;
-    const apiKey = document.getElementById("api-key").value;
+    const apiUrl = document.getElementById("ai-url").value.trim();
+    const apiKey = document.getElementById("api-key").value.trim();
     const customGroups = this.getCustomGroupsFromUI();
 
     await this.settingsManager.saveSettings({
-      aiUrl,
+      apiUrl,
       apiKey,
       customGroups,
     });
@@ -88,8 +96,8 @@ export class SettingsUI {
   async loadSettings() {
     const settings = await this.settingsManager.loadSettings();
 
-    document.getElementById("ai-url").value = settings.aiUrl;
-    document.getElementById("api-key").value = settings.apiKey;
+    document.getElementById("ai-url").value = settings.apiUrl || "";
+    document.getElementById("api-key").value = settings.apiKey || "";
 
     await this.loadCustomGroupsToUI(settings.customGroups);
     this.initializeSettingsTabs();
