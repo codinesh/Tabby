@@ -20,7 +20,7 @@
       </div>
     </div>
 
-    <div id="content">
+    <div id="main-content">
       <!-- Search bar -->
       <div class="search-container">
         <input
@@ -56,8 +56,17 @@
         <div id="recent-groups-list"></div>
       </div>
 
-      <div id="ai-settings" class="hidden">
-        <h3>Settings</h3>
+      <div id="tabs-list">
+        <!-- Tabs will be listed here -->
+      </div>
+    </div>
+
+    <div id="settings-content" class="hidden">
+      <div class="settings-header">
+        <h2>Settings</h2>
+      </div>
+      
+      <div class="settings-body">
         <div class="settings-tabs">
           <button class="settings-tab active" data-tab="groups-settings">
             Custom Groups
@@ -79,9 +88,6 @@
             </div>
             <div class="group-actions">
               <button id="add-group" class="small-button">+ Add Group</button>
-              <button id="save-favorite" class="small-button">
-                Save as Favorite
-              </button>
             </div>
           </div>
         </div>
@@ -125,12 +131,11 @@
             </div>
           </div>
         </div>
-
-        <button id="save-settings">Save Settings</button>
       </div>
 
-      <div id="tabs-list">
-        <!-- Tabs will be listed here -->
+      <div class="settings-actions">
+        <button id="save-settings" class="primary-button">Save</button>
+        <button id="cancel-settings" class="secondary-button">Cancel</button>
       </div>
     </div>
 
