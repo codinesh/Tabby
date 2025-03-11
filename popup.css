@@ -52,12 +52,15 @@ body {
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
-  height: 120vh;
-  width: 80vmax;
+  height: 600px;
+  width: 60vw; /* Set width to 60% of viewport width */
+  min-width: 500px; /* Minimum width to ensure usability on small screens */
+  max-width: 1200px; /* Maximum width to prevent excessive stretching on large screens */
   background-color: var(--secondary-color);
   color: var(--text-color);
   padding: 20px;
   transition: background-color 0.3s, color 0.3s;
+  margin: 0 auto; /* Center the popup in the viewport */
 }
 
 /* Header with inline status */
@@ -89,11 +92,30 @@ h1 {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 4px 8px;
+  padding: 8px;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 14px;
   transition: all 0.3s ease;
   margin-right: 8px;
+}
+
+#status-container.hidden {
+  display: none;
+}
+
+#status-message {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+#status-message.error {
+  color: var(--error-color);
+}
+
+#status-message.success {
+  color: var(--success-color);
 }
 
 #status-container.error {
@@ -116,28 +138,13 @@ h1 {
   color: white;
 }
 
+/* Loading spinner */
 #loading-spinner {
   width: 16px;
   height: 16px;
   border: 2px solid #ffffff;
   border-radius: 50%;
   border-top-color: transparent;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Loading spinner */
-#loading-spinner {
-  width: 12px;
-  height: 12px;
-  border: 2px solid var(--bg-secondary);
-  border-radius: 50%;
-  border-top-color: var(--primary-color);
   animation: spin 1s linear infinite;
 }
 
@@ -166,6 +173,7 @@ h1 {
   gap: 8px;
 }
 
+/* Button styles */
 button {
   border: 1px solid var(--border-color);
   padding: 4px 8px;
@@ -173,27 +181,62 @@ button {
   border-radius: 4px;
 }
 
-button.primary-button {
+.primary-button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
   background-color: var(--primary-color);
-  color: var(--text-secondary);
+  color: white;
+  border: none;
 }
 
-button.secondary-button {
-  color: var(--text-secondary);
-  background-color: transparent;
-}
-
-button:hover {
+.primary-button:hover {
   background-color: var(--active-color);
 }
 
-.settings-button {
-  background-color: #888;
-  align-self: flex-end;
+.secondary-button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+  background-color: transparent;
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
 }
 
-.settings-button:hover {
-  background-color: #666;
+.secondary-button:hover {
+  background-color: var(--hover-color);
+}
+
+.small-button {
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: var(--secondary-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+
+.small-button:hover {
+  background-color: var(--hover-color);
+}
+
+/* Theme toggle */
+.theme-toggle {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.theme-toggle:hover {
+  background-color: var(--hover-color);
 }
 
 /* Tab list */
@@ -206,6 +249,7 @@ button:hover {
   display: flex;
   align-items: center;
   padding: 8px;
+  margin-bottom: 8px;
   border: 1px solid var(--border-color);
   border-radius: 4px;
   background-color: var(--secondary-color);
@@ -266,20 +310,119 @@ button:hover {
   overflow: hidden;
 }
 
-/* Parent-child relationship styles */
-.tabs-container {
-  padding-left: var(--child-indent);
-  background-color: var(--bg-primary);
-  border-top: 1px solid var(--border-color);
+/* Group header styling */
+.group-header {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  background-color: var(--bg-secondary);
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border-bottom: none;
+  font-weight: 500;
+  justify-content: space-between; /* Separate left and right side content */
 }
 
-/* Add proper collapsed state handling */
-.tab-group.collapsed .tabs-container {
-  display: none;
+.group-header:hover {
+  background-color: var(--hover-color);
 }
 
-.tab-group.collapsed .collapse-indicator {
-  transform: rotate(-90deg);
+/* Left side of the header (icon and title) */
+.group-header-left {
+  display: flex;
+  align-items: center;
+  flex: 1; /* Take up available space for title */
+  overflow: hidden; /* Prevent long titles from breaking layout */
+}
+
+/* Collapse indicator with improved alignment */
+.collapse-indicator {
+  margin-right: 8px;
+  transition: transform 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0; /* Prevent shrinking */
+}
+
+.group-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Right side of the header (count and actions) */
+.group-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0; /* Prevent shrinking */
+}
+
+.group-count {
+  color: var(--text-secondary);
+  font-size: 0.8em;
+  margin-right: 4px;
+}
+
+.group-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.group-close {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 6px;
+  width: 24px;
+  height: 24px;
+  font-size: 14px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  margin-left: 4px;
+}
+
+.group-close:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+  color: var(--error-color);
+}
+
+[data-theme="dark"] .group-close:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Color-specific hover styles for close button */
+.group-header.grey .group-close:hover {
+  background-color: rgba(0, 0, 0, 0.15);
+}
+.group-header.blue .group-close:hover {
+  background-color: rgba(0, 0, 0, 0.15);
+}
+.group-header.red .group-close:hover {
+  background-color: rgba(0, 0, 0, 0.15);
+}
+.group-header.yellow .group-close:hover {
+  background-color: rgba(0, 0, 0, 0.15);
+  color: #d32f2f;
+}
+.group-header.green .group-close:hover {
+  background-color: rgba(0, 0, 0, 0.15);
+}
+.group-header.pink .group-close:hover {
+  background-color: rgba(0, 0, 0, 0.15);
+}
+.group-header.purple .group-close:hover {
+  background-color: rgba(0, 0, 0, 0.15);
+}
+.group-header.cyan .group-close:hover {
+  background-color: rgba(0, 0, 0, 0.15);
 }
 
 /* Parent-child relationship styles */
@@ -297,6 +440,7 @@ button:hover {
   border-radius: 0;
   border-bottom: none;
   border-top: none;
+  margin-bottom: 0;
 }
 
 .tabs-container .tab:hover {
@@ -305,88 +449,83 @@ button:hover {
 
 .tabs-container .tab:last-child {
   border-bottom: none;
-  margin-bottom: 0;
 }
 
-.tabs-container .tab:focus {
-  color: var(--text-color);
+/* Add proper collapsed state handling */
+.tab-group.collapsed .tabs-container {
+  display: none;
 }
 
-.tabs-container .tab-title {
-  display: flex;
+.tab-group.collapsed .collapse-indicator {
+  transform: rotate(-90deg);
 }
 
-.tabs-container .tab-title i {
-  margin-left: 0.7em;
+/* Group colors */
+.group-header.grey {
+  background-color: #757575;
+  color: white;
 }
-
-/* Group header styling enhancements for better contrast with child tabs */
-.group-header {
-  display: flex;
-  align-items: center;
-  padding: 10px;
-  background-color: var(--bg-secondary);
-  cursor: pointer;
-  transition: background-color 0.2s;
-  border-bottom: none;
-  font-weight: 500;
+.group-header.blue {
+  background-color: #1a73e8;
+  color: white;
 }
-
-/* Collapse indicator with improved alignment */
-.collapse-indicator {
-  margin-right: 8px;
-  transition: transform 0.2s;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px;
-  height: 16px;
+.group-header.red {
+  background-color: #ea4335;
+  color: white;
+}
+.group-header.yellow {
+  background-color: #fbbc04;
+  color: black;
+}
+.group-header.green {
+  background-color: #34a853;
+  color: white;
+}
+.group-header.pink {
+  background-color: #e91e63;
+  color: white;
+}
+.group-header.purple {
+  background-color: #9c27b0;
+  color: white;
+}
+.group-header.cyan {
+  background-color: #00acc1;
+  color: white;
 }
 
 /* Search */
 .search-container {
-  position: relative;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: var(--secondary-color);
+  padding: 8px 0;
 }
 
 .search-input {
   width: 100%;
-  padding: 8px 32px 8px 8px;
+  padding: 8px 32px 8px 12px;
   border: 1px solid var(--border-color);
   border-radius: 4px;
-  background-color: var(--bg-primary);
-  color: var(--text-color);
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--accent-color);
 }
 
 .search-icon {
   position: absolute;
-  right: 8px;
+  right: 10px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-secondary);
 }
 
-/* Settings */
-.settings-content {
-  padding: 1rem;
-}
-
-.settings-content.hidden {
-  display: none;
-}
-
-.settings-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  padding: 1rem;
-  border-top: 1px solid var(--border-color);
-}
-
-/* Utility classes */
-.hidden {
-  display: none !important;
-}
-
+/* Recent groups section */
 .recent-groups {
   margin-top: 16px;
   padding: 8px;
@@ -420,144 +559,6 @@ button:hover {
   border-radius: 12px;
   font-size: 12px;
   margin-left: 8px;
-}
-
-/* Theme toggle */
-.theme-toggle {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  padding: 4px 8px;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.theme-toggle:hover {
-  background-color: var(--hover-color);
-}
-
-/* Custom group colors */
-.color-picker {
-  display: flex;
-  gap: 4px;
-  margin-top: 8px;
-}
-
-.color-option {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  cursor: pointer;
-  border: 2px solid transparent;
-}
-
-.color-option.selected {
-  border-color: var(--accent-color);
-}
-
-.single-tab-indicator {
-  background-color: #f8f9fa;
-  color: #666;
-  padding: 8px;
-  font-size: 12px;
-  text-align: center;
-  cursor: pointer;
-  border-top: 1px solid #eee;
-}
-
-.single-tab-indicator:hover {
-  background-color: #e8f0fe;
-  color: #1a73e8;
-}
-
-/* Ensure settings UI works well with dark theme */
-[data-theme="dark"] #ai-settings {
-  background-color: var(--bg-secondary);
-  border-color: var(--border-color);
-}
-
-[data-theme="dark"] .settings-tabs {
-  border-bottom-color: var(--border-color);
-}
-
-[data-theme="dark"] .settings-tab {
-  color: var(--text-secondary);
-}
-
-[data-theme="dark"] .settings-tab.active {
-  color: var(--accent-color);
-}
-
-[data-theme="dark"] .settings-tab:hover {
-  background-color: var(--hover-bg);
-}
-
-[data-theme="dark"] .help-text {
-  color: var(--text-secondary);
-}
-
-[data-theme="dark"] .custom-group {
-  background-color: var(--bg-primary);
-  border-color: var(--border-color);
-}
-
-[data-theme="dark"] .category {
-  color: var(--text-secondary);
-}
-
-[data-theme="dark"] .menu-button {
-  color: var(--text-secondary);
-}
-
-[data-theme="dark"] .menu-button:hover {
-  background-color: var(--hover-bg);
-}
-
-[data-theme="dark"] .context-menu {
-  background-color: var(--bg-primary);
-}
-
-[data-theme="dark"] .context-menu li:hover {
-  background-color: var(--hover-bg);
-}
-
-/* Ensure input fields are styled for dark theme */
-[data-theme="dark"] input[type="text"],
-[data-theme="dark"] input[type="password"] {
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
-  border-color: var(--border-color);
-}
-
-/* New styles for search bar */
-.search-container {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background-color: var(--secondary-color);
-  padding: 8px 0;
-}
-
-.search-input {
-  width: 100%;
-  padding: 8px 32px 8px 12px;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: var(--accent-color);
-}
-
-.search-icon {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-secondary);
 }
 
 /* Menu styling */
@@ -661,12 +662,7 @@ button:hover {
   justify-content: center;
 }
 
-/* Dark mode adjustments */
-[data-theme="dark"] .context-menu {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-/* New styles for settings panel */
+/* Settings */
 #settings-content {
   padding: 16px;
   background-color: var(--secondary-color);
@@ -696,7 +692,7 @@ button:hover {
   background: none;
   color: var(--text-color);
   cursor: pointer;
-  border-radius: 4px 0 0 0;
+  border-radius: 4px 4px 0 0;
   transition: all 0.2s;
 }
 
@@ -710,7 +706,20 @@ button:hover {
 }
 
 .settings-content {
+  padding: 1rem;
   margin-bottom: 24px;
+}
+
+.settings-content.hidden {
+  display: none;
+}
+
+.settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px;
+  border-top: 1px solid var(--border-color);
 }
 
 .form-group {
@@ -753,10 +762,12 @@ button:hover {
   margin-bottom: 8px;
 }
 
+/* Custom group colors */
 .color-picker {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  margin-top: 8px;
 }
 
 .color-option {
@@ -771,7 +782,8 @@ button:hover {
   transform: scale(1.1);
 }
 
-.color-option.active {
+.color-option.active,
+.color-option.selected {
   border-color: var(--primary-color);
 }
 
@@ -800,103 +812,72 @@ button:hover {
   background-color: #00bcd4;
 }
 
-.settings-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border-color);
-}
-
-.primary-button,
-.secondary-button {
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s;
-}
-
-.primary-button {
-  background-color: var(--primary-color);
-  color: white;
-  border: none;
-}
-
-.primary-button:hover {
-  background-color: var(--active-color);
-}
-
-.secondary-button {
-  background-color: transparent;
-  color: var(--text-color);
-  border: 1px solid var(--border-color);
-}
-
-.secondary-button:hover {
-  background-color: var(--hover-color);
-}
-
-.small-button {
-  padding: 4px 8px;
-  font-size: 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  background-color: var(--secondary-color);
-  color: var(--text-color);
-  border: 1px solid var(--border-color);
-}
-
-.small-button:hover {
-  background-color: var(--hover-color);
-}
-
+/* Utility classes */
 .hidden {
   display: none !important;
 }
 
-#status-container {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px;
-  border-radius: 4px;
-  font-size: 14px;
+/* Dark mode adjustments */
+[data-theme="dark"] .context-menu {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-#status-container.error {
-  background-color: var(--error-color);
-  color: white;
+[data-theme="dark"] #ai-settings {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
 }
 
-#status-container.success {
-  background-color: var(--success-color);
-  color: white;
+[data-theme="dark"] .settings-tabs {
+  border-bottom-color: var(--border-color);
 }
 
-#status-container.warning {
-  background-color: var(--warning-color);
-  color: black;
+[data-theme="dark"] .settings-tab {
+  color: var(--text-secondary);
 }
 
-#status-container.info {
-  background-color: var(--info-color);
-  color: white;
+[data-theme="dark"] .settings-tab.active {
+  color: var(--accent-color);
 }
 
-#loading-spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid #ffffff;
-  border-radius: 50%;
-  border-top-color: transparent;
-  animation: spin 1s linear infinite;
+[data-theme="dark"] .settings-tab:hover {
+  background-color: var(--hover-bg);
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+[data-theme="dark"] .help-text {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .custom-group {
+  background-color: var(--bg-primary);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .category {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .menu-button {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .menu-button:hover {
+  background-color: var(--hover-bg);
+}
+
+[data-theme="dark"] .context-menu {
+  background-color: var(--bg-primary);
+}
+
+[data-theme="dark"] .context-menu li:hover {
+  background-color: var(--hover-bg);
+}
+
+/* Ensure input fields are styled for dark theme */
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] input[type="password"] {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
 }
 
 /* Scrollbar styling */
@@ -921,7 +902,7 @@ button:hover {
 /* Content areas */
 #main-content,
 #settings-content {
-  height: "100%";
+  height: 100%;
   position: relative;
   overflow: hidden;
 }

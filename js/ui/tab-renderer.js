@@ -59,6 +59,10 @@ export class TabRenderer {
     header.className = "group-header";
     if (group.color) header.classList.add(group.color);
 
+    // Create left side of header (icon and title)
+    const headerLeft = document.createElement("div");
+    headerLeft.className = "group-header-left";
+
     const collapseIndicator = document.createElement("span");
     collapseIndicator.className = "collapse-indicator";
     collapseIndicator.textContent = isCollapsed ? "▶" : "🔽";
@@ -67,6 +71,12 @@ export class TabRenderer {
     const groupTitle = document.createElement("span");
     groupTitle.className = "group-title";
     groupTitle.textContent = group.title || "Unnamed Group";
+
+    headerLeft.append(collapseIndicator, groupTitle);
+
+    // Create right side of header (count and actions)
+    const headerRight = document.createElement("div");
+    headerRight.className = "group-header-right";
 
     const groupCount = document.createElement("span");
     groupCount.className = "group-count";
@@ -95,7 +105,10 @@ export class TabRenderer {
       groupActions.appendChild(ungroupButton);
     }
 
-    header.append(collapseIndicator, groupTitle, groupCount, groupActions);
+    headerRight.append(groupCount, groupActions);
+
+    // Assemble the header with left and right sides
+    header.append(headerLeft, headerRight);
 
     const tabsContainer = document.createElement("div");
     tabsContainer.className = "tabs-container";
