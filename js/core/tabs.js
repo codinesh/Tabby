@@ -14,84 +14,77 @@ export class TabManager {
     return await chrome.tabGroups.query({});
   }
 
+  async createTabGroup(tabs, title, color = "grey") {
+    if (tabs.length > 1) {
+      try {
+        const tabIds = tabs.map(tab => tab.id);
+        const group = await chrome.tabs.group({ tabIds });
+        await chrome.tabGroups.update(group, {
+          title,
+          color,
+          collapsed: false
+        });
+        return group;
+      } catch (e) {
+        console.error("Error creating group:", title, e);
+        return null;
+      }
+    }
+    return null;
+  }
+
   async groupTabsByDomain() {
     const tabs = await this.getAllTabs();
     const domains = new Map();
-
+    const settings = await this.settingsManager.loadSettings();
+    const customGroups = settings.customGroups || [];
+    
     // Group tabs by domain
-    tabs.forEach((tab) => {
+    tabs.forEach(tab => {
       try {
         const url = new URL(tab.url);
         const domain = url.hostname;
         if (!domains.has(domain)) {
-          domains.set(domain, []);
+          domains.set(domain, {
+            tabs: [],
+            customGroup: this.findMatchingCustomGroup(tab, customGroups)
+          });
         }
-        domains.get(domain).push(tab);
+        domains.get(domain).tabs.push(tab);
       } catch (e) {
-        // Skip invalid URLs
         console.error("Invalid URL:", tab.url);
       }
     });
 
     // Create tab groups
-    for (const [domain, domainTabs] of domains) {
-      if (domainTabs.length > 1) {
-        try {
-          const tabIds = domainTabs.map((tab) => tab.id);
-          const group = await chrome.tabs.group({ tabIds });
-          const category = await this.getDomainCategory(domain, domainTabs);
-          await chrome.tabGroups.update(group, {
-            title: category.title,
-            color: category.color,
-            collapsed: false,
-          });
-        } catch (e) {
-          console.error("Error creating group for domain:", domain, e);
-        }
-      }
+    for (const [domain, domainData] of domains) {
+      const { tabs, customGroup } = domainData;
+      const title = customGroup ? customGroup.name : domain.replace(/^www\./, '');
+      const color = customGroup ? customGroup.color || "grey" : this.getColorForDomain(domain);
+      await this.createTabGroup(tabs, title, color);
     }
   }
 
-  async getDomainCategory(domain, tabs) {
-    // First check user-configured groups
-    const settings = await this.settingsManager.loadSettings();
-    const customGroups = settings.customGroups || [];
+  findMatchingCustomGroup(tab, customGroups) {
+    if (!customGroups) return null;
 
-    // Check if any tab in this group matches user-defined keywords
     for (const group of customGroups) {
-      if (!group || !group.keywords) continue;
-
-      const keywords = group.keywords
-        .toLowerCase()
-        .split(",")
-        .map((k) => k.trim());
-      const matchingTab = tabs.find((tab) =>
-        keywords.some(
-          (keyword) =>
-            tab.title.toLowerCase().includes(keyword) ||
-            tab.url.toLowerCase().includes(keyword)
-        )
-      );
-
-      if (matchingTab) {
-        return {
-          title: group.name || domain,
-          color: group.color || "grey",
-        };
+      if (!group || !group.keywords || !Array.isArray(group.keywords)) continue;
+      
+      if (group.keywords.some(keyword => 
+        tab.title.toLowerCase().includes(keyword.toLowerCase()) || 
+        tab.url.toLowerCase().includes(keyword.toLowerCase())
+      )) {
+        return group;
       }
     }
-
-    // If no custom group matches, use the domain name
-    return {
-      title: domain.replace(/^www\./, ""),
-      color: "grey",
-    };
+    return null;
   }
 
   async groupTabsByAI() {
     const tabs = await this.getAllTabs();
     const settings = await this.settingsManager.loadSettings();
-
+    
     if (!settings.apiKey) {
       throw new Error("API key not configured");
     }
@@ -102,105 +95,66 @@ export class TabManager {
     const matchedGroups = new Map();
     const unmatchedTabs = [];
 
-    tabs.forEach((tab) => {
-      let matched = false;
-      for (const group of customGroups) {
-        if (!group || !group.keywords) continue;
-
-        const keywords = group.keywords.map((k) => k.trim());
-        if (
-          keywords.some(
-            (keyword) =>
-              tab.title.toLowerCase().includes(keyword) ||
-              tab.url.toLowerCase().includes(keyword)
-          )
-        ) {
-          if (!matchedGroups.has(group.name)) {
-            matchedGroups.set(group.name, {
-              tabs: [],
-              color: group.color || "grey",
-            });
-          }
-          matchedGroups.get(group.name).tabs.push(tab);
-          matched = true;
-          break;
+    tabs.forEach(tab => {
+      const matchingGroup = this.findMatchingCustomGroup(tab, customGroups);
+      
+      if (matchingGroup) {
+        const groupName = matchingGroup.name;
+        if (!matchedGroups.has(groupName)) {
+          matchedGroups.set(groupName, {
+            tabs: [],
+            color: matchingGroup.color || 'grey'
+          });
         }
-      }
-      if (!matched) {
+        matchedGroups.get(groupName).tabs.push(tab);
+      } else {
         unmatchedTabs.push(tab);
       }
     });
 
     // Create groups for matched tabs
     for (const [groupName, groupData] of matchedGroups) {
-      if (groupData.tabs.length > 1) {
-        const tabIds = groupData.tabs.map((tab) => tab.id);
-        const group = await chrome.tabs.group({ tabIds });
-        await chrome.tabGroups.update(group, {
-          title: groupName,
-          color: groupData.color,
-          collapsed: false,
-        });
-      }
+      await this.createTabGroup(groupData.tabs, groupName, groupData.color);
     }
 
     // Use AI to categorize remaining tabs
     if (unmatchedTabs.length > 0) {
-      const categories = await this.callAIApi(
-        settings.apiUrl,
-        settings.apiKey,
-        unmatchedTabs
-      );
-
+      const categories = await this.callAIApi(settings.apiUrl, settings.apiKey, unmatchedTabs);
+      
       // Create AI-suggested groups
       for (const category of categories) {
-        const tabIds = category.indices.map((i) => unmatchedTabs[i].id);
-        if (tabIds.length > 1) {
-          const group = await chrome.tabs.group({ tabIds });
-          await chrome.tabGroups.update(group, {
-            title: category.category,
-            color: "blue",
-            collapsed: false,
-          });
-        }
+        const categoryTabs = category.indices.map(i => unmatchedTabs[i]);
+        await this.createTabGroup(categoryTabs, category.category, 'blue');
       }
     }
   }
 
   async callAIApi(apiUrl, apiKey, tabs) {
-    const tabInfo = tabs.map((tab) => ({
+    const tabInfo = tabs.map(tab => ({
       title: tab.title,
-      url: tab.url,
+      url: tab.url
     }));
 
-    const response = await fetch(
-      apiUrl || "https://api.openai.com/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "api-key": apiKey,
-        },
-        body: JSON.stringify({
-          model: "gpt-3.5-turbo",
-          messages: [
-            {
-              role: "system",
-              content:
-                'You are a helpful assistant that categorizes browser tabs into groups. Respond only with a JSON array where each element has a "category" and "indices" field. The category should be a short, descriptive name, and indices should be an array of tab indices that belong to that category.',
-            },
-            {
-              role: "user",
-              content: `Please categorize these tabs:\n${JSON.stringify(
-                tabInfo,
-                null,
-                2
-              )}`,
-            },
-          ],
-        }),
-      }
-    );
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "api-key": apiKey,
+      },
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo",
+        messages: [
+          {
+            role: "system",
+            content: "You are a helpful assistant that categorizes browser tabs into groups. Respond only with a JSON array where each element has a \"category\" and \"indices\" field. The category should be a short, descriptive name, and indices should be an array of tab indices that belong to that category."
+          },
+          {
+            role: "user",
+            content: `Please categorize these tabs:\n${JSON.stringify(tabInfo, null, 2)}`
+          }
+        ]
+      })
+    });
 
     if (!response.ok) {
       throw new Error("Failed to get AI categories");
@@ -210,9 +164,27 @@ export class TabManager {
     return JSON.parse(data.choices[0].message.content);
   }
 
+  getColorForDomain(domain) {
+    const colors = [
+      "grey",
+      "blue",
+      "red",
+      "yellow",
+      "green",
+      "pink",
+      "purple",
+      "cyan",
+    ];
+    const hash = Array.from(domain).reduce(
+      (acc, char) => acc + char.charCodeAt(0),
+      0
+    );
+    return colors[hash % colors.length];
+  }
+
   async ungroupAllTabs() {
     const tabs = await this.getAllTabs();
-    const groupedTabs = tabs.filter((tab) => tab.groupId !== -1);
+    const groupedTabs = tabs.filter(tab => tab.groupId !== -1);
     for (const tab of groupedTabs) {
       await chrome.tabs.ungroup(tab.id);
     }

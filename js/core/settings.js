@@ -1,4 +1,4 @@
-// Core settings operations without any DOM manipulation
+// Settings management functionality
 export class SettingsManager {
   constructor() {
     this.defaultSettings = {
@@ -8,7 +8,20 @@ export class SettingsManager {
     };
   }
 
+  processCustomGroups(groups) {
+    if (!groups) return [];
+    return groups.map(group => ({
+      ...group,
+      keywords: typeof group.keywords === 'string' 
+        ? group.keywords.split(',').map(k => k.trim())
+        : group.keywords
+    }));
+  }
+
   async saveSettings(settings) {
+    if (settings.customGroups) {
+      settings.customGroups = this.processCustomGroups(settings.customGroups);
+    }
     await chrome.storage.sync.set(settings);
   }
 
@@ -29,7 +42,8 @@ export class SettingsManager {
   }
 
   async saveCustomGroups(groups) {
-    await chrome.storage.sync.set({ customGroups: groups });
+    const processedGroups = this.processCustomGroups(groups);
+    await chrome.storage.sync.set({ customGroups: processedGroups });
   }
 
   async getCustomGroups() {
@@ -46,7 +60,7 @@ export class SettingsManager {
     return result.theme || this.defaultSettings.theme;
   }
 
-  async saveCollapsedState(groupId, isCollapsed) {
+  async setCollapsedState(groupId, isCollapsed) {
     const result = await chrome.storage.local.get(["collapsedGroups"]);
     const collapsedGroups = result.collapsedGroups || {};
     collapsedGroups[groupId] = isCollapsed;

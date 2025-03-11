@@ -65,6 +65,7 @@ export class SettingsUI {
       const colorSelect = element.querySelector(".group-color");
 
       nameInput.value = group.name || "";
+      // Handle both string and array formats for keywords
       keywordsInput.value = Array.isArray(group.keywords)
         ? group.keywords.join(", ")
         : group.keywords || "";
