@@ -262,4 +262,17 @@ export class TabManager {
       throw new Error("Failed to close tab");
     }
   }
+
+  async closeTabGroup(groupId) {
+    try {
+      const tabs = await chrome.tabs.query({ groupId });
+      if (tabs.length === 0) return;
+
+      const tabIds = tabs.map(tab => tab.id);
+      await chrome.tabs.remove(tabIds);
+    } catch (error) {
+      console.error("Error closing tab group:", error);
+      throw new Error("Failed to close tab group");
+    }
+  }
 }

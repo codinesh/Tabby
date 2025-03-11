@@ -19,11 +19,13 @@ Tabby is a smart browser extension that revolutionizes how you organize your tab
 ## Quick Installation
 
 ### Chrome Web Store (Recommended)
+
 1. Visit the [Chrome Web Store](https://chrome.google.com/webstore) (Coming Soon)
 2. Click "Add to Chrome"
 3. Confirm the installation
 
 ### Manual Installation (Developer Mode)
+
 1. Download this repository
 2. Go to `chrome://extensions/` (or equivalent for your browser)
 3. Enable "Developer mode"
@@ -32,12 +34,14 @@ Tabby is a smart browser extension that revolutionizes how you organize your tab
 ## Setup Guide
 
 ### Basic Usage
+
 1. Click the Tabby icon in your toolbar
 2. Choose your preferred grouping method:
    - 🤖 AI Categorization
    - 🌐 Domain-based Grouping
 
 ### AI Feature Setup (Optional)
+
 1. Open Settings (⋮ menu)
 2. Enter your OpenAI API details:
    - API Endpoint (default: `https://api.openai.com/v1/chat/completions`)
@@ -45,16 +49,19 @@ Tabby is a smart browser extension that revolutionizes how you organize your tab
 3. Save changes
 
 ### Custom Groups Configuration
+
 1. Navigate to Settings > Custom Groups
 2. Add groups with relevant keywords
 3. Save to apply custom grouping rules
 
 ## Keyboard Shortcuts
+
 - `Alt + T`: Open Tabby popup
 - `Alt + G`: Quick group by domain
 - `Alt + U`: Ungroup all tabs
 
 ## Browser Compatibility
+
 - ✅ Google Chrome (v88+)
 - ✅ Microsoft Edge
 - ✅ Brave Browser
@@ -63,27 +70,32 @@ Tabby is a smart browser extension that revolutionizes how you organize your tab
 ## Troubleshooting
 
 ### Common Issues
+
 - **API Not Working**: Verify API key and endpoint
 - **Groups Not Forming**: Check browser permissions
 - **Custom Rules Not Applied**: Verify keyword formatting
 
 ### Need Help?
+
 - 📜 Check our [Wiki](https://github.com/yourusername/tabby/wiki)
 - 🐛 Report issues on [GitHub](https://github.com/yourusername/tabby/issues)
 - 📧 Contact: [your-support-email]
 
 ## Privacy & Security
+
 - ✅ No user data collection
 - ✅ Local storage only
 - ✅ Optional AI feature with your own API key
 - ✅ Open-source code
 
 ## Contributing
+
 We welcome contributions! See our [Contributing Guidelines](CONTRIBUTING.md) for details.
 
 ## License
+
 MIT License - See [LICENSE](LICENSE) file for details
 
 ---
 
-*Made with ❤️ by the Tabby team*
+_Made with ❤️ by the Tabby team_

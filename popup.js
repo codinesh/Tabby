@@ -117,6 +117,7 @@ function initializeEventListeners() {
 
   // Settings related buttons
   document.getElementById("menu-settings").addEventListener("click", () => {
+    menuManager.closeContextMenu();
     settingsUI.show();
   });
 
@@ -145,10 +146,6 @@ function initializeEventListeners() {
     document.getElementById("custom-groups-container").appendChild(element);
   });
 
-  // Menu button
-  const menuButton = document.getElementById("menu-button");
-  menuButton.addEventListener("click", () => menuManager.toggleContextMenu());
-
   // Refresh tabs button
   document
     .getElementById("menu-refresh-tabs")
@@ -156,11 +153,19 @@ function initializeEventListeners() {
       try {
         statusManager.showLoading("Refreshing tabs...");
         await tabRenderer.renderTabs();
-        menuManager.toggleContextMenu();
+        menuManager.closeContextMenu();
         statusManager.showStatus("Tabs refreshed successfully");
       } catch (error) {
         console.error("Error refreshing tabs:", error);
         statusManager.showStatus("Error refreshing tabs: " + error.message, true);
       }
+    });
+    
+  // Backup tabs button
+  document
+    .getElementById("backup-tabs")
+    .addEventListener("click", () => {
+      menuManager.closeContextMenu();
+      statusManager.showStatus("Backup feature coming soon!");
     });
 }

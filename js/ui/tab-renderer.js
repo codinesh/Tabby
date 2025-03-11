@@ -85,7 +85,7 @@ export class TabRenderer {
       ungroupButton.addEventListener("click", async (e) => {
         e.stopPropagation();
         try {
-          await this.tabManager.ungroupTabs(group.id);
+          await this.tabManager.closeTabGroup(group.id);
           await this.renderTabs();
         } catch (error) {
           console.error("Error ungrouping tabs:", error);

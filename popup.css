@@ -43,7 +43,6 @@ html,
 body {
   margin: 0;
   padding: 0;
-  height: 600px;
   overflow: hidden;
 }
 
@@ -51,6 +50,7 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
   width: auto;
+  height: 120vh;
   min-width: 600px;
   max-width: 1000px;
   background-color: var(--secondary-color);
@@ -314,14 +314,38 @@ button:hover {
 }
 
 /* Group colors */
-.group-header.grey { background-color: #757575; color: white; }
-.group-header.blue { background-color: #1a73e8; color: white; }
-.group-header.red { background-color: #ea4335; color: white; }
-.group-header.yellow { background-color: #fbbc04; color: black; }
-.group-header.green { background-color: #34a853; color: white; }
-.group-header.pink { background-color: #e91e63; color: white; }
-.group-header.purple { background-color: #9c27b0; color: white; }
-.group-header.cyan { background-color: #00acc1; color: white; }
+.group-header.grey {
+  background-color: #757575;
+  color: white;
+}
+.group-header.blue {
+  background-color: #1a73e8;
+  color: white;
+}
+.group-header.red {
+  background-color: #ea4335;
+  color: white;
+}
+.group-header.yellow {
+  background-color: #fbbc04;
+  color: black;
+}
+.group-header.green {
+  background-color: #34a853;
+  color: white;
+}
+.group-header.pink {
+  background-color: #e91e63;
+  color: white;
+}
+.group-header.purple {
+  background-color: #9c27b0;
+  color: white;
+}
+.group-header.cyan {
+  background-color: #00acc1;
+  color: white;
+}
 
 /* Search */
 .search-container {
