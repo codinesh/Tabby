@@ -177,7 +177,8 @@ button:hover {
 }
 
 #tabs-list {
-  padding-right: 8px;
+  padding: 1rem;
+  overflow-y: auto;
 }
 
 .tab {
@@ -454,12 +455,11 @@ input[type="password"] {
 .group-header {
   display: flex;
   align-items: center;
-  padding: 8px 12px;
-  background-color: var(--secondary-color);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  margin-bottom: 8px;
+  padding: 8px;
   cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  margin-bottom: 0.5rem;
 }
 
 .group-header:hover {
@@ -489,20 +489,14 @@ input[type="password"] {
 }
 
 .tabs-container {
+  padding: 0 1rem;
+  margin: 0.5rem 0;
+  border-left: 2px solid var(--border-color);
+  margin-left: 1rem;
 }
 
 .tab-group.collapsed .tabs-container {
-  display: none !important;
-}
-
-.collapse-indicator {
-  margin-right: 8px;
-  font-size: 12px;
-  transition: transform 0.2s;
-}
-
-.tab-group.collapsed .collapse-indicator {
-  transform: rotate(-90deg);
+  display: none;
 }
 
 .tab {

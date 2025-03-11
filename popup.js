@@ -10,9 +10,9 @@ const tabManager = new TabManager();
 const settingsManager = new SettingsManager();
 
 // Initialize UI components
-const tabRenderer = new TabRenderer(tabManager);
+const tabRenderer = new TabRenderer(tabManager, settingsManager);
 const settingsUI = new SettingsUI(settingsManager);
-const themeManager = new ThemeManager();
+const themeManager = new ThemeManager(settingsManager);
 const menuManager = new MenuManager();
 
 // Helper function for debouncing

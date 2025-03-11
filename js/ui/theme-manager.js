@@ -1,19 +1,18 @@
 // Theme management functionality
 export class ThemeManager {
-  constructor() {
+  constructor(settingsManager) {
+    this.settingsManager = settingsManager;
     this.themeToggle = document.getElementById("theme-toggle");
     this.prefersDark = window.matchMedia("(prefers-color-scheme: dark)");
   }
 
-  initialize() {
-    const theme = localStorage.getItem("theme") || "system";
+  async initialize() {
+    const theme = await this.settingsManager.getTheme();
     this.applyTheme(theme);
 
     // Listen for system theme changes
     this.prefersDark.addEventListener("change", () => {
-      if (localStorage.getItem("theme") === "system") {
-        this.applyTheme("system");
-      }
+      this.applyTheme(theme);
     });
   }
 
@@ -34,10 +33,10 @@ export class ThemeManager {
         : "🌙";
   }
 
-  toggle() {
+  async toggle() {
     const currentTheme = document.documentElement.getAttribute("data-theme");
     const newTheme = currentTheme === "dark" ? "light" : "dark";
-    localStorage.setItem("theme", newTheme);
+    await this.settingsManager.saveTheme(newTheme);
     this.applyTheme(newTheme);
   }
 }
