@@ -4,6 +4,15 @@ export class TabManager {
     this.settingsManager = settingsManager;
     this.tabs = [];
     this.tabGroups = [];
+    this.colors = [
+      "blue",
+      "red",
+      "yellow",
+      "green",
+      "pink",
+      "purple",
+      "cyan"
+    ];
   }
 
   async getAllTabs() {
@@ -12,6 +21,14 @@ export class TabManager {
 
   async getAllTabGroups() {
     return await chrome.tabGroups.query({});
+  }
+
+  getColorForText(text) {
+    const hash = Array.from(text.toLowerCase()).reduce(
+      (acc, char) => acc + char.charCodeAt(0),
+      0
+    );
+    return this.colors[hash % this.colors.length];
   }
 
   async createTabGroup(tabs, title, color = "grey") {
@@ -60,7 +77,7 @@ export class TabManager {
     for (const [domain, domainData] of domains) {
       const { tabs, customGroup } = domainData;
       const title = customGroup ? customGroup.name : domain.replace(/^www\./, '');
-      const color = customGroup ? customGroup.color || "grey" : this.getColorForDomain(domain);
+      const color = customGroup ? customGroup.color || "grey" : this.getColorForText(domain);
       await this.createTabGroup(tabs, title, color);
     }
   }
@@ -124,7 +141,8 @@ export class TabManager {
       // Create AI-suggested groups
       for (const category of categories) {
         const categoryTabs = category.indices.map(i => unmatchedTabs[i]);
-        await this.createTabGroup(categoryTabs, category.category, 'blue');
+        const color = this.getColorForText(category.category);
+        await this.createTabGroup(categoryTabs, category.category, color);
       }
     }
   }
@@ -172,24 +190,6 @@ export class TabManager {
       console.error("Failed to parse AI response:", jsonStr);
       throw new Error("Invalid response format from AI");
     }
-  }
-
-  getColorForDomain(domain) {
-    const colors = [
-      "grey",
-      "blue",
-      "red",
-      "yellow",
-      "green",
-      "pink",
-      "purple",
-      "cyan",
-    ];
-    const hash = Array.from(domain).reduce(
-      (acc, char) => acc + char.charCodeAt(0),
-      0
-    );
-    return colors[hash % colors.length];
   }
 
   async ungroupAllTabs() {
