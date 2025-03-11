@@ -125,8 +125,18 @@ function initializeEventListeners() {
       try {
         statusManager.showLoading("Collapsing all tab groups...");
         menuManager.closeContextMenu();
-        await tabManager.collapseAllTabGroups();
-        await tabRenderer.renderTabs();
+        
+        // Collapse browser tab groups and get updated state
+        const result = await tabManager.collapseAllTabGroups();
+        
+        if (result) {
+          // Update UI directly without full re-render
+          updateGroupCollapseState(true);
+        } else {
+          // Fallback to full re-render
+          await tabRenderer.renderTabs();
+        }
+        
         statusManager.showStatus("All tab groups collapsed");
       } catch (error) {
         console.error("Error collapsing tab groups:", error);
@@ -141,8 +151,18 @@ function initializeEventListeners() {
       try {
         statusManager.showLoading("Expanding all tab groups...");
         menuManager.closeContextMenu();
-        await tabManager.expandAllTabGroups();
-        await tabRenderer.renderTabs();
+        
+        // Expand browser tab groups and get updated state
+        const result = await tabManager.expandAllTabGroups();
+        
+        if (result) {
+          // Update UI directly without full re-render
+          updateGroupCollapseState(false);
+        } else {
+          // Fallback to full re-render
+          await tabRenderer.renderTabs();
+        }
+        
         statusManager.showStatus("All tab groups expanded");
       } catch (error) {
         console.error("Error expanding tab groups:", error);
@@ -204,4 +224,23 @@ function initializeEventListeners() {
       menuManager.closeContextMenu();
       statusManager.showStatus("Backup feature coming soon!");
     });
+}
+
+// Function to update UI group collapse states without re-rendering everything
+function updateGroupCollapseState(isCollapsed) {
+  document.querySelectorAll('.tab-group').forEach(groupElement => {
+    // Update class
+    if (isCollapsed) {
+      groupElement.classList.add('collapsed');
+    } else {
+      groupElement.classList.remove('collapsed');
+    }
+    
+    // Update collapse indicator
+    const indicator = groupElement.querySelector('.collapse-indicator');
+    if (indicator) {
+      indicator.textContent = isCollapsed ? "▶" : "🔽";
+      indicator.setAttribute('aria-label', isCollapsed ? "Expand group" : "Collapse group");
+    }
+  });
 }

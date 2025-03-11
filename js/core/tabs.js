@@ -333,6 +333,13 @@ export class TabManager {
       await this.settingsManager.setCollapsedState("ungrouped", true);
       
       await Promise.all(updatePromises);
+      
+      // Return the updated collapse states for UI update
+      return { 
+        allCollapsed: true,
+        groupIds: tabGroups.map(group => group.id.toString()),
+        includeUngrouped: true
+      };
     } catch (error) {
       console.error("Error collapsing all tab groups:", error);
       throw new Error("Failed to collapse all tab groups");
@@ -358,6 +365,13 @@ export class TabManager {
       await this.settingsManager.setCollapsedState("ungrouped", false);
       
       await Promise.all(updatePromises);
+      
+      // Return the updated collapse states for UI update
+      return {
+        allCollapsed: false,
+        groupIds: tabGroups.map(group => group.id.toString()),
+        includeUngrouped: true
+      };
     } catch (error) {
       console.error("Error expanding all tab groups:", error);
       throw new Error("Failed to expand all tab groups");
