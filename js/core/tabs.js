@@ -571,10 +571,24 @@ export class TabManager {
           await chrome.tabGroups.update(group.id, {
             collapsed: collapsedStates[groupId],
           });
+        } else {
+          // If we don't have a saved state for this group yet,
+          // save the current state
+          await this.settingsManager.setCollapsedState(
+            groupId,
+            group.collapsed || false
+          );
         }
       });
 
       await Promise.all(updatePromises);
+
+      // No need to update UI for ungrouped tabs here as the renderer will handle it
+      // We just make sure the state exists in storage
+      if (!("ungrouped" in collapsedStates)) {
+        // Default to not collapsed if no state is saved
+        await this.settingsManager.setCollapsedState("ungrouped", false);
+      }
     } catch (error) {
       console.error("Error syncing collapsed states:", error);
     }
