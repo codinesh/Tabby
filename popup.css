@@ -120,10 +120,17 @@ h1 {
   font-size: 14px;
   transition: all 0.3s ease;
   margin-right: 8px;
+  min-height: 20px; /* Add fixed minimum height */
+  height: 20px; /* Fixed height to prevent flickering */
+  overflow: hidden; /* Hide overflow content */
+  opacity: 1; /* Start fully visible */
 }
 
 #status-container.hidden {
-  display: none;
+  opacity: 0;
+  height: 0;
+  padding: 0;
+  margin: 0;
 }
 
 #status-message {
@@ -131,6 +138,7 @@ h1 {
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 200px;
+  line-height: 20px; /* Match container height */
 }
 
 #status-message.error {
@@ -944,4 +952,91 @@ button {
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
+}
+
+/* SVG icons styling */
+svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+  vertical-align: middle;
+}
+
+/* Style for collapse indicators */
+.collapse-indicator svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.3s ease;
+  fill: currentColor;
+}
+
+/* Update the rotation behavior for collapsed state */
+.tab-group.collapsed .collapse-indicator svg {
+  transform: rotate(-180deg);
+}
+
+/* Ensure the collapse indicator has consistent spacing and alignment */
+.collapse-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+/* Style for navigation button icons */
+.menu-button svg,
+.secondary-button svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Style for the refresh icon in the menu */
+#menu-refresh-tabs svg {
+  width: 14px;
+  height: 14px;
+  margin-right: 4px;
+}
+
+/* Ensure the collapse indicator has consistent spacing */
+.collapse-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+}
+
+/* Adjust the height and transitions for the status container */
+#status-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  margin-right: 8px;
+  min-height: 20px; /* Add fixed minimum height */
+  height: 20px; /* Fixed height to prevent flickering */
+  overflow: hidden; /* Hide overflow content */
+  opacity: 1; /* Start fully visible */
+}
+
+#status-container.hidden {
+  opacity: 0;
+  height: 0;
+  padding: 0;
+  margin: 0;
+}
+
+#status-message {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+  line-height: 20px; /* Match container height */
 }

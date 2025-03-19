@@ -65,7 +65,10 @@ export class TabRenderer {
 
     const collapseIndicator = document.createElement("span");
     collapseIndicator.className = "collapse-indicator";
-    collapseIndicator.textContent = isCollapsed ? "▶" : "🔽";
+    // Use SVG icons instead of emoji
+    collapseIndicator.innerHTML = isCollapsed
+      ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>' // chevron down
+      : '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M233.4 105.4c12.5-12.5 32.8-12.5 45.3 0l192 192c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L256 173.3 86.6 342.6c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l192-192z"/></svg>'; // chevron up
     collapseIndicator.setAttribute(
       "aria-label",
       isCollapsed ? "Expand group" : "Collapse group"
@@ -137,7 +140,12 @@ export class TabRenderer {
 
       // Update UI immediately for better feedback
       groupElement.classList.toggle("collapsed");
-      collapseIndicator.textContent = newCollapsedState ? "▶" : "🔽";
+
+      // Update the collapse indicator with the appropriate SVG
+      collapseIndicator.innerHTML = newCollapsedState
+        ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>' // chevron down
+        : '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M233.4 105.4c12.5-12.5 32.8-12.5 45.3 0l192 192c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L256 173.3 86.6 342.6c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l192-192z"/></svg>'; // chevron up
+
       collapseIndicator.setAttribute(
         "aria-label",
         newCollapsedState ? "Expand group" : "Collapse group"
@@ -161,7 +169,9 @@ export class TabRenderer {
         console.error("Error updating tab group collapsed state:", error);
         // Revert UI if update fails
         groupElement.classList.toggle("collapsed");
-        collapseIndicator.textContent = wasCollapsed ? "▶" : "🔽";
+        collapseIndicator.innerHTML = wasCollapsed
+          ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>' // chevron down
+          : '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M233.4 105.4c12.5-12.5 32.8-12.5 45.3 0l192 192c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L256 173.3 86.6 342.6c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l192-192z"/></svg>'; // chevron up
       }
     });
 
