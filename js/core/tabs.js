@@ -552,8 +552,7 @@ export class TabManager {
         collapsed: isCollapsed,
       });
 
-      // Also update our saved state
-      await this.settingsManager.setCollapsedState(groupId, isCollapsed);
+      // Removed storage persistence
     } catch (error) {
       console.error("Error updating tab group collapsed state:", error);
       throw new Error("Failed to update tab group collapsed state");
@@ -561,37 +560,9 @@ export class TabManager {
   }
 
   async syncSavedCollapsedStates() {
-    try {
-      const collapsedStates = await this.settingsManager.getCollapsedStates();
-      const tabGroups = await this.getAllTabGroups();
-
-      const updatePromises = tabGroups.map(async (group) => {
-        const groupId = group.id.toString();
-        if (groupId in collapsedStates) {
-          await chrome.tabGroups.update(group.id, {
-            collapsed: collapsedStates[groupId],
-          });
-        } else {
-          // If we don't have a saved state for this group yet,
-          // save the current state
-          await this.settingsManager.setCollapsedState(
-            groupId,
-            group.collapsed || false
-          );
-        }
-      });
-
-      await Promise.all(updatePromises);
-
-      // No need to update UI for ungrouped tabs here as the renderer will handle it
-      // We just make sure the state exists in storage
-      if (!("ungrouped" in collapsedStates)) {
-        // Default to not collapsed if no state is saved
-        await this.settingsManager.setCollapsedState("ungrouped", false);
-      }
-    } catch (error) {
-      console.error("Error syncing collapsed states:", error);
-    }
+    // No need to sync or save collapsed states anymore
+    // This method is kept for compatibility but doesn't do anything
+    return;
   }
 
   async collapseAllTabGroups() {
@@ -604,13 +575,8 @@ export class TabManager {
       const updatePromises = tabGroups.map(async (group) => {
         // Update the browser tab group
         await chrome.tabGroups.update(group.id, { collapsed: true });
-
-        // Update our saved state
-        await this.settingsManager.setCollapsedState(group.id.toString(), true);
+        // Removed storage persistence
       });
-
-      // Also set ungrouped tabs as collapsed in our saved state
-      await this.settingsManager.setCollapsedState("ungrouped", true);
 
       await Promise.all(updatePromises);
 
@@ -636,16 +602,8 @@ export class TabManager {
       const updatePromises = tabGroups.map(async (group) => {
         // Update the browser tab group
         await chrome.tabGroups.update(group.id, { collapsed: false });
-
-        // Update our saved state
-        await this.settingsManager.setCollapsedState(
-          group.id.toString(),
-          false
-        );
+        // Removed storage persistence
       });
-
-      // Also set ungrouped tabs as expanded in our saved state
-      await this.settingsManager.setCollapsedState("ungrouped", false);
 
       await Promise.all(updatePromises);
 
@@ -658,6 +616,37 @@ export class TabManager {
     } catch (error) {
       console.error("Error expanding all tab groups:", error);
       throw new Error("Failed to expand all tab groups");
+    }
+  }
+
+  async syncWithBrowserGroups(groupedTabs, groups) {
+    try {
+      // Create a map of group IDs to group details
+      const groupMap = new Map(groups.map((group) => [group.id, group]));
+
+      // Group tabs by their groupId
+      const tabsByGroup = groupedTabs.reduce((acc, tab) => {
+        if (!acc.has(tab.groupId)) {
+          acc.set(tab.groupId, []);
+        }
+        acc.get(tab.groupId).push(tab);
+        return acc;
+      }, new Map());
+
+      // For each group, create or update our internal group state
+      for (const [groupId, tabs] of tabsByGroup) {
+        const group = groupMap.get(groupId);
+        if (group) {
+          // Get existing group color or use grey as default
+          const color = group.color || "grey";
+
+          // Create tab group with browser's settings
+          await this.createTabGroup(tabs, group.title || "", color);
+        }
+      }
+    } catch (error) {
+      console.error("Error syncing with browser groups:", error);
+      throw new Error("Failed to sync tab groups");
     }
   }
 }

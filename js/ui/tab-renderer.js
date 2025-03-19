@@ -51,15 +51,38 @@ export class TabRenderer {
     return tabElement;
   }
 
-  createGroupElement(group, tabs, isCollapsed = false) {
+  async renderTabGroup(group, tabs) {
     const groupElement = document.createElement("div");
     groupElement.className = "tab-group";
-    groupElement.setAttribute("data-group-id", group.id);
-    if (isCollapsed) groupElement.classList.add("collapsed");
+    groupElement.dataset.groupId = group.id;
 
+    // Use only the browser's collapsed state
+    if (group.collapsed) {
+      groupElement.classList.add("collapsed");
+    }
+
+    // Create group header
     const header = document.createElement("div");
-    header.className = "group-header";
-    if (group.color) header.classList.add(group.color);
+    header.className = `group-header ${group.color || "grey"}`;
+    header.addEventListener("click", async (e) => {
+      if (!e.target.closest(".tab-close")) {
+        const isCollapsed = !groupElement.classList.contains("collapsed");
+        await this.tabManager.setTabGroupCollapsed(group.id, isCollapsed);
+
+        // Update UI directly after toggling
+        groupElement.classList.toggle("collapsed");
+        const indicator = groupElement.querySelector(".collapse-indicator");
+        if (indicator) {
+          indicator.style.transform = isCollapsed
+            ? "rotate(0deg)"
+            : "rotate(90deg)";
+          indicator.setAttribute(
+            "aria-label",
+            isCollapsed ? "Expand group" : "Collapse group"
+          );
+        }
+      }
+    });
 
     // Create left side of header (icon and title)
     const headerLeft = document.createElement("div");
@@ -68,7 +91,7 @@ export class TabRenderer {
     const collapseIndicator = document.createElement("span");
     collapseIndicator.className = "collapse-indicator";
     collapseIndicator.innerHTML = ICONS.CHEVRON;
-    if (isCollapsed) {
+    if (group.collapsed) {
       collapseIndicator.style.transform = "rotate(0deg)";
     } else {
       collapseIndicator.style.transform = "rotate(90deg)";
@@ -124,66 +147,14 @@ export class TabRenderer {
 
     groupElement.append(header, tabsContainer);
 
-    // Add event listener for collapse/expand
-    header.addEventListener("click", async (e) => {
-      // Skip if clicking on close button
-      if (e.target.closest(".group-close")) return;
-
-      // Toggle collapsed state for UI
-      const wasCollapsed = groupElement.classList.contains("collapsed");
-      const newCollapsedState = !wasCollapsed;
-
-      // Debug logging
-      console.log(
-        `Toggling group ${group.id} collapsed state: ${wasCollapsed} -> ${newCollapsedState}`
-      );
-
-      // Update UI immediately for better feedback
-      groupElement.classList.toggle("collapsed");
-
-      // Update rotation based on collapsed state
-      collapseIndicator.style.transform = newCollapsedState
-        ? "rotate(0deg)"
-        : "rotate(90deg)";
-
-      collapseIndicator.setAttribute(
-        "aria-label",
-        newCollapsedState ? "Expand group" : "Collapse group"
-      );
-
-      // Update browser tab group and storage
-      try {
-        if (group.id && group.id !== "ungrouped") {
-          await this.tabManager.setTabGroupCollapsed(
-            group.id,
-            newCollapsedState
-          );
-        } else if (group.id === "ungrouped") {
-          // Just save the state for ungrouped tabs
-          await this.settingsManager.setCollapsedState(
-            group.id,
-            newCollapsedState
-          );
-        }
-      } catch (error) {
-        console.error("Error updating tab group collapsed state:", error);
-        // Revert UI if update fails
-        groupElement.classList.toggle("collapsed");
-        collapseIndicator.style.transform = wasCollapsed
-          ? "rotate(90deg)"
-          : "rotate(0deg)";
-      }
-    });
-
     return groupElement;
   }
 
   async renderTabs() {
     try {
-      const [tabs, tabGroups, collapsedGroups] = await Promise.all([
+      const [tabs, tabGroups] = await Promise.all([
         this.tabManager.getAllTabs(),
         this.tabManager.getAllTabGroups(),
-        this.settingsManager.getCollapsedStates(),
       ]);
 
       // Create a map of group IDs to their details
@@ -212,33 +183,15 @@ export class TabRenderer {
         const group = groupMap.get(groupId);
         if (!group) continue;
 
-        // Check if there's a saved collapsed state, if not use the browser's state
-        const isCollapsed = collapsedGroups.hasOwnProperty(groupId.toString())
-          ? collapsedGroups[groupId.toString()]
-          : group.collapsed;
-
-        // If we're using the browser's state, make sure to save it
-        if (!collapsedGroups.hasOwnProperty(groupId.toString())) {
-          this.settingsManager.setCollapsedState(
-            groupId.toString(),
-            group.collapsed
-          );
-        }
-
-        const groupElement = this.createGroupElement(group, tabs, isCollapsed);
+        const groupElement = await this.renderTabGroup(group, tabs);
         this.tabsList.appendChild(groupElement);
       }
 
       // Render ungrouped tabs
       if (ungroupedTabs.length > 0) {
-        const isUngroupedCollapsed = collapsedGroups.hasOwnProperty("ungrouped")
-          ? collapsedGroups["ungrouped"]
-          : false;
-
-        const ungroupedElement = this.createGroupElement(
+        const ungroupedElement = await this.renderTabGroup(
           { id: "ungrouped", title: "Ungrouped Tabs" },
-          ungroupedTabs,
-          isUngroupedCollapsed
+          ungroupedTabs
         );
         this.tabsList.appendChild(ungroupedElement);
       }

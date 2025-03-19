@@ -70,10 +70,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     statusManager.showLoading("Loading tabs...");
 
-    // Sync saved tab group collapsed states with browser
-    await tabManager.syncSavedCollapsedStates();
-
-    // Load and display tabs
+    // Load and display tabs directly from browser state
     await tabRenderer.renderTabs();
 
     // Load settings
@@ -168,16 +165,11 @@ function initializeEventListeners() {
         statusManager.showLoading("Collapsing all tab groups...");
         menuManager.closeContextMenu();
 
-        // Collapse browser tab groups and get updated state
-        const result = await tabManager.collapseAllTabGroups();
+        // Collapse browser tab groups
+        await tabManager.collapseAllTabGroups();
 
-        if (result) {
-          // Update UI directly without full re-render
-          updateGroupCollapseState(true);
-        } else {
-          // Fallback to full re-render
-          await tabRenderer.renderTabs();
-        }
+        // Re-render to reflect the current browser state
+        await tabRenderer.renderTabs();
 
         statusManager.showStatus("All tab groups collapsed");
       } catch (error) {
@@ -197,16 +189,11 @@ function initializeEventListeners() {
         statusManager.showLoading("Expanding all tab groups...");
         menuManager.closeContextMenu();
 
-        // Expand browser tab groups and get updated state
-        const result = await tabManager.expandAllTabGroups();
+        // Expand browser tab groups
+        await tabManager.expandAllTabGroups();
 
-        if (result) {
-          // Update UI directly without full re-render
-          updateGroupCollapseState(false);
-        } else {
-          // Fallback to full re-render
-          await tabRenderer.renderTabs();
-        }
+        // Re-render to reflect the current browser state
+        await tabRenderer.renderTabs();
 
         statusManager.showStatus("All tab groups expanded");
       } catch (error) {
@@ -270,29 +257,4 @@ function initializeEventListeners() {
         );
       }
     });
-}
-
-// Function to update UI group collapse states without re-rendering everything
-function updateGroupCollapseState(isCollapsed) {
-  document.querySelectorAll(".tab-group").forEach((groupElement) => {
-    // Update class
-    if (isCollapsed) {
-      groupElement.classList.add("collapsed");
-    } else {
-      groupElement.classList.remove("collapsed");
-    }
-
-    // Update the collapse indicator SVG
-    const indicator = groupElement.querySelector(".collapse-indicator");
-    if (indicator) {
-      indicator.innerHTML = ICONS.CHEVRON;
-      indicator.style.transform = isCollapsed
-        ? "rotate(0deg)"
-        : "rotate(90deg)";
-      indicator.setAttribute(
-        "aria-label",
-        isCollapsed ? "Expand group" : "Collapse group"
-      );
-    }
-  });
 }
