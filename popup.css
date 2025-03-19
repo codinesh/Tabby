@@ -509,34 +509,50 @@ button {
   transform: rotate(90deg);
 }
 
-#collapse-tabs,
-#expand-tabs {
-  width: 32px;
-  padding: 6px;
+/* Toggle all groups button */
+#toggle-all-groups {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  margin-right: 0.5rem;
+}
+
+#toggle-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  transition: transform 0.3s ease;
 }
 
-#collapse-tabs svg {
+#toggle-icon svg {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.3s ease;
+  fill: currentColor;
+}
+
+/* When button is set to expand, show chevron pointing right (0 degrees) */
+#toggle-all-groups[data-state="expand"] #toggle-icon svg {
   transform: rotate(0deg);
 }
 
-#expand-tabs svg {
+/* When button is set to collapse, show chevron pointing down (90 degrees) */
+#toggle-all-groups[data-state="collapse"] #toggle-icon svg {
   transform: rotate(90deg);
 }
 
-#collapse-tabs:hover svg {
+#toggle-all-groups:hover #toggle-icon svg {
+  transform: scale(1.1) rotate(var(--rotation, 0deg));
+}
+
+/* Update hover effect based on state */
+#toggle-all-groups[data-state="expand"]:hover #toggle-icon svg {
   transform: scale(1.1) rotate(0deg);
 }
 
-#expand-tabs:hover svg {
+#toggle-all-groups[data-state="collapse"]:hover #toggle-icon svg {
   transform: scale(1.1) rotate(90deg);
-}
-
-#collapse-tabs svg,
-#expand-tabs svg {
-  transition: transform 0.3s ease;
 }
 
 /* Group colors - with unified text color handling */
@@ -831,7 +847,7 @@ button {
 
 .color-option.active,
 .color-option.selected {
-  border-color: var(--primary-color);
+  border-color: var (--primary-color);
 }
 
 .color-option.grey {
@@ -1025,6 +1041,7 @@ svg {
 .tab,
 .color-option,
 #loading-spinner,
-.collapse-indicator svg {
+.collapse-indicator svg,
+#toggle-icon svg {
   will-change: transform;
 }

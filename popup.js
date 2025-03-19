@@ -22,8 +22,7 @@ const statusManager = new StatusManager();
 function initializeIcons() {
   document.getElementById("search-icon").innerHTML = ICONS.SEARCH;
   document.getElementById("menu-icon").innerHTML = ICONS.MENU;
-  document.getElementById("collapse-icon").innerHTML = ICONS.CHEVRON;
-  document.getElementById("expand-icon").innerHTML = ICONS.CHEVRON;
+  document.getElementById("toggle-icon").innerHTML = ICONS.CHEVRON;
   document.getElementById("refresh-icon").innerHTML = ICONS.REFRESH;
   document.getElementById("settings-icon").innerHTML = ICONS.SETTINGS;
 
@@ -79,12 +78,48 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Initialize all event listeners
     initializeEventListeners();
 
+    // Set initial state for toggle-all-groups button
+    initializeToggleButton();
+
     statusManager.showStatus("Extension loaded successfully");
   } catch (error) {
     console.error("Error initializing extension:", error);
     statusManager.showStatus("Error loading extension: " + error.message, true);
   }
 });
+
+function initializeToggleButton() {
+  const toggleButton = document.getElementById("toggle-all-groups");
+  // Default to expand state (will expand groups when clicked)
+  toggleButton.setAttribute("data-state", "expand");
+  toggleButton.title = "Expand All Groups";
+  document.getElementById("toggle-text").textContent = "Expand All";
+
+  // Get current state of tab groups and set button state accordingly
+  chrome.tabGroups
+    .query({})
+    .then((groups) => {
+      if (groups.length > 0) {
+        // Check if any groups are collapsed
+        const hasCollapsedGroups = groups.some((group) => group.collapsed);
+
+        // If we have collapsed groups, set button to expand state
+        if (hasCollapsedGroups) {
+          toggleButton.setAttribute("data-state", "expand");
+          toggleButton.title = "Expand All Groups";
+          document.getElementById("toggle-text").textContent = "Expand All";
+        } else {
+          // All groups are expanded, set button to collapse state
+          toggleButton.setAttribute("data-state", "collapse");
+          toggleButton.title = "Collapse All Groups";
+          document.getElementById("toggle-text").textContent = "Collapse All";
+        }
+      }
+    })
+    .catch((error) => {
+      console.error("Error checking tab group states:", error);
+    });
+}
 
 function initializeEventListeners() {
   // Theme toggle
@@ -158,53 +193,48 @@ function initializeEventListeners() {
       }
     });
 
-  // Collapse all tab groups
-  document.querySelectorAll("#collapse-tabs").forEach((button) => {
-    button.addEventListener("click", async () => {
+  // Toggle all groups button
+  document
+    .getElementById("toggle-all-groups")
+    .addEventListener("click", async () => {
+      const toggleButton = document.getElementById("toggle-all-groups");
+      const currentState = toggleButton.getAttribute("data-state");
+      const toggleText = document.getElementById("toggle-text");
+
       try {
-        statusManager.showLoading("Collapsing all tab groups...");
-        menuManager.closeContextMenu();
+        if (currentState === "expand") {
+          // Current state is expand, so we're going to expand all groups
+          statusManager.showLoading("Expanding all tab groups...");
+          await tabManager.expandAllTabGroups();
+          await tabRenderer.renderTabs();
 
-        // Collapse browser tab groups
-        await tabManager.collapseAllTabGroups();
+          // Update button to collapse state
+          toggleButton.setAttribute("data-state", "collapse");
+          toggleText.textContent = "Collapse All";
+          toggleButton.title = "Collapse All Groups";
 
-        // Re-render to reflect the current browser state
-        await tabRenderer.renderTabs();
+          statusManager.showStatus("All tab groups expanded");
+        } else {
+          // Current state is collapse, so we're going to collapse all groups
+          statusManager.showLoading("Collapsing all tab groups...");
+          await tabManager.collapseAllTabGroups();
+          await tabRenderer.renderTabs();
 
-        statusManager.showStatus("All tab groups collapsed");
+          // Update button to expand state
+          toggleButton.setAttribute("data-state", "expand");
+          toggleText.textContent = "Expand All";
+          toggleButton.title = "Expand All Groups";
+
+          statusManager.showStatus("All tab groups collapsed");
+        }
       } catch (error) {
-        console.error("Error collapsing tab groups:", error);
+        console.error("Error toggling tab groups:", error);
         statusManager.showStatus(
-          "Error collapsing tab groups: " + error.message,
+          "Error toggling tab groups: " + error.message,
           true
         );
       }
     });
-  });
-
-  // Expand all tab groups
-  document.querySelectorAll("#expand-tabs").forEach((button) => {
-    button.addEventListener("click", async () => {
-      try {
-        statusManager.showLoading("Expanding all tab groups...");
-        menuManager.closeContextMenu();
-
-        // Expand browser tab groups
-        await tabManager.expandAllTabGroups();
-
-        // Re-render to reflect the current browser state
-        await tabRenderer.renderTabs();
-
-        statusManager.showStatus("All tab groups expanded");
-      } catch (error) {
-        console.error("Error expanding tab groups:", error);
-        statusManager.showStatus(
-          "Error expanding tab groups: " + error.message,
-          true
-        );
-      }
-    });
-  });
 
   // Settings related buttons
   document.getElementById("menu-settings").addEventListener("click", () => {
