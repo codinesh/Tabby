@@ -83,24 +83,13 @@ export class SettingsUI {
   }
 
   async saveSettings() {
-    const apiUrl = document.getElementById("ai-url").value.trim();
-    const apiKey = document.getElementById("api-key").value.trim();
     const customGroups = this.getCustomGroupsFromUI();
-
-    await this.settingsManager.saveSettings({
-      apiUrl,
-      apiKey,
-      customGroups,
-    });
+    await this.settingsManager.saveCustomGroups(customGroups);
   }
 
   async loadSettings() {
-    const settings = await this.settingsManager.loadSettings();
-
-    document.getElementById("ai-url").value = settings.apiUrl || "";
-    document.getElementById("api-key").value = settings.apiKey || "";
-
-    await this.loadCustomGroupsToUI(settings.customGroups);
+    const customGroups = await this.settingsManager.getCustomGroups();
+    await this.loadCustomGroupsToUI(customGroups);
     this.initializeSettingsTabs();
   }
 
