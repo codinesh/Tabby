@@ -5,6 +5,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="popup.css" />
+    <!-- Load the transformers library as a module -->
+    <script type="module" src="lib/transformers.min.js"></script>
   </head>
   <body>
     <div class="header">
@@ -22,20 +24,20 @@
           🌙
         </button>
         <div class="menu-container">
-          <button 
-            id="menu-button" 
-            class="menu-button" 
+          <button
+            id="menu-button"
+            class="menu-button"
             aria-label="Menu"
-            aria-haspopup="menu" 
+            aria-haspopup="menu"
             aria-expanded="false"
             aria-controls="context-menu"
           >
             <i aria-hidden="true">⚙️</i>
           </button>
-          <div 
-            id="context-menu" 
-            class="context-menu hidden" 
-            role="menu" 
+          <div
+            id="context-menu"
+            class="context-menu hidden"
+            role="menu"
             aria-labelledby="menu-button"
           >
             <ul role="none">
@@ -79,14 +81,28 @@
         <div class="controls">
           <div class="group-controls">
             <button id="group-by-ai" class="primary-button">Group by AI</button>
-            <button id="group-by-domain" class="secondary-button">Domain</button>
-            <button id="ungroup-tabs" class="secondary-button" title="Ungroup All Tabs">
+            <button id="group-by-domain" class="secondary-button">
+              Domain
+            </button>
+            <button
+              id="ungroup-tabs"
+              class="secondary-button"
+              title="Ungroup All Tabs"
+            >
               <i aria-hidden="true">📂</i>
             </button>
-            <button id="collapse-tabs" class="secondary-button" title="Collapse All Groups">
+            <button
+              id="collapse-tabs"
+              class="secondary-button"
+              title="Collapse All Groups"
+            >
               <i aria-hidden="true">🔽</i>
             </button>
-            <button id="expand-tabs" class="secondary-button" title="Expand All Groups">
+            <button
+              id="expand-tabs"
+              class="secondary-button"
+              title="Expand All Groups"
+            >
               <i aria-hidden="true">▶️</i>
             </button>
           </div>
