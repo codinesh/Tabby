@@ -46,43 +46,45 @@ html,
 body {
   margin: 0;
   padding: 0;
-  overflow: hidden; /* Prevent scrolling on the body */
+  overflow: hidden;
   width: 100%;
 }
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
-  width: 60vw; /* Set width to 60% of viewport width */
-  min-width: 500px; /* Minimum width to ensure usability on small screens */
-  max-width: 1200px; /* Maximum width to prevent excessive stretching on large screens */
-  height: 600px; /* Fixed height that's reasonable for a popup */
-  min-height: 500px; /* Ensure minimum usable height */
+  width: 60vw;
+  min-width: 500px;
+  max-width: 1200px;
+  height: 600px;
+  min-height: 500px;
   background-color: var(--secondary-color);
   color: var(--text-color);
   padding: 20px;
   transition: background-color 0.3s, color 0.3s;
-  margin: 0 auto; /* Center the popup in the viewport */
+  margin: 0 auto;
   display: flex;
-  flex-direction: column; /* Stack children vertically */
-  box-sizing: border-box; /* Include padding in width calculation */
+  flex-direction: column;
+  box-sizing: border-box;
 }
 
 /* Content areas - main panel and settings panel */
 #main-content,
 #settings-content {
-  flex: 1; /* Take up remaining space */
+  flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* Hide overflow */
+  overflow: hidden;
   position: relative;
+  height: 100%;
 }
 
 /* Scrollable container */
 .content-scroll {
-  flex: 1; /* Take up remaining space */
-  overflow-y: auto; /* Only this container scrolls */
+  flex: 1;
+  overflow-y: auto;
   overflow-x: hidden;
+  height: 100%;
 }
 
 /* Header with inline status - fixed at top */
@@ -93,7 +95,7 @@ body {
   justify-content: space-between;
   align-items: center;
   margin: 0 0 4px 0;
-  flex-shrink: 0; /* Don't shrink the header */
+  flex-shrink: 0;
 }
 
 .header-actions {
@@ -120,10 +122,10 @@ h1 {
   font-size: 14px;
   transition: all 0.3s ease;
   margin-right: 8px;
-  min-height: 20px; /* Add fixed minimum height */
-  height: 20px; /* Fixed height to prevent flickering */
-  overflow: hidden; /* Hide overflow content */
-  opacity: 1; /* Start fully visible */
+  min-height: 20px;
+  height: 20px;
+  overflow: hidden;
+  opacity: 1;
 }
 
 #status-container.hidden {
@@ -138,32 +140,27 @@ h1 {
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 200px;
-  line-height: 20px; /* Match container height */
+  line-height: 20px;
 }
 
 #status-message.error {
   color: var(--error-color);
 }
-
 #status-message.success {
   color: var(--success-color);
 }
-
 #status-container.error {
   background-color: var(--error-color);
   color: white;
 }
-
 #status-container.success {
   background-color: var(--success-color);
   color: white;
 }
-
 #status-container.warning {
   background-color: var(--warning-color);
   color: black;
 }
-
 #status-container.info {
   background-color: var(--info-color);
   color: white;
@@ -197,7 +194,7 @@ h1 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-shrink: 0; /* Don't shrink the controls */
+  flex-shrink: 0;
 }
 
 .group-controls {
@@ -215,8 +212,6 @@ button {
 
 .primary-button {
   padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
   font-weight: 500;
   transition: all 0.2s;
   background-color: var(--primary-color);
@@ -230,8 +225,6 @@ button {
 
 .secondary-button {
   padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
   font-weight: 500;
   transition: all 0.2s;
   background-color: transparent;
@@ -246,8 +239,6 @@ button {
 .small-button {
   padding: 4px 8px;
   font-size: 12px;
-  border-radius: 4px;
-  cursor: pointer;
   background-color: var(--secondary-color);
   color: var(--text-color);
   border: 1px solid var(--border-color);
@@ -278,14 +269,36 @@ button {
   z-index: 10;
   background-color: var(--secondary-color);
   padding: 8px 0;
-  flex-shrink: 0; /* Don't shrink the search container */
+  flex-shrink: 0;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px 32px 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+
+.search-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
 }
 
 /* Tab list */
 #tabs-list {
   padding: 1rem;
-  /* No need for overflow here as it's inside .content-scroll */
 }
+
 .tab {
   display: flex;
   align-items: center;
@@ -361,7 +374,7 @@ button {
   transition: background-color 0.2s;
   border-bottom: none;
   font-weight: 500;
-  justify-content: space-between; /* Separate left and right side content */
+  justify-content: space-between;
 }
 
 .group-header:hover {
@@ -372,8 +385,8 @@ button {
 .group-header-left {
   display: flex;
   align-items: center;
-  flex: 1; /* Take up available space for title */
-  overflow: hidden; /* Prevent long titles from breaking layout */
+  flex: 1;
+  overflow: hidden;
 }
 
 /* Collapse indicator with improved alignment */
@@ -384,19 +397,7 @@ button {
   width: 16px;
   height: 16px;
   margin-right: 8px;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-
-.collapse-indicator svg {
-  width: 100%;
-  height: 100%;
-  fill: currentColor;
-}
-
-/* Rotate chevron for expanded state */
-.tab-group:not(.collapsed) .collapse-indicator svg {
-  transform: rotate(45deg);
+  flex-shrink: 0;
 }
 
 .collapse-indicator svg {
@@ -406,11 +407,7 @@ button {
   fill: currentColor;
 }
 
-/* Style for the collapse indicator in collapsed state */
-.collapsed .collapse-indicator svg {
-  transform: rotate(-90deg);
-}
-
+/* Group title */
 .group-title {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -422,7 +419,7 @@ button {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-shrink: 0; /* Prevent shrinking */
+  flex-shrink: 0;
 }
 
 .group-count {
@@ -462,33 +459,6 @@ button {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Color-specific hover styles for close button */
-.group-header.grey .group-close:hover {
-  background-color: rgba(0, 0, 0, 0.15);
-}
-.group-header.blue .group-close:hover {
-  background-color: rgba(0, 0, 0, 0.15);
-}
-.group-header.red .group-close:hover {
-  background-color: rgba(0, 0, 0, 0.15);
-}
-.group-header.yellow .group-close:hover {
-  background-color: rgba(0, 0, 0, 0.15);
-  color: #d32f2f;
-}
-.group-header.green .group-close:hover {
-  background-color: rgba(0, 0, 0, 0.15);
-}
-.group-header.pink .group-close:hover {
-  background-color: rgba(0, 0, 0, 0.15);
-}
-.group-header.purple .group-close:hover {
-  background-color: rgba(0, 0, 0, 0.15);
-}
-.group-header.cyan .group-close:hover {
-  background-color: rgba(0, 0, 0, 0.15);
-}
-
 /* Parent-child relationship styles */
 .tabs-container {
   padding-left: var(--child-indent);
@@ -507,17 +477,52 @@ button {
   margin-bottom: 0;
 }
 
-.tabs-container .tab:hover {
-  background-color: var(--hover-color);
-}
-
 .tabs-container .tab:last-child {
   border-bottom: none;
 }
 
-/* Add proper collapsed state handling */
+/* Collapsible state handling */
 .tab-group.collapsed .tabs-container {
   display: none;
+}
+
+/* Collapse/Expand indicators */
+.collapsed .collapse-indicator svg {
+  transform: rotate(-90deg);
+}
+
+.tab-group:not(.collapsed) .collapse-indicator svg {
+  transform: rotate(90deg);
+}
+
+#collapse-tabs,
+#expand-tabs {
+  width: 32px;
+  padding: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#collapse-tabs svg {
+  transform: rotate(0deg);
+}
+
+#expand-tabs svg {
+  transform: rotate(90deg);
+}
+
+#collapse-tabs:hover svg {
+  transform: scale(1.1) rotate(0deg);
+}
+
+#expand-tabs:hover svg {
+  transform: scale(1.1) rotate(90deg);
+}
+
+#collapse-tabs svg,
+#expand-tabs svg {
+  transition: transform 0.3s ease;
 }
 
 /* Group colors */
@@ -552,43 +557,6 @@ button {
 .group-header.cyan {
   background-color: #00acc1;
   color: white;
-}
-
-/* Search */
-.search-container {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background-color: var(--secondary-color);
-  padding: 8px 0;
-}
-
-.search-input {
-  width: 100%;
-  padding: 8px 32px 8px 12px;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: var(--accent-color);
-}
-
-.search-icon {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-secondary);
-}
-
-.search-icon svg {
-  width: 16px;
-  height: 16px;
-  fill: var(--text-color-secondary);
 }
 
 /* Recent groups section */
@@ -654,12 +622,6 @@ button {
 
 .menu-button[aria-expanded="true"] {
   background-color: var(--hover-color);
-}
-
-.menu-button svg {
-  width: 20px;
-  height: 20px;
-  fill: var(--text-color);
 }
 
 .context-menu {
@@ -884,72 +846,75 @@ button {
   background-color: #00bcd4;
 }
 
-/* Utility classes */
-.hidden {
-  display: none !important;
+/* SVG icons styling */
+svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+  vertical-align: middle;
 }
 
-/* Dark mode adjustments */
-[data-theme="dark"] .context-menu {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+/* Icon containers */
+.icon-container,
+.search-icon,
+.theme-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
 }
 
-[data-theme="dark"] #ai-settings {
-  background-color: var(--bg-secondary);
-  border-color: var(--border-color);
+/* Menu button icon styles */
+.menu-button svg {
+  width: 20px;
+  height: 20px;
+  fill: var(--text-color);
 }
 
-[data-theme="dark"] .settings-tabs {
-  border-bottom-color: var(--border-color);
+.search-icon svg {
+  width: 16px;
+  height: 16px;
+  fill: var(--text-color-secondary);
 }
 
-[data-theme="dark"] .settings-tab {
-  color: var(--text-secondary);
+#menu-refresh-tabs svg {
+  width: 14px;
+  height: 14px;
+  margin-right: 4px;
 }
 
-[data-theme="dark"] .settings-tab.active {
-  color: var(--accent-color);
+/* Theme icon styles */
+.theme-icon {
+  position: relative;
+  width: 20px;
+  height: 20px;
 }
 
-[data-theme="dark"] .settings-tab:hover {
-  background-color: var(--hover-bg);
+.theme-icon-dark,
+.theme-icon-light {
+  display: none;
 }
 
-[data-theme="dark"] .help-text {
-  color: var(--text-secondary);
+[data-theme="dark"] .theme-icon-light {
+  display: block;
+  opacity: 1;
 }
 
-[data-theme="dark"] .custom-group {
-  background-color: var(--bg-primary);
-  border-color: var(--border-color);
+[data-theme="light"] .theme-icon-dark {
+  display: block;
+  opacity: 1;
 }
 
-[data-theme="dark"] .category {
-  color: var(--text-secondary);
-}
-
-[data-theme="dark"] .menu-button {
-  color: var(--text-secondary);
-}
-
-[data-theme="dark"] .menu-button:hover {
-  background-color: var(--hover-bg);
-}
-
-[data-theme="dark"] .context-menu {
-  background-color: var(--bg-primary);
-}
-
-[data-theme="dark"] .context-menu li:hover {
-  background-color: var(--hover-bg);
-}
-
-/* Ensure input fields are styled for dark theme */
-[data-theme="dark"] input[type="text"],
-[data-theme="dark"] input[type="password"] {
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
-  border-color: var(--border-color);
+.theme-icon svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  fill: currentColor;
 }
 
 /* Scrollbar styling */
@@ -971,298 +936,49 @@ button {
   background: var(--hover-color);
 }
 
-/* Content areas */
-#main-content,
-#settings-content {
-  height: 100%;
-  position: relative;
-  overflow: hidden;
+/* Utility classes */
+.hidden {
+  display: none !important;
 }
 
-.content-scroll {
-  height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
+/* Dark mode specific adjustments */
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] input[type="password"] {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
 }
 
-/* SVG icons styling */
-svg {
-  width: 16px;
-  height: 16px;
-  fill: currentColor;
-  vertical-align: middle;
+[data-theme="dark"] .context-menu {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-.search-icon svg {
-  width: 16px;
-  height: 16px;
-  fill: var(--text-color-secondary);
+[data-theme="dark"] .help-text,
+[data-theme="dark"] .category,
+[data-theme="dark"] .settings-tab {
+  color: var(--text-secondary);
 }
 
-.menu-button svg {
-  width: 20px;
-  height: 20px;
-  fill: var(--text-color);
+[data-theme="dark"] .settings-tab.active {
+  color: var(--accent-color);
 }
 
-/* Style for collapse indicators */
-.collapse-indicator svg {
-  width: 16px;
-  height: 16px;
-  transition: transform 0.3s ease;
-  fill: currentColor;
+[data-theme="dark"] .settings-tab:hover,
+[data-theme="dark"] .menu-button:hover,
+[data-theme="dark"] .context-menu li:hover {
+  background-color: var(--hover-bg);
 }
 
-/* Ensure the collapse indicator has consistent spacing and alignment */
-.collapse-indicator {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  margin-right: 8px;
-  flex-shrink: 0;
+[data-theme="dark"] .custom-group,
+[data-theme="dark"] #ai-settings {
+  background-color: var(--bg-primary);
+  border-color: var(--border-color);
 }
 
-/* Style for the collapse indicator in collapsed state */
-.collapsed .collapse-indicator svg {
-  transform: rotate(-90deg);
+[data-theme="dark"] .context-menu {
+  background-color: var(--bg-primary);
 }
 
-/* Style for navigation button icons */
-.menu-button svg,
-.secondary-button svg {
-  width: 14px;
-  height: 14px;
-}
-
-/* Style for the refresh icon in the menu */
-#menu-refresh-tabs svg {
-  width: 14px;
-  height: 14px;
-  margin-right: 4px;
-}
-
-/* Ensure the collapse indicator has consistent spacing */
-.collapse-indicator {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  margin-right: 8px;
-}
-
-/* Adjust the height and transitions for the status container */
-#status-container {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px;
-  border-radius: 4px;
-  font-size: 14px;
-  transition: all 0.3s ease;
-  margin-right: 8px;
-  min-height: 20px; /* Add fixed minimum height */
-  height: 20px; /* Fixed height to prevent flickering */
-  overflow: hidden; /* Hide overflow content */
-  opacity: 1; /* Start fully visible */
-}
-
-#status-container.hidden {
-  opacity: 0;
-  height: 0;
-  padding: 0;
-  margin: 0;
-}
-
-#status-message {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 200px;
-  line-height: 20px; /* Match container height */
-}
-
-.theme-toggle .theme-icon-dark,
-.theme-toggle .theme-icon-light {
-  display: none;
-}
-
-[data-theme="dark"] .theme-toggle .theme-icon-light {
-  display: block;
-}
-
-[data-theme="light"] .theme-toggle .theme-icon-dark {
-  display: block;
-}
-
-#collapse-tabs,
-#expand-tabs {
-  width: 32px;
-  padding: 6px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-#collapse-tabs:hover svg,
-#expand-tabs:hover svg {
-  transform: scale(1.1) rotate(45deg);
-}
-
-#collapse-tabs svg {
-  transform: rotate(0deg);
-}
-
-#collapse-tabs:hover svg {
-  transform: scale(1.1) rotate(0deg);
-}
-
-#collapse-tabs svg,
-#expand-tabs svg {
-  transition: transform 0.3s ease;
-}
-
-#expand-tabs svg {
-  transform: rotate(45deg);
-}
-
-/* Base SVG icon styles */
-.icon svg {
-  width: 16px;
-  height: 16px;
-  fill: currentColor;
-  transition: transform 0.3s ease;
-}
-
-/* Icon container styles */
-.collapse-indicator,
-.menu-icon,
-.search-icon,
-.theme-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-}
-
-/* Specific icon styles */
-#expand-icon svg {
-  transform: rotate(90deg);
-}
-
-.collapsed .collapse-indicator svg {
-  transform: rotate(0deg);
-}
-
-.tab-group:not(.collapsed) .collapse-indicator svg {
-  transform: rotate(90deg);
-}
-
-/* Theme icons */
-.theme-icon-dark,
-.theme-icon-light {
-  display: none;
-}
-
-[data-theme="dark"] .theme-icon-light {
-  display: block;
-}
-
-[data-theme="light"] .theme-icon-dark {
-  display: block;
-}
-
-.theme-icon {
-  position: relative;
-  width: 20px;
-  height: 20px;
-}
-
-.theme-icon svg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  fill: currentColor;
-}
-
-[data-theme="dark"] .theme-icon-light {
-  opacity: 1;
-}
-
-[data-theme="light"] .theme-icon-dark {
-  opacity: 1;
-}
-
-/* Icon base styles */
-.icon-container {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Default icon styles */
-.icon-container svg {
-  width: 16px;
-  height: 16px;
-  fill: currentColor;
-  transition: transform 0.3s ease;
-}
-
-/* Specific icon containers */
-.collapse-indicator,
-.menu-icon,
-.search-icon,
-.theme-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-}
-
-/* Theme icon transitions */
-.theme-icon {
-  position: relative;
-}
-
-.theme-icon svg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-[data-theme="dark"] .theme-icon-light {
-  opacity: 1;
-}
-
-[data-theme="light"] .theme-icon-dark {
-  opacity: 1;
-}
-
-/* Collapse/Expand transitions */
-.collapse-indicator svg {
-  transform: rotate(0deg);
-}
-
-.tab-group:not(.collapsed) .collapse-indicator svg {
-  transform: rotate(90deg);
-}
-
-#expand-tabs svg {
-  transform: rotate(90deg);
-}
-
-#collapse-tabs svg {
-  transform: rotate(0deg);
+[data-theme="dark"] .settings-tabs {
+  border-bottom-color: var(--border-color);
 }
