@@ -29,7 +29,44 @@ Tabby is a smart browser extension that revolutionizes how you organize your tab
 1. Download this repository
 2. Go to `chrome://extensions/` (or equivalent for your browser)
 3. Enable "Developer mode"
-4. Click "Load unpacked" and select the Tabby folder
+4. Click "Load unpacked" and select the Tabby folder or the `dist` folder after building
+
+## Build Instructions
+
+### Prerequisites
+
+- Node.js (v14 or later)
+- npm (v6 or later)
+
+### Building the Extension
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/tabby.git
+   cd tabby
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Build the extension:
+   ```bash
+   npm run build
+   ```
+   This will:
+   - Create a `dist` folder with the optimized extension files
+   - Generate a `tabby.zip` file ready for submission to the Chrome Web Store
+
+### Installing from the Build Directory
+
+1. Build the extension as described above
+2. Open Chrome/Brave/Edge and navigate to `chrome://extensions/`
+3. Enable "Developer mode" using the toggle in the top-right corner
+4. Click "Load unpacked"
+5. Select the `dist` folder that was created during the build process
+6. The extension should now be installed and active
 
 ## Setup Guide
 
@@ -67,6 +104,26 @@ Tabby is a smart browser extension that revolutionizes how you organize your tab
 - ✅ Brave Browser
 - ✅ Other Chromium-based browsers
 
+## Project Structure
+
+```
+tabby/
+├── background.js        # Background service worker
+├── manifest.json        # Extension manifest
+├── popup.html           # Main popup interface
+├── popup.css            # Styles for popup
+├── popup.js             # Popup functionality
+├── images/              # Icons and screenshots
+├── js/                  # JavaScript modules
+│   ├── core/            # Core functionality
+│   │   ├── settings.js  # Settings management
+│   │   └── tabs.js      # Tab operations
+│   └── ui/              # UI components
+├── lib/                 # External libraries
+│   └── transformers.min.js  # AI transformer library
+└── scripts/             # Build scripts
+```
+
 ## Troubleshooting
 
 ### Common Issues
@@ -74,6 +131,14 @@ Tabby is a smart browser extension that revolutionizes how you organize your tab
 - **API Not Working**: Verify API key and endpoint
 - **Groups Not Forming**: Check browser permissions
 - **Custom Rules Not Applied**: Verify keyword formatting
+- **Build Errors**: Make sure Node.js is installed and up to date
+
+### Size Optimization
+
+The build script optimizes the extension size by:
+- Including only the necessary WASM files for AI functionality
+- Minimizing included assets
+- Using minified JavaScript files
 
 ### Need Help?
 
@@ -90,7 +155,7 @@ Tabby is a smart browser extension that revolutionizes how you organize your tab
 
 ## Contributing
 
-We welcome contributions! See our [Contributing Guidelines](CONTRIBUTING.md) for details.
+We welcome contributions!
 
 ## License
 
