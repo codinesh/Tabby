@@ -1,13 +1,12 @@
 import { ICONS } from "./icons.js";
 
-// Theme management functionality
 export class ThemeManager {
   constructor(settingsManager) {
     this.settingsManager = settingsManager;
   }
 
   async initialize() {
-    const theme = (await this.settingsManager.getSetting("theme")) || "system";
+    const theme = await this.settingsManager.getTheme();
     this.setTheme(theme);
 
     // Watch for system theme changes if using system theme
@@ -20,7 +19,7 @@ export class ThemeManager {
     const currentTheme = document.documentElement.getAttribute("data-theme");
     const newTheme = currentTheme === "dark" ? "light" : "dark";
     this.setTheme(newTheme);
-    this.settingsManager.setSetting("theme", newTheme);
+    this.settingsManager.saveTheme(newTheme);
   }
 
   setTheme(theme) {

@@ -21,14 +21,29 @@ const statusManager = new StatusManager();
 // Function to initialize icons
 function initializeIcons() {
   document.getElementById("search-icon").innerHTML = ICONS.SEARCH;
-  document.getElementById("menu-icon").innerHTML = ICONS.SETTINGS;
+  document.getElementById("menu-icon").innerHTML = ICONS.MENU;
   document.getElementById("collapse-icon").innerHTML = ICONS.CHEVRON;
   document.getElementById("expand-icon").innerHTML = ICONS.CHEVRON;
   document.getElementById("refresh-icon").innerHTML = ICONS.REFRESH;
   document.getElementById("settings-icon").innerHTML = ICONS.SETTINGS;
-  document.getElementById(
-    "theme-icon"
-  ).innerHTML = `${ICONS.THEME_DARK}${ICONS.THEME_LIGHT}`;
+
+  // Initialize theme icons
+  const themeIcon = document.getElementById("theme-icon");
+  // Clear any existing content
+  themeIcon.innerHTML = "";
+
+  // Create dark theme icon
+  const darkIcon = document.createElement("div");
+  darkIcon.className = "theme-icon-dark";
+  darkIcon.innerHTML = ICONS.THEME_DARK;
+
+  // Create light theme icon
+  const lightIcon = document.createElement("div");
+  lightIcon.className = "theme-icon-light";
+  lightIcon.innerHTML = ICONS.THEME_LIGHT;
+
+  themeIcon.appendChild(darkIcon);
+  themeIcon.appendChild(lightIcon);
 }
 
 // Helper function for debouncing
@@ -47,8 +62,11 @@ function debounce(func, wait) {
 // Initialize the extension
 document.addEventListener("DOMContentLoaded", async () => {
   try {
-    // Initialize icons
+    // Initialize icons first
     initializeIcons();
+
+    // Initialize theme before showing status
+    await themeManager.initialize();
 
     statusManager.showLoading("Loading tabs...");
 
@@ -60,9 +78,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Load settings
     await settingsUI.loadSettings();
-
-    // Initialize theme and menu
-    themeManager.initialize();
 
     // Initialize all event listeners
     initializeEventListeners();
@@ -76,8 +91,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 function initializeEventListeners() {
   // Theme toggle
-  const themeToggle = document.getElementById("theme-toggle");
-  themeToggle.addEventListener("click", () => themeManager.toggle());
+  document.getElementById("theme-toggle").addEventListener("click", () => {
+    themeManager.toggle();
+  });
 
   // Search functionality
   const searchInput = document.getElementById("search-input");
