@@ -1,10 +1,12 @@
+import { ICONS } from "./icons.js";
+
 // Menu and context menu functionality
 export class MenuManager {
   constructor() {
     this.menuButton = document.getElementById("menu-button");
     this.contextMenu = document.getElementById("context-menu");
     this.isOpen = false;
-    this.initializeEventListeners();
+    this.setupEventListeners();
   }
 
   get menuItems() {
@@ -12,7 +14,7 @@ export class MenuManager {
     return this.contextMenu.querySelectorAll("button[role='menuitem']");
   }
 
-  initializeEventListeners() {
+  setupEventListeners() {
     // Toggle menu on button click
     this.menuButton.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -21,7 +23,10 @@ export class MenuManager {
 
     // Close menu when clicking outside
     document.addEventListener("click", (e) => {
-      if (!this.contextMenu.contains(e.target) && e.target !== this.menuButton) {
+      if (
+        !this.contextMenu.contains(e.target) &&
+        e.target !== this.menuButton
+      ) {
         this.closeContextMenu();
       }
     });
@@ -44,12 +49,14 @@ export class MenuManager {
       switch (e.key) {
         case "ArrowUp":
           e.preventDefault();
-          const prevIndex = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
+          const prevIndex =
+            currentIndex > 0 ? currentIndex - 1 : items.length - 1;
           items[prevIndex].focus();
           break;
         case "ArrowDown":
           e.preventDefault();
-          const nextIndex = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
+          const nextIndex =
+            currentIndex < items.length - 1 ? currentIndex + 1 : 0;
           items[nextIndex].focus();
           break;
         case "Home":
@@ -92,17 +99,17 @@ export class MenuManager {
   openContextMenu() {
     // Remove hidden class first
     this.contextMenu.classList.remove("hidden");
-    
+
     // Force a reflow to ensure the transition works
     this.contextMenu.offsetHeight;
-    
+
     // Add visible class to trigger animation
     this.contextMenu.classList.add("visible");
     this.isOpen = true;
 
     // Set ARIA attributes
     this.menuButton.setAttribute("aria-expanded", "true");
-    
+
     // Focus the first menu item
     const items = this.menuItems;
     if (items.length > 0) {
@@ -113,7 +120,7 @@ export class MenuManager {
   closeContextMenu() {
     // Remove visible class first to trigger animation
     this.contextMenu.classList.remove("visible");
-    
+
     // Wait for animation to complete before hiding
     setTimeout(() => {
       if (!this.isOpen) {

@@ -1,42 +1,45 @@
+import { ICONS } from "./icons.js";
+
 // Theme management functionality
 export class ThemeManager {
   constructor(settingsManager) {
     this.settingsManager = settingsManager;
-    this.themeToggle = document.getElementById("theme-toggle");
-    this.prefersDark = window.matchMedia("(prefers-color-scheme: dark)");
   }
 
   async initialize() {
-    const theme = await this.settingsManager.getTheme();
-    this.applyTheme(theme);
+    const theme = (await this.settingsManager.getSetting("theme")) || "system";
+    this.setTheme(theme);
 
-    // Listen for system theme changes
-    this.prefersDark.addEventListener("change", () => {
-      this.applyTheme(theme);
-    });
-  }
-
-  applyTheme(theme) {
+    // Watch for system theme changes if using system theme
     if (theme === "system") {
-      document.documentElement.setAttribute(
-        "data-theme",
-        this.prefersDark.matches ? "dark" : "light"
-      );
-    } else {
-      document.documentElement.setAttribute("data-theme", theme);
+      this.watchSystemTheme();
     }
-
-    // Update theme toggle button
-    this.themeToggle.textContent =
-      document.documentElement.getAttribute("data-theme") === "dark"
-        ? "☀️"
-        : "🌙";
   }
 
-  async toggle() {
+  toggle() {
     const currentTheme = document.documentElement.getAttribute("data-theme");
     const newTheme = currentTheme === "dark" ? "light" : "dark";
-    await this.settingsManager.saveTheme(newTheme);
-    this.applyTheme(newTheme);
+    this.setTheme(newTheme);
+    this.settingsManager.setSetting("theme", newTheme);
+  }
+
+  setTheme(theme) {
+    const isDark =
+      theme === "dark" ||
+      (theme === "system" &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches);
+
+    document.documentElement.setAttribute(
+      "data-theme",
+      isDark ? "dark" : "light"
+    );
+  }
+
+  watchSystemTheme() {
+    window
+      .matchMedia("(prefers-color-scheme: dark)")
+      .addEventListener("change", (e) => {
+        this.setTheme("system");
+      });
   }
 }

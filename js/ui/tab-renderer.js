@@ -1,3 +1,5 @@
+import { ICONS } from "./icons.js";
+
 // UI components for rendering tabs and groups
 export class TabRenderer {
   constructor(tabManager, settingsManager) {
@@ -65,14 +67,12 @@ export class TabRenderer {
 
     const collapseIndicator = document.createElement("span");
     collapseIndicator.className = "collapse-indicator";
-    // Use SVG icons instead of emoji
-    collapseIndicator.innerHTML = isCollapsed
-      ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>' // chevron down
-      : '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M233.4 105.4c12.5-12.5 32.8-12.5 45.3 0l192 192c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L256 173.3 86.6 342.6c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l192-192z"/></svg>'; // chevron up
-    collapseIndicator.setAttribute(
-      "aria-label",
-      isCollapsed ? "Expand group" : "Collapse group"
-    );
+    collapseIndicator.innerHTML = ICONS.CHEVRON;
+    if (isCollapsed) {
+      collapseIndicator.style.transform = "rotate(0deg)";
+    } else {
+      collapseIndicator.style.transform = "rotate(90deg)";
+    }
 
     const groupTitle = document.createElement("span");
     groupTitle.className = "group-title";
@@ -141,10 +141,10 @@ export class TabRenderer {
       // Update UI immediately for better feedback
       groupElement.classList.toggle("collapsed");
 
-      // Update the collapse indicator with the appropriate SVG
-      collapseIndicator.innerHTML = newCollapsedState
-        ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>' // chevron down
-        : '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M233.4 105.4c12.5-12.5 32.8-12.5 45.3 0l192 192c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L256 173.3 86.6 342.6c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l192-192z"/></svg>'; // chevron up
+      // Update rotation based on collapsed state
+      collapseIndicator.style.transform = newCollapsedState
+        ? "rotate(0deg)"
+        : "rotate(90deg)";
 
       collapseIndicator.setAttribute(
         "aria-label",
@@ -169,9 +169,9 @@ export class TabRenderer {
         console.error("Error updating tab group collapsed state:", error);
         // Revert UI if update fails
         groupElement.classList.toggle("collapsed");
-        collapseIndicator.innerHTML = wasCollapsed
-          ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>' // chevron down
-          : '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M233.4 105.4c12.5-12.5 32.8-12.5 45.3 0l192 192c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L256 173.3 86.6 342.6c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l192-192z"/></svg>'; // chevron up
+        collapseIndicator.style.transform = wasCollapsed
+          ? "rotate(90deg)"
+          : "rotate(0deg)";
       }
     });
 

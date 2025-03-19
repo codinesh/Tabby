@@ -378,14 +378,37 @@ button {
 
 /* Collapse indicator with improved alignment */
 .collapse-indicator {
-  margin-right: 8px;
-  transition: transform 0.2s;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 16px;
   height: 16px;
-  flex-shrink: 0; /* Prevent shrinking */
+  margin-right: 8px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.collapse-indicator svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+
+/* Rotate chevron for expanded state */
+.tab-group:not(.collapsed) .collapse-indicator svg {
+  transform: rotate(45deg);
+}
+
+.collapse-indicator svg {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.3s ease;
+  fill: currentColor;
+}
+
+/* Style for the collapse indicator in collapsed state */
+.collapsed .collapse-indicator svg {
+  transform: rotate(-90deg);
 }
 
 .group-title {
@@ -497,10 +520,6 @@ button {
   display: none;
 }
 
-.tab-group.collapsed .collapse-indicator {
-  transform: rotate(-90deg);
-}
-
 /* Group colors */
 .group-header.grey {
   background-color: #757575;
@@ -566,6 +585,12 @@ button {
   color: var(--text-secondary);
 }
 
+.search-icon svg {
+  width: 16px;
+  height: 16px;
+  fill: var(--text-color-secondary);
+}
+
 /* Recent groups section */
 .recent-groups {
   margin-top: 16px;
@@ -629,6 +654,12 @@ button {
 
 .menu-button[aria-expanded="true"] {
   background-color: var(--hover-color);
+}
+
+.menu-button svg {
+  width: 20px;
+  height: 20px;
+  fill: var(--text-color);
 }
 
 .context-menu {
@@ -962,17 +993,24 @@ svg {
   vertical-align: middle;
 }
 
-/* Style for collapse indicators */
-.collapse-indicator svg {
-  width: 14px;
-  height: 14px;
-  transition: transform 0.3s ease;
-  fill: currentColor;
+.search-icon svg {
+  width: 16px;
+  height: 16px;
+  fill: var(--text-color-secondary);
 }
 
-/* Update the rotation behavior for collapsed state */
-.tab-group.collapsed .collapse-indicator svg {
-  transform: rotate(-180deg);
+.menu-button svg {
+  width: 20px;
+  height: 20px;
+  fill: var(--text-color);
+}
+
+/* Style for collapse indicators */
+.collapse-indicator svg {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.3s ease;
+  fill: currentColor;
 }
 
 /* Ensure the collapse indicator has consistent spacing and alignment */
@@ -984,6 +1022,11 @@ svg {
   height: 20px;
   margin-right: 8px;
   flex-shrink: 0;
+}
+
+/* Style for the collapse indicator in collapsed state */
+.collapsed .collapse-indicator svg {
+  transform: rotate(-90deg);
 }
 
 /* Style for navigation button icons */
@@ -1039,4 +1082,187 @@ svg {
   text-overflow: ellipsis;
   max-width: 200px;
   line-height: 20px; /* Match container height */
+}
+
+.theme-toggle .theme-icon-dark,
+.theme-toggle .theme-icon-light {
+  display: none;
+}
+
+[data-theme="dark"] .theme-toggle .theme-icon-light {
+  display: block;
+}
+
+[data-theme="light"] .theme-toggle .theme-icon-dark {
+  display: block;
+}
+
+#collapse-tabs,
+#expand-tabs {
+  width: 32px;
+  padding: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#collapse-tabs:hover svg,
+#expand-tabs:hover svg {
+  transform: scale(1.1) rotate(45deg);
+}
+
+#collapse-tabs svg {
+  transform: rotate(0deg);
+}
+
+#collapse-tabs:hover svg {
+  transform: scale(1.1) rotate(0deg);
+}
+
+#collapse-tabs svg,
+#expand-tabs svg {
+  transition: transform 0.3s ease;
+}
+
+#expand-tabs svg {
+  transform: rotate(45deg);
+}
+
+/* Base SVG icon styles */
+.icon svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+  transition: transform 0.3s ease;
+}
+
+/* Icon container styles */
+.collapse-indicator,
+.menu-icon,
+.search-icon,
+.theme-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+/* Specific icon styles */
+#expand-icon svg {
+  transform: rotate(90deg);
+}
+
+.collapsed .collapse-indicator svg {
+  transform: rotate(0deg);
+}
+
+.tab-group:not(.collapsed) .collapse-indicator svg {
+  transform: rotate(90deg);
+}
+
+/* Theme icons */
+.theme-icon-dark,
+.theme-icon-light {
+  display: none;
+}
+
+[data-theme="dark"] .theme-icon-light {
+  display: block;
+}
+
+[data-theme="light"] .theme-icon-dark {
+  display: block;
+}
+
+.theme-icon {
+  position: relative;
+  width: 20px;
+  height: 20px;
+}
+
+.theme-icon svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  fill: currentColor;
+}
+
+[data-theme="dark"] .theme-icon-light {
+  opacity: 1;
+}
+
+[data-theme="light"] .theme-icon-dark {
+  opacity: 1;
+}
+
+/* Icon base styles */
+.icon-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Default icon styles */
+.icon-container svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+  transition: transform 0.3s ease;
+}
+
+/* Specific icon containers */
+.collapse-indicator,
+.menu-icon,
+.search-icon,
+.theme-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+/* Theme icon transitions */
+.theme-icon {
+  position: relative;
+}
+
+.theme-icon svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+[data-theme="dark"] .theme-icon-light {
+  opacity: 1;
+}
+
+[data-theme="light"] .theme-icon-dark {
+  opacity: 1;
+}
+
+/* Collapse/Expand transitions */
+.collapse-indicator svg {
+  transform: rotate(0deg);
+}
+
+.tab-group:not(.collapsed) .collapse-indicator svg {
+  transform: rotate(90deg);
+}
+
+#expand-tabs svg {
+  transform: rotate(90deg);
+}
+
+#collapse-tabs svg {
+  transform: rotate(0deg);
 }

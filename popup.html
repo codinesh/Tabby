@@ -21,7 +21,7 @@
           id="theme-toggle"
           title="Toggle dark mode"
         >
-          🌙
+          <div id="theme-icon" aria-hidden="true"></div>
         </button>
         <div class="menu-container">
           <button
@@ -32,7 +32,7 @@
             aria-expanded="false"
             aria-controls="context-menu"
           >
-            <i aria-hidden="true">⚙️</i>
+            <div id="menu-icon" aria-hidden="true"></div>
           </button>
           <div
             id="context-menu"
@@ -43,29 +43,14 @@
             <ul role="none">
               <li role="none">
                 <button id="menu-refresh-tabs" role="menuitem" tabindex="-1">
-                  <i aria-hidden="true">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 512 512"
-                    >
-                      <path
-                        d="M142.9 142.9c-17.5 17.5-30.1 38-37.8 59.8c-5.9 16.7-24.2 25.4-40.8 19.5s-25.4-24.2-19.5-40.8C55.6 150.7 73.2 122 97.6 97.6c87.2-87.2 228.3-87.5 315.8-1L455 55c6.9-6.9 17.2-8.9 26.2-5.2s14.8 12.5 14.8 22.2l0 128c0 13.3-10.7 24-24 24l-8.4 0c0 0 0 0 0 0L344 224c-9.7 0-18.5-5.8-22.2-14.8s-1.7-19.3 5.2-26.2l41.1-41.1c-62.6-61.5-163.1-61.2-225.3 1zM16 312c0-13.3 10.7-24 24-24l7.6 0 .7 0L168 288c9.7 0 18.5 5.8 22.2 14.8s1.7 19.3-5.2 26.2l-41.1 41.1c62.6 61.5 163.1 61.2 225.3-1c17.5-17.5 30.1-38 37.8-59.8c5.9-16.7 24.2-25.4 40.8-19.5s25.4 24.2 19.5 40.8c-10.8 30.6-28.4 59.3-52.9 83.8c-87.2 87.2-228.3 87.5-315.8 1L57 457c-6.9 6.9-17.2 8.9-26.2 5.2S16 449.7 16 440l0-119.6 0-.7 0-7.6z"
-                      />
-                    </svg>
-                  </i>
+                  <i aria-hidden="true" id="refresh-icon"></i>
                   <span>Refresh Tabs</span>
                 </button>
               </li>
               <li role="none">
                 <button id="menu-settings" role="menuitem" tabindex="-1">
-                  <i aria-hidden="true">⚙️</i>
+                  <i aria-hidden="true" id="settings-icon"></i>
                   <span>Settings</span>
-                </button>
-              </li>
-              <li role="none">
-                <button id="backup-tabs" role="menuitem" tabindex="-1">
-                  <i aria-hidden="true">💾</i>
-                  <span>Backup Tabs</span>
                 </button>
               </li>
             </ul>
@@ -84,7 +69,9 @@
             class="search-input"
             placeholder="Search tabs..."
           />
-          <span class="search-icon">🔍</span>
+          <span class="search-icon">
+            <div id="search-icon" aria-hidden="true"></div>
+          </span>
         </div>
 
         <div class="controls">
@@ -93,44 +80,24 @@
             <button id="group-by-domain" class="secondary-button">
               Domain
             </button>
-            <button
-              id="ungroup-tabs"
-              class="secondary-button"
-              title="Ungroup All Tabs"
-            >
-              <i aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512">
-                  <path
-                    d="M264.5 5.2c14.9-6.9 32.1-6.9 47 0l218.6 101c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 149.8C37.4 145.8 32 137.3 32 128s5.4-17.9 13.9-21.8L264.5 5.2zM476.9 209.6l53.2 24.6c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 277.8C37.4 273.8 32 265.3 32 256s5.4-17.9 13.9-21.8l53.2-24.6 152 70.2c23.4 10.8 50.4 10.8 73.8 0l152-70.2zm-152 198.2l152-70.2 53.2 24.6c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 405.8C37.4 401.8 32 393.3 32 384s5.4-17.9 13.9-21.8l53.2-24.6 152 70.2c23.4 10.8 50.4 10.8 73.8 0z"
-                  />
-                </svg>
-              </i>
+            <button id="ungroup-tabs" class="secondary-button">
+              Ungroup
             </button>
+          </div>
+          <div class="collapse-controls">
             <button
               id="collapse-tabs"
               class="secondary-button"
               title="Collapse All Groups"
             >
-              <i aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-                  <path
-                    d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"
-                  />
-                </svg>
-              </i>
+              <i aria-hidden="true" id="collapse-icon"></i>
             </button>
             <button
               id="expand-tabs"
               class="secondary-button"
               title="Expand All Groups"
             >
-              <i aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-                  <path
-                    d="M233.4 105.4c12.5-12.5 32.8-12.5 45.3 0l192 192c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L256 173.3 86.6 342.6c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l192-192z"
-                  />
-                </svg>
-              </i>
+              <i aria-hidden="true" id="expand-icon"></i>
             </button>
           </div>
         </div>
@@ -149,10 +116,9 @@
 
     <div id="settings-content" class="hidden">
       <div class="content-scroll">
-        <div class="settings-header">
+        <div class="settings-header"></div>
           <h2>Settings</h2>
         </div>
-
         <div class="settings-body">
           <div class="settings-tabs">
             <button class="settings-tab active" data-tab="groups-settings">
@@ -219,7 +185,6 @@
             </div>
           </div>
         </div>
-
         <div class="settings-actions">
           <button id="save-settings" class="primary-button">Save</button>
           <button id="cancel-settings" class="secondary-button">Cancel</button>

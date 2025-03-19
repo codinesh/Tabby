@@ -5,7 +5,8 @@
   "description": "Smart browser tab manager that uses AI to organize and group your tabs by content or domain. Save time and reduce tab clutter.",
   "permissions": ["tabs", "storage", "tabGroups", "sessions", "alarms"],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
   "action": {
     "default_popup": "popup.html",
@@ -22,7 +23,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["images/*", "lib/*"],
+      "resources": ["images/*", "lib/*", "js/**/*.js", "*.js"],
       "matches": ["<all_urls>"]
     }
   ],

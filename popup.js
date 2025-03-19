@@ -5,6 +5,7 @@ import { SettingsUI } from "./js/ui/settings-ui.js";
 import { ThemeManager } from "./js/ui/theme-manager.js";
 import { MenuManager } from "./js/ui/menu-manager.js";
 import { StatusManager } from "./js/ui/status-manager.js";
+import { ICONS } from "./js/ui/icons.js";
 
 // Initialize core managers
 const settingsManager = new SettingsManager();
@@ -16,6 +17,19 @@ const settingsUI = new SettingsUI(settingsManager);
 const themeManager = new ThemeManager(settingsManager);
 const menuManager = new MenuManager();
 const statusManager = new StatusManager();
+
+// Function to initialize icons
+function initializeIcons() {
+  document.getElementById("search-icon").innerHTML = ICONS.SEARCH;
+  document.getElementById("menu-icon").innerHTML = ICONS.SETTINGS;
+  document.getElementById("collapse-icon").innerHTML = ICONS.CHEVRON;
+  document.getElementById("expand-icon").innerHTML = ICONS.CHEVRON;
+  document.getElementById("refresh-icon").innerHTML = ICONS.REFRESH;
+  document.getElementById("settings-icon").innerHTML = ICONS.SETTINGS;
+  document.getElementById(
+    "theme-icon"
+  ).innerHTML = `${ICONS.THEME_DARK}${ICONS.THEME_LIGHT}`;
+}
 
 // Helper function for debouncing
 function debounce(func, wait) {
@@ -33,11 +47,14 @@ function debounce(func, wait) {
 // Initialize the extension
 document.addEventListener("DOMContentLoaded", async () => {
   try {
+    // Initialize icons
+    initializeIcons();
+
     statusManager.showLoading("Loading tabs...");
-    
+
     // Sync saved tab group collapsed states with browser
     await tabManager.syncSavedCollapsedStates();
-    
+
     // Load and display tabs
     await tabRenderer.renderTabs();
 
@@ -49,7 +66,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Initialize all event listeners
     initializeEventListeners();
-    
+
     statusManager.showStatus("Extension loaded successfully");
   } catch (error) {
     console.error("Error initializing extension:", error);
@@ -81,7 +98,10 @@ function initializeEventListeners() {
       statusManager.showStatus("Tabs grouped by domain successfully");
     } catch (error) {
       console.error("Error grouping by domain:", error);
-      statusManager.showStatus("Error grouping by domain: " + error.message, true);
+      statusManager.showStatus(
+        "Error grouping by domain: " + error.message,
+        true
+      );
     }
   });
 
@@ -98,7 +118,10 @@ function initializeEventListeners() {
         settingsUI.show();
         statusManager.showStatus("Please configure API key in settings", true);
       } else {
-        statusManager.showStatus("Error grouping by AI: " + error.message, true);
+        statusManager.showStatus(
+          "Error grouping by AI: " + error.message,
+          true
+        );
       }
       console.error("Error grouping by AI:", error);
     }
@@ -115,20 +138,23 @@ function initializeEventListeners() {
         statusManager.showStatus("All tabs ungrouped successfully");
       } catch (error) {
         console.error("Error ungrouping tabs:", error);
-        statusManager.showStatus("Error ungrouping tabs: " + error.message, true);
+        statusManager.showStatus(
+          "Error ungrouping tabs: " + error.message,
+          true
+        );
       }
     });
 
   // Collapse all tab groups
-  document.querySelectorAll("#collapse-tabs").forEach(button => {
+  document.querySelectorAll("#collapse-tabs").forEach((button) => {
     button.addEventListener("click", async () => {
       try {
         statusManager.showLoading("Collapsing all tab groups...");
         menuManager.closeContextMenu();
-        
+
         // Collapse browser tab groups and get updated state
         const result = await tabManager.collapseAllTabGroups();
-        
+
         if (result) {
           // Update UI directly without full re-render
           updateGroupCollapseState(true);
@@ -136,25 +162,28 @@ function initializeEventListeners() {
           // Fallback to full re-render
           await tabRenderer.renderTabs();
         }
-        
+
         statusManager.showStatus("All tab groups collapsed");
       } catch (error) {
         console.error("Error collapsing tab groups:", error);
-        statusManager.showStatus("Error collapsing tab groups: " + error.message, true);
+        statusManager.showStatus(
+          "Error collapsing tab groups: " + error.message,
+          true
+        );
       }
     });
   });
 
   // Expand all tab groups
-  document.querySelectorAll("#expand-tabs").forEach(button => {
+  document.querySelectorAll("#expand-tabs").forEach((button) => {
     button.addEventListener("click", async () => {
       try {
         statusManager.showLoading("Expanding all tab groups...");
         menuManager.closeContextMenu();
-        
+
         // Expand browser tab groups and get updated state
         const result = await tabManager.expandAllTabGroups();
-        
+
         if (result) {
           // Update UI directly without full re-render
           updateGroupCollapseState(false);
@@ -162,11 +191,14 @@ function initializeEventListeners() {
           // Fallback to full re-render
           await tabRenderer.renderTabs();
         }
-        
+
         statusManager.showStatus("All tab groups expanded");
       } catch (error) {
         console.error("Error expanding tab groups:", error);
-        statusManager.showStatus("Error expanding tab groups: " + error.message, true);
+        statusManager.showStatus(
+          "Error expanding tab groups: " + error.message,
+          true
+        );
       }
     });
   });
@@ -188,7 +220,10 @@ function initializeEventListeners() {
         statusManager.showStatus("Settings saved successfully");
       } catch (error) {
         console.error("Error saving settings:", error);
-        statusManager.showStatus("Error saving settings: " + error.message, true);
+        statusManager.showStatus(
+          "Error saving settings: " + error.message,
+          true
+        );
       }
     });
 
@@ -213,34 +248,35 @@ function initializeEventListeners() {
         statusManager.showStatus("Tabs refreshed successfully");
       } catch (error) {
         console.error("Error refreshing tabs:", error);
-        statusManager.showStatus("Error refreshing tabs: " + error.message, true);
+        statusManager.showStatus(
+          "Error refreshing tabs: " + error.message,
+          true
+        );
       }
-    });
-    
-  // Backup tabs button
-  document
-    .getElementById("backup-tabs")
-    .addEventListener("click", () => {
-      menuManager.closeContextMenu();
-      statusManager.showStatus("Backup feature coming soon!");
     });
 }
 
 // Function to update UI group collapse states without re-rendering everything
 function updateGroupCollapseState(isCollapsed) {
-  document.querySelectorAll('.tab-group').forEach(groupElement => {
+  document.querySelectorAll(".tab-group").forEach((groupElement) => {
     // Update class
     if (isCollapsed) {
-      groupElement.classList.add('collapsed');
+      groupElement.classList.add("collapsed");
     } else {
-      groupElement.classList.remove('collapsed');
+      groupElement.classList.remove("collapsed");
     }
-    
-    // Update collapse indicator
-    const indicator = groupElement.querySelector('.collapse-indicator');
+
+    // Update the collapse indicator SVG
+    const indicator = groupElement.querySelector(".collapse-indicator");
     if (indicator) {
-      indicator.textContent = isCollapsed ? "▶" : "🔽";
-      indicator.setAttribute('aria-label', isCollapsed ? "Expand group" : "Collapse group");
+      indicator.innerHTML = ICONS.CHEVRON;
+      indicator.style.transform = isCollapsed
+        ? "rotate(0deg)"
+        : "rotate(90deg)";
+      indicator.setAttribute(
+        "aria-label",
+        isCollapsed ? "Expand group" : "Collapse group"
+      );
     }
   });
 }
