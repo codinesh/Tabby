@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Tabby</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="popup.css" />
+    <!-- Load the transformers library as a module -->
+    <script type="module" src="lib/transformers.min.js"></script>
+  </head>
+  <body>
+    <div class="header">
+      <h1>Tabby</h1>
+      <div class="header-actions">
+        <div id="status-container" class="hidden">
+          <div id="status-message"></div>
+          <div id="loading-spinner"></div>
+        </div>
+        <button
+          class="menu-button theme-toggle"
+          id="theme-toggle"
+          title="Toggle dark mode"
+        >
+          <div id="theme-icon" aria-hidden="true"></div>
+        </button>
+        <div class="menu-container">
+          <button
+            id="menu-button"
+            class="menu-button"
+            aria-label="Menu"
+            aria-haspopup="menu"
+            aria-expanded="false"
+            aria-controls="context-menu"
+          >
+            <div id="menu-icon" aria-hidden="true"></div>
+          </button>
+          <div
+            id="context-menu"
+            class="context-menu hidden"
+            role="menu"
+            aria-labelledby="menu-button"
+          >
+            <ul role="none">
+              <li role="none">
+                <button id="menu-refresh-tabs" role="menuitem" tabindex="-1">
+                  <i aria-hidden="true" id="refresh-icon"></i>
+                  <span>Refresh Tabs</span>
+                </button>
+              </li>
+              <li role="none">
+                <button id="menu-settings" role="menuitem" tabindex="-1">
+                  <i aria-hidden="true" id="settings-icon"></i>
+                  <span>Settings</span>
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="main-content">
+      <div class="content-scroll">
+        <!-- Search bar -->
+        <div class="search-container">
+          <input
+            type="text"
+            id="search-input"
+            class="search-input"
+            placeholder="Search tabs..."
+          />
+          <span class="search-icon">
+            <div id="search-icon" aria-hidden="true"></div>
+          </span>
+        </div>
+
+        <div class="controls">
+          <div class="group-controls">
+            <button id="group-by-ai" class="primary-button">Group by AI</button>
+            <button id="group-by-domain" class="secondary-button">
+              Domain
+            </button>
+            <button id="ungroup-tabs" class="secondary-button">
+              Ungroup
+            </button>
+          </div>
+          <div class="collapse-controls">
+            <button
+              id="toggle-all-groups"
+              class="secondary-button"
+              title="Expand All Groups"
+            >
+               <i aria-hidden="true" id="toggle-icon"></i>
+
+              <span id="toggle-text">Expand All</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Recent Groups Section -->
+        <div class="recent-groups hidden">
+          <div class="recent-groups-title">Recent Groups</div>
+          <div id="recent-groups-list"></div>
+        </div>
+
+        <div id="tabs-list">
+          <!-- Tabs will be listed here -->
+        </div>
+      </div>
+    </div>
+
+    <div id="settings-content" class="hidden">
+      <div class="content-scroll">
+        <div class="settings-header"></div>
+          <h2>Settings</h2>
+        </div>
+        <div class="settings-body">
+          <div class="settings-tabs">
+            <button class="settings-tab active" data-tab="groups-settings">
+              Custom Groups
+            </button>
+          </div>
+
+          <div id="groups-settings" class="settings-content">
+            <div class="form-group">
+              <p class="help-text">
+                Configure your preferred groups and the keywords that should be
+                included in each group.
+              </p>
+              <div id="custom-groups-container">
+                <!-- Custom groups will be added here dynamically -->
+              </div>
+              <div class="group-actions">
+                <button id="add-group" class="small-button">+ Add Group</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="settings-actions">
+          <button id="save-settings" class="primary-button">Save</button>
+          <button id="cancel-settings" class="secondary-button">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <template id="custom-group-template">
+      <div class="custom-group">
+        <div class="form-row">
+          <input
+            type="text"
+            class="group-name"
+            placeholder="Group name (e.g., Workflow)"
+          />
+          <select class="group-color">
+            <option value="grey">Grey</option>
+            <option value="blue">Blue</option>
+            <option value="red">Red</option>
+            <option value="yellow">Yellow</option>
+            <option value="green">Green</option>
+            <option value="pink">Pink</option>
+            <option value="purple">Purple</option>
+            <option value="cyan">Cyan</option>
+          </select>
+          <button class="remove-group small-button">✕</button>
+        </div>
+        <div class="form-row keywords-container">
+          <input
+            type="text"
+            class="group-keywords"
+            placeholder="Keywords (comma separated, e.g., workflow, process, task)"
+          />
+        </div>
+      </div>
+    </template>
+
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

@@ -12,7 +12,6 @@ yarn-error.log*
 package-lock.json
 
 # Build directories
-dist/
 build/
 
 # Editor directories and files
