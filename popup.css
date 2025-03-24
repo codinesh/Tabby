@@ -460,17 +460,31 @@ button {
   gap: 4px;
 }
 
-.group-close {
+.group-close,
+.group-edit {
   padding: 6px;
   width: 24px;
   height: 24px;
   font-size: 14px;
   border-radius: 4px;
   margin-left: 4px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
 }
 
-[data-theme="dark"] .group-close:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+.group-close:hover,
+.group-edit:hover {
+  background-color: var(--hover-color);
+}
+
+.group-edit:hover {
+  color: var(--primary-color);
 }
 
 /* Parent-child relationship styles */
@@ -1010,6 +1024,42 @@ svg {
 
 [data-theme="dark"] .settings-tabs {
   border-bottom-color: var(--border-color);
+}
+
+/* Group title edit input */
+.group-title-edit {
+  background: transparent;
+  border: 1px solid var(--primary-color);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 14px;
+  color: inherit;
+  font-weight: 500;
+  min-width: 100px;
+  max-width: 200px;
+}
+
+/* Make the edit input match the title's color in various group colors */
+.group-header.grey .group-title-edit,
+.group-header.blue .group-title-edit,
+.group-header.red .group-title-edit,
+.group-header.green .group-title-edit,
+.group-header.pink .group-title-edit,
+.group-header.purple .group-title-edit,
+.group-header.cyan .group-title-edit {
+  color: white;
+}
+
+.group-header.yellow .group-title-edit {
+  color: black;
+}
+
+[data-theme="dark"] .group-edit:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .group-title-edit {
+  background-color: rgba(0, 0, 0, 0.2);
 }
 
 /* Media query for smaller screens */

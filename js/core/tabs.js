@@ -688,4 +688,21 @@ export class TabManager {
       throw new Error("Failed to sync tab groups");
     }
   }
+
+  async renameTabGroup(groupId, newTitle) {
+    try {
+      if (groupId === "ungrouped" || groupId === -1) {
+        return; // Skip for ungrouped tabs which don't have a browser tab group
+      }
+
+      await chrome.tabGroups.update(parseInt(groupId), {
+        title: newTitle,
+      });
+
+      return true;
+    } catch (error) {
+      console.error("Error renaming tab group:", error);
+      throw new Error("Failed to rename tab group");
+    }
+  }
 }

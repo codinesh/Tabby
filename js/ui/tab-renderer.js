@@ -65,7 +65,7 @@ export class TabRenderer {
     const header = document.createElement("div");
     header.className = `group-header ${group.color || "grey"}`;
     header.addEventListener("click", async (e) => {
-      if (!e.target.closest(".tab-close")) {
+      if (!e.target.closest(".tab-close") && !e.target.closest(".group-edit")) {
         const isCollapsed = !groupElement.classList.contains("collapsed");
         await this.tabManager.setTabGroupCollapsed(group.id, isCollapsed);
 
@@ -100,6 +100,10 @@ export class TabRenderer {
     const groupTitle = document.createElement("span");
     groupTitle.className = "group-title";
     groupTitle.textContent = group.title || "Unnamed Group";
+    groupTitle.setAttribute(
+      "data-original-title",
+      group.title || "Unnamed Group"
+    );
 
     headerLeft.append(collapseIndicator, groupTitle);
 
@@ -115,6 +119,17 @@ export class TabRenderer {
     groupActions.className = "group-actions";
 
     if (group.id !== "ungrouped") {
+      // Add edit button for renaming
+      const editButton = document.createElement("button");
+      editButton.className = "group-edit";
+      editButton.title = "Edit group name";
+      editButton.innerHTML = "✎";
+      editButton.setAttribute("aria-label", "Edit group name");
+      editButton.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.enableGroupRenaming(group.id, groupTitle);
+      });
+
       const ungroupButton = document.createElement("button");
       ungroupButton.className = "group-close";
       ungroupButton.title = "Ungroup tabs";
@@ -131,6 +146,7 @@ export class TabRenderer {
         }
       });
 
+      groupActions.appendChild(editButton);
       groupActions.appendChild(ungroupButton);
     }
 
@@ -148,6 +164,62 @@ export class TabRenderer {
     groupElement.append(header, tabsContainer);
 
     return groupElement;
+  }
+
+  // Add new method to enable group renaming
+  enableGroupRenaming(groupId, titleElement) {
+    if (groupId === "ungrouped") return;
+
+    const currentTitle = titleElement.getAttribute("data-original-title");
+
+    // Create input element for editing
+    const inputElement = document.createElement("input");
+    inputElement.type = "text";
+    inputElement.className = "group-title-edit";
+    inputElement.value = currentTitle;
+    inputElement.setAttribute("aria-label", "Edit group name");
+
+    // Replace the title element with the input
+    titleElement.style.display = "none";
+    titleElement.parentNode.insertBefore(
+      inputElement,
+      titleElement.nextSibling
+    );
+
+    // Focus the input element
+    inputElement.focus();
+    inputElement.select();
+
+    const saveRename = async () => {
+      const newTitle = inputElement.value.trim();
+      if (newTitle && newTitle !== currentTitle) {
+        try {
+          await this.tabManager.renameTabGroup(groupId, newTitle);
+          titleElement.textContent = newTitle;
+          titleElement.setAttribute("data-original-title", newTitle);
+        } catch (error) {
+          console.error("Error renaming group:", error);
+        }
+      }
+
+      // Remove input and show title again
+      inputElement.remove();
+      titleElement.style.display = "";
+    };
+
+    // Add event listeners for saving the new name
+    inputElement.addEventListener("blur", saveRename);
+    inputElement.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        saveRename();
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        // Restore the original title without saving
+        inputElement.remove();
+        titleElement.style.display = "";
+      }
+    });
   }
 
   async renderTabs() {
