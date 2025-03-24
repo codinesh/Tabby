@@ -403,31 +403,52 @@ export class TabManager {
       const ungroupedTabs = tabs.filter((tab) => tab.groupId === -1);
 
       if (ungroupedTabs.length === 0) {
+        console.log("No ungrouped tabs to process");
         return; // No ungrouped tabs to process
       }
 
+      // PRIORITY 1: Match with custom groups first
       const customGroups = settings.customGroups || [];
+      console.log(`Found ${customGroups.length} custom groups:`, customGroups);
+
       const matchedGroups = new Map();
       const unmatchedTabs = [];
 
-      // First try to match with custom groups
+      // Debug information for matching process
       for (const tab of ungroupedTabs) {
         const matchingGroup = this.findMatchingCustomGroup(tab, customGroups);
         if (matchingGroup) {
+          // If tab matches a custom group, add it to that group
+          console.log(`Tab matched custom group: "${matchingGroup.name}"`, {
+            tabTitle: tab.title,
+            tabUrl: tab.url,
+            groupKeywords: matchingGroup.keywords,
+          });
+
           const groupName = matchingGroup.name;
           if (!matchedGroups.has(groupName)) {
             matchedGroups.set(groupName, {
               tabs: [],
-              color: matchingGroup.color || "grey",
+              color: matchingGroup.color || this.getColorForText(groupName),
             });
           }
           matchedGroups.get(groupName).tabs.push(tab);
         } else {
+          // If no custom group match, save for AI grouping
+          console.log(`Tab did not match any custom group:`, {
+            tabTitle: tab.title,
+            tabUrl: tab.url,
+          });
           unmatchedTabs.push(tab);
         }
       }
 
-      // Create groups for matched tabs
+      console.log(
+        `Matched ${tabs.length - unmatchedTabs.length} tabs to custom groups`
+      );
+      console.log(`${unmatchedTabs.length} tabs remaining for AI grouping`);
+
+      // Create all custom group matches first
       const matchedGroupPromises = Array.from(matchedGroups.entries()).map(
         async ([groupName, groupData]) => {
           return this.createTabGroup(
@@ -440,16 +461,23 @@ export class TabManager {
 
       await Promise.all(matchedGroupPromises);
 
-      // Use our custom text similarity approach to group remaining tabs
+      // PRIORITY 2: Use AI grouping for remaining tabs
       if (unmatchedTabs.length > 0) {
         const tabClusters =
           this.textProcessor.groupTabsBySimilarity(unmatchedTabs);
+        console.log(`AI grouping created ${tabClusters.length} clusters`);
 
         const clusterPromises = tabClusters.map(async (cluster) => {
-          if (cluster.length < 2) return null; // Skip single tabs
+          if (cluster.length < 2) {
+            console.log(`Skipping single-tab cluster`);
+            return null; // Skip single tabs
+          }
 
           const clusterName = this.textProcessor.generateClusterName(cluster);
           const color = this.getColorForText(clusterName);
+          console.log(
+            `Creating AI cluster: "${clusterName}" with ${cluster.length} tabs`
+          );
           return this.createTabGroup(cluster, clusterName, color);
         });
 

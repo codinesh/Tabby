@@ -28,19 +28,13 @@ async function groupTabsByDomain() {
   const tabs = await chrome.tabs.query({ windowId: currentWindow.id });
   const domainGroups = new Map();
 
-  // Get custom groups for domain categorization
-  const customGroups = await settingsManager.getCustomGroups();
-
   // Group tabs by domain
   tabs.forEach((tab) => {
     try {
       const url = new URL(tab.url);
       const domain = url.hostname;
       if (!domainGroups.has(domain)) {
-        domainGroups.set(domain, {
-          tabs: [],
-          customGroup: findMatchingCustomGroup(tab, customGroups),
-        });
+        domainGroups.set(domain, { tabs: [] });
       }
       domainGroups.get(domain).tabs.push(tab.id);
     } catch (e) {
@@ -51,40 +45,19 @@ async function groupTabsByDomain() {
 
   // Create tab groups for each domain
   for (const [domain, groupData] of domainGroups) {
-    const { tabs: tabIds, customGroup } = groupData;
+    const { tabs: tabIds } = groupData;
     if (tabIds.length > 1) {
       try {
         const groupId = await chrome.tabs.group({ tabIds });
         await chrome.tabGroups.update(groupId, {
-          title: customGroup ? customGroup.name : domain,
-          color: customGroup
-            ? customGroup.color || "grey"
-            : getColorForDomain(domain),
+          title: domain,
+          color: getColorForDomain(domain),
         });
       } catch (e) {
         console.error("Error creating group for domain:", domain, e);
       }
     }
   }
-}
-
-function findMatchingCustomGroup(tab, customGroups) {
-  for (const group of customGroups) {
-    const keywords = group.keywords
-      .toLowerCase()
-      .split(",")
-      .map((k) => k.trim());
-    if (
-      keywords.some(
-        (keyword) =>
-          tab.title.toLowerCase().includes(keyword) ||
-          tab.url.toLowerCase().includes(keyword)
-      )
-    ) {
-      return group;
-    }
-  }
-  return null;
 }
 
 // Ungroup all tabs
