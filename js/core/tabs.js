@@ -279,7 +279,9 @@ export class TabManager {
 
   async getAllTabs() {
     try {
-      return await chrome.tabs.query({});
+      // Get the current window ID
+      const currentWindow = await chrome.windows.getCurrent();
+      return await chrome.tabs.query({ windowId: currentWindow.id });
     } catch (error) {
       console.error("Error getting tabs:", error);
       throw new Error("Failed to get tabs");
@@ -288,7 +290,9 @@ export class TabManager {
 
   async getAllTabGroups() {
     try {
-      return await chrome.tabGroups.query({});
+      // Get the current window ID
+      const currentWindow = await chrome.windows.getCurrent();
+      return await chrome.tabGroups.query({ windowId: currentWindow.id });
     } catch (error) {
       console.error("Error getting tab groups:", error);
       throw new Error("Failed to get tab groups");
@@ -395,12 +399,19 @@ export class TabManager {
         this.settingsManager.loadSettings(),
       ]);
 
+      // Filter to only get ungrouped tabs (groupId === -1)
+      const ungroupedTabs = tabs.filter((tab) => tab.groupId === -1);
+
+      if (ungroupedTabs.length === 0) {
+        return; // No ungrouped tabs to process
+      }
+
       const customGroups = settings.customGroups || [];
       const matchedGroups = new Map();
       const unmatchedTabs = [];
 
       // First try to match with custom groups
-      for (const tab of tabs) {
+      for (const tab of ungroupedTabs) {
         const matchingGroup = this.findMatchingCustomGroup(tab, customGroups);
         if (matchingGroup) {
           const groupName = matchingGroup.name;

@@ -24,7 +24,8 @@ chrome.commands.onCommand.addListener((command) => {
 // Group tabs by domain
 async function groupTabsByDomain() {
   console.log("Grouping tabs by domain...");
-  const tabs = await chrome.tabs.query({});
+  const currentWindow = await chrome.windows.getCurrent();
+  const tabs = await chrome.tabs.query({ windowId: currentWindow.id });
   const domainGroups = new Map();
 
   // Get custom groups for domain categorization
@@ -89,7 +90,8 @@ function findMatchingCustomGroup(tab, customGroups) {
 // Ungroup all tabs
 async function ungroupAllTabs() {
   console.log("Ungrouping all tabs...");
-  const tabs = await chrome.tabs.query({});
+  const currentWindow = await chrome.windows.getCurrent();
+  const tabs = await chrome.tabs.query({ windowId: currentWindow.id });
   for (const tab of tabs) {
     if (tab.groupId !== chrome.tabs.TAB_GROUP_ID_NONE) {
       try {
